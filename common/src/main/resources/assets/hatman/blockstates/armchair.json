@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/armchair"},"facing=east":{"model":"hatman:block/armchair","y":90},"facing=south":{"model":"hatman:block/armchair","y":180},"facing=west":{"model":"hatman:block/armchair","y":270}}}

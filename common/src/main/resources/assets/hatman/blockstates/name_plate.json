@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/name_plate"},"facing=east":{"model":"hatman:block/name_plate","y":90},"facing=south":{"model":"hatman:block/name_plate","y":180},"facing=west":{"model":"hatman:block/name_plate","y":270}}}

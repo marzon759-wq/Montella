@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/piano"},"facing=east":{"model":"hatman:block/piano","y":90},"facing=south":{"model":"hatman:block/piano","y":180},"facing=west":{"model":"hatman:block/piano","y":270}}}

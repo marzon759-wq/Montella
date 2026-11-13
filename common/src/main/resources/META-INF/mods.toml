@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="hatman"
+version="${mod_version}"
+displayName="The Hatman: Hollow House"
+authors="krolasyon"
+description='''
+A story-driven analog horror. You are a detective sent into Marlowe House to find your missing partner.
+Something in a hat is already inside. It is polite. It asks questions. It does not like liars.
+Start the story with /hatman start (or /hatman basla).
+'''
+
+[[dependencies.hatman]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.hatman]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.hatman]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"

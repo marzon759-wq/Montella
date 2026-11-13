@@ -1,0 +1,45 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+version = "${mc_version}-forge-${mod_version}"
+group = 'com.krolasyon.hatman'
+base { archivesName = 'hatman_hollow_house' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods { hatman { source sourceSets.main } }
+        }
+        client {
+            if (System.getenv('HATMAN_AUTOTEST') != null) property 'hatman.autotest', System.getenv('HATMAN_AUTOTEST')
+        }
+        server { args '--nogui' }
+    }
+}
+sourceSets.main {
+    java.srcDirs = ['../common/src/main/java', 'src/main/java']
+    resources.srcDirs = ['../common/src/main/resources', 'src/main/resources']
+}
+repositories {
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${mc_version}:${gecko_version}")
+}
+tasks.named('processResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    def props = [mod_version: mod_version, pack_format: pack_format]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['Specification-Title': 'hatman', 'Implementation-Title': 'hatman', 'Implementation-Version': project.version]) }
+    if (mc_version == '1.20.1') finalizedBy 'reobfJar'
+}

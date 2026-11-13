@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/hat_box"},"facing=east":{"model":"hatman:block/hat_box","y":90},"facing=south":{"model":"hatman:block/hat_box","y":180},"facing=west":{"model":"hatman:block/hat_box","y":270}}}

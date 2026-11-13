@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/can_shelf"},"facing=east":{"model":"hatman:block/can_shelf","y":90},"facing=south":{"model":"hatman:block/can_shelf","y":180},"facing=west":{"model":"hatman:block/can_shelf","y":270}}}

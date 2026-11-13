@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/dining_chair"},"facing=east":{"model":"hatman:block/dining_chair","y":90},"facing=south":{"model":"hatman:block/dining_chair","y":180},"facing=west":{"model":"hatman:block/dining_chair","y":270}}}

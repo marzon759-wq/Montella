@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/recorder"},"facing=east":{"model":"hatman:block/recorder","y":90},"facing=south":{"model":"hatman:block/recorder","y":180},"facing=west":{"model":"hatman:block/recorder","y":270}}}

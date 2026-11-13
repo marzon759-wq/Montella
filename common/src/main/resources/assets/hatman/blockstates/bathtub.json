@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/bathtub"},"facing=east":{"model":"hatman:block/bathtub","y":90},"facing=south":{"model":"hatman:block/bathtub","y":180},"facing=west":{"model":"hatman:block/bathtub","y":270}}}

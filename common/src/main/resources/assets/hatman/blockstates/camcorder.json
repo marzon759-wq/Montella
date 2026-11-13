@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"hatman:block/camcorder"},"facing=east":{"model":"hatman:block/camcorder","y":90},"facing=south":{"model":"hatman:block/camcorder","y":180},"facing=west":{"model":"hatman:block/camcorder","y":270}}}

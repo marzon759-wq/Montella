@@ -1,0 +1,383 @@
+{
+ "amb.rain": {
+  "sounds": [
+   {
+    "name": "hatman:amb_rain",
+    "stream": true
+   }
+  ]
+ },
+ "amb.house": {
+  "sounds": [
+   {
+    "name": "hatman:amb_house",
+    "stream": true
+   }
+  ]
+ },
+ "amb.cellar": {
+  "sounds": [
+   {
+    "name": "hatman:amb_cellar",
+    "stream": true
+   }
+  ]
+ },
+ "amb.chase": {
+  "sounds": [
+   {
+    "name": "hatman:amb_chase",
+    "stream": true
+   }
+  ]
+ },
+ "amb.heartbeat": {
+  "sounds": [
+   "hatman:amb_heartbeat"
+  ]
+ },
+ "amb.generator": {
+  "sounds": [
+   "hatman:amb_generator"
+  ]
+ },
+ "amb.breath": {
+  "sounds": [
+   "hatman:amb_breath"
+  ]
+ },
+ "amb.fire": {
+  "sounds": [
+   "minecraft:fire/fire"
+  ]
+ },
+ "hm.step": {
+  "sounds": [
+   "hatman:hm_step0",
+   "hatman:hm_step1",
+   "hatman:hm_step2"
+  ],
+  "subtitle": "subtitles.hatman.hm.step"
+ },
+ "hm.breath": {
+  "sounds": [
+   "hatman:hm_breath0",
+   "hatman:hm_breath1"
+  ],
+  "subtitle": "subtitles.hatman.hm.breath"
+ },
+ "hm.growl": {
+  "sounds": [
+   "hatman:hm_growl0",
+   "hatman:hm_growl1",
+   "hatman:hm_growl2",
+   "hatman:hm_growl3"
+  ],
+  "subtitle": "subtitles.hatman.hm.growl"
+ },
+ "hm.scream": {
+  "sounds": [
+   "hatman:hm_scream0",
+   "hatman:hm_scream1"
+  ],
+  "subtitle": "subtitles.hatman.hm.scream"
+ },
+ "hm.whisper": {
+  "sounds": [
+   "hatman:hm_whisper0",
+   "hatman:hm_whisper1",
+   "hatman:hm_whisper2"
+  ],
+  "subtitle": "subtitles.hatman.hm.whisper"
+ },
+ "hm.emerge": {
+  "sounds": [
+   "hatman:hm_emerge"
+  ],
+  "subtitle": "subtitles.hatman.hm.emerge"
+ },
+ "hm.vanish": {
+  "sounds": [
+   "hatman:hm_vanish"
+  ],
+  "subtitle": "subtitles.hatman.hm.vanish"
+ },
+ "hm.knock": {
+  "sounds": [
+   "hatman:hm_knock"
+  ],
+  "subtitle": "subtitles.hatman.hm.knock"
+ },
+ "hm.twitch": {
+  "sounds": [
+   "hatman:hm_twitch0",
+   "hatman:hm_twitch1"
+  ],
+  "subtitle": "subtitles.hatman.hm.twitch"
+ },
+ "hm.grab": {
+  "sounds": [
+   "hatman:hm_grab"
+  ],
+  "subtitle": "subtitles.hatman.hm.grab"
+ },
+ "hm.voice": {
+  "sounds": [
+   "hatman:hm_voice0",
+   "hatman:hm_voice1",
+   "hatman:hm_voice2",
+   "hatman:hm_voice3"
+  ],
+  "subtitle": "subtitles.hatman.hm.voice"
+ },
+ "hm.bang": {
+  "sounds": [
+   "hatman:hm_bang0",
+   "hatman:hm_bang1"
+  ],
+  "subtitle": "subtitles.hatman.hm.bang"
+ },
+ "hm.search": {
+  "sounds": [
+   "hatman:hm_search0",
+   "hatman:hm_search1"
+  ],
+  "subtitle": "subtitles.hatman.hm.search"
+ },
+ "fx.static": {
+  "sounds": [
+   "hatman:fx_static0",
+   "hatman:fx_static1"
+  ],
+  "subtitle": "subtitles.hatman.fx.static"
+ },
+ "fx.jumpscare": {
+  "sounds": [
+   "hatman:fx_jumpscare"
+  ],
+  "subtitle": "subtitles.hatman.fx.jumpscare"
+ },
+ "fx.creak": {
+  "sounds": [
+   "hatman:fx_creak0",
+   "hatman:fx_creak1"
+  ],
+  "subtitle": "subtitles.hatman.fx.creak"
+ },
+ "fx.door_slam": {
+  "sounds": [
+   "hatman:fx_door_slam0",
+   "hatman:fx_door_slam1"
+  ],
+  "subtitle": "subtitles.hatman.fx.door_slam"
+ },
+ "fx.door_creak": {
+  "sounds": [
+   "hatman:fx_door_creak0",
+   "hatman:fx_door_creak1"
+  ],
+  "subtitle": "subtitles.hatman.fx.door_creak"
+ },
+ "fx.lock": {
+  "sounds": [
+   "hatman:fx_lock"
+  ],
+  "subtitle": "subtitles.hatman.fx.lock"
+ },
+ "fx.unlock": {
+  "sounds": [
+   "hatman:fx_unlock"
+  ],
+  "subtitle": "subtitles.hatman.fx.unlock"
+ },
+ "fx.drawer": {
+  "sounds": [
+   "hatman:fx_drawer0",
+   "hatman:fx_drawer1"
+  ],
+  "subtitle": "subtitles.hatman.fx.drawer"
+ },
+ "fx.paper": {
+  "sounds": [
+   "minecraft:item/book/open_flip1",
+   "minecraft:item/book/open_flip2",
+   "minecraft:item/book/open_flip3"
+  ],
+  "subtitle": "subtitles.hatman.fx.paper"
+ },
+ "fx.pickup": {
+  "sounds": [
+   "minecraft:random/pop"
+  ],
+  "subtitle": "subtitles.hatman.fx.pickup"
+ },
+ "fx.phone_ring": {
+  "sounds": [
+   "hatman:fx_phone_ring"
+  ],
+  "subtitle": "subtitles.hatman.fx.phone_ring"
+ },
+ "fx.phone_pick": {
+  "sounds": [
+   "hatman:fx_phone_pick"
+  ],
+  "subtitle": "subtitles.hatman.fx.phone_pick"
+ },
+ "fx.tv_on": {
+  "sounds": [
+   "hatman:fx_tv_on"
+  ],
+  "subtitle": "subtitles.hatman.fx.tv_on"
+ },
+ "fx.generator_start": {
+  "sounds": [
+   "hatman:fx_generator_start"
+  ],
+  "subtitle": "subtitles.hatman.fx.generator_start"
+ },
+ "fx.power_down": {
+  "sounds": [
+   "hatman:fx_power_down"
+  ],
+  "subtitle": "subtitles.hatman.fx.power_down"
+ },
+ "fx.switch": {
+  "sounds": [
+   "hatman:fx_switch"
+  ],
+  "subtitle": "subtitles.hatman.fx.switch"
+ },
+ "fx.bulb_pop": {
+  "sounds": [
+   "hatman:fx_bulb_pop"
+  ],
+  "subtitle": "subtitles.hatman.fx.bulb_pop"
+ },
+ "fx.glass": {
+  "sounds": [
+   "hatman:fx_glass"
+  ],
+  "subtitle": "subtitles.hatman.fx.glass"
+ },
+ "fx.wood_break": {
+  "sounds": [
+   "hatman:fx_wood_break0",
+   "hatman:fx_wood_break1"
+  ],
+  "subtitle": "subtitles.hatman.fx.wood_break"
+ },
+ "fx.music_box": {
+  "sounds": [
+   "hatman:fx_music_box"
+  ],
+  "subtitle": "subtitles.hatman.fx.music_box"
+ },
+ "fx.clock_tick": {
+  "sounds": [
+   "hatman:fx_clock_tick"
+  ],
+  "subtitle": "subtitles.hatman.fx.clock_tick"
+ },
+ "fx.clock_chime": {
+  "sounds": [
+   "minecraft:block/bell/bell_use01"
+  ],
+  "subtitle": "subtitles.hatman.fx.clock_chime"
+ },
+ "fx.cam_on": {
+  "sounds": [
+   "hatman:fx_cam_on"
+  ],
+  "subtitle": "subtitles.hatman.fx.cam_on"
+ },
+ "fx.cam_off": {
+  "sounds": [
+   "hatman:fx_cam_off"
+  ],
+  "subtitle": "subtitles.hatman.fx.cam_off"
+ },
+ "fx.cam_low": {
+  "sounds": [
+   "minecraft:note/bit"
+  ],
+  "subtitle": "subtitles.hatman.fx.cam_low"
+ },
+ "fx.keypad": {
+  "sounds": [
+   "hatman:fx_keypad"
+  ],
+  "subtitle": "subtitles.hatman.fx.keypad"
+ },
+ "fx.safe_open": {
+  "sounds": [
+   "hatman:fx_safe_open"
+  ],
+  "subtitle": "subtitles.hatman.fx.safe_open"
+ },
+ "fx.fake_steps": {
+  "sounds": [
+   "hatman:fx_fake_steps0",
+   "hatman:fx_fake_steps1"
+  ],
+  "subtitle": "subtitles.hatman.fx.fake_steps"
+ },
+ "fx.crow": {
+  "sounds": [
+   "hatman:fx_crow"
+  ],
+  "subtitle": "subtitles.hatman.fx.crow"
+ },
+ "fx.sting": {
+  "sounds": [
+   "hatman:fx_sting0",
+   "hatman:fx_sting1"
+  ],
+  "subtitle": "subtitles.hatman.fx.sting"
+ },
+ "fx.chapter": {
+  "sounds": [
+   "hatman:fx_chapter"
+  ],
+  "subtitle": "subtitles.hatman.fx.chapter"
+ },
+ "fx.type": {
+  "sounds": [
+   "hatman:fx_type"
+  ],
+  "subtitle": "subtitles.hatman.fx.type"
+ },
+ "fx.voice_ruth": {
+  "sounds": [
+   "hatman:fx_voice_ruth0",
+   "hatman:fx_voice_ruth1",
+   "hatman:fx_voice_ruth2",
+   "hatman:fx_voice_ruth3"
+  ],
+  "subtitle": "subtitles.hatman.fx.voice_ruth"
+ },
+ "fx.thump": {
+  "sounds": [
+   "hatman:fx_thump"
+  ],
+  "subtitle": "subtitles.hatman.fx.thump"
+ },
+ "fx.piano": {
+  "sounds": [
+   "minecraft:note/harp"
+  ],
+  "subtitle": "subtitles.hatman.fx.piano"
+ },
+ "fx.tape": {
+  "sounds": [
+   "hatman:fx_tape"
+  ],
+  "subtitle": "subtitles.hatman.fx.tape"
+ },
+ "fx.thunder": {
+  "sounds": [
+   "hatman:fx_thunder0",
+   "hatman:fx_thunder1"
+  ],
+  "subtitle": "subtitles.hatman.fx.thunder"
+ }
+}
