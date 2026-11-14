@@ -18,6 +18,14 @@ You are a detective. Your partner, Ruth Calloway, walked into Marlowe House nine
 
 The game language decides the story language (English / Türkçe).
 
+## Install / Kurulum
+
+1. Install Forge for your Minecraft version and **GeckoLib** (Forge build) for the same version.
+2. Drop the matching jar from `dist/` into `mods/`:
+   - `hatman_hollow_house-1.20.1-forge-1.0.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
+   - `hatman_hollow_house-1.21.1-forge-1.0.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+3. Create a world (flat or normal), stand somewhere open and type `/hatman start` (`/hatman basla`).
+
 ## Layout
 
 - `common/` — all gameplay code and assets, shared by both versions

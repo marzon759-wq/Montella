@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="${loader_range}"
 license="All Rights Reserved"
 
 [[mods]]
@@ -16,20 +16,20 @@ Start the story with /hatman start (or /hatman basla).
 [[dependencies.hatman]]
     modId="forge"
     mandatory=true
-    versionRange="[47,)"
+    versionRange="${loader_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.hatman]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.20.1,1.21.2)"
+    versionRange="${mc_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.hatman]]
     modId="geckolib"
     mandatory=true
-    versionRange="[4.4,)"
+    versionRange="${gecko_range}"
     ordering="AFTER"
     side="BOTH"

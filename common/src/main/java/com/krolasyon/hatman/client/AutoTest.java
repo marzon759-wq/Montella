@@ -174,6 +174,20 @@ public final class AutoTest {
             cue(12, () -> shot("screen_jumpscare"));
         }
         if (mode.contains("story")) story();
+        if (mode.contains("quick")) {
+            cue(10, () -> srv("step:c3_talk"));
+            cue(10, () -> srv("tp:34.5,7,9.5,-60,0"));
+            cue(110, () -> shot("q_dialogue"));
+            cue(2, () -> srv("advance:0"));
+            cue(30, () -> shot("q_dialogue2"));
+            cue(5, () -> srv("note:confession"));
+            cue(30, () -> shot("q_note"));
+            close();
+            cue(10, () -> { srv("kill"); srv("step:c2_evidence"); srv("power:off"); srv("nv:on"); srv("tp:2.5,1,15.5,-90,0"); srv("hm:14.5,1,15.5,90,1"); });
+            cue(60, () -> shot("q_nv"));
+            cue(5, () -> srv("nv:off"));
+        }
+        if (mode.contains("finale")) for (String e : new String[]{"closed", "newface", "worn", "burn", "run"}) finale(e);
         cue(60, () -> {
             HatmanMod.LOG.info("[AUTOTEST] finished");
             Minecraft.getInstance().stop();
@@ -255,13 +269,50 @@ public final class AutoTest {
         tp(17.5, 7, 9.5); at += 10; tp(36.5, 1, 8.5); at += 50; tp(20.5, -5, 6.5); at += 10;
         tp(9.5, -5, 10.5); use("hatblock"); tp(7.5, -5, 16.5); expect("c4_cold");
         at += 60; talk(0, 8); at += 130; expect("c5_walk");
-        tp(3.5, 7, 21.5); use("safe"); close(); cue(4, () -> srv("code:0731")); at += 40; close();
+        tp(3.5, 7, 21.5); use("safe"); close(); cue(4, () -> srv("code:0731")); at += 80; close(); at += 20; close();
         tp(36.5, 1, 19.5); at += 6; skipCut(); expect("c5_talk");
         talk(0, 8); at += 20;
         cue(4, () -> HatmanMod.LOG.info("[AUTOTEST] ending={} step={}", Story.S.ending, Story.S.step));
         skipCut(); expect("credits");
         close(); at += 20;
         cue(4, () -> HatmanMod.LOG.info("[AUTOTEST] story finished: active={} ending={} notes={} anger={} claim={}", Story.S.active, Story.S.ending, Story.S.notes.size(), Story.S.anger, Story.S.claim));
+    }
+
+    /** jumps to the last chapter and drives the final conversation to one ending */
+    private static void finale(String ending) {
+        cue(20, () -> { srv("give"); srv("mood:" + (ending.equals("newface") ? "10:80" : "0:0")); srv("step:c5_walk"); });
+        at += 20;
+        tp(36.5, 1, 19.5); at += 20; skipCut(); expect("c5_talk");
+        // f1 -> f2x -> f3 choices: 0 face, 1 yes, 2 no / 3 bound-yes, 4 burn (indices of the node, not of the list)
+        cue(6, () -> srv("advance:0"));
+        cue(6, () -> srv("advance:0"));
+        int c = switch (ending) { case "closed", "worn" -> 0; case "newface" -> 1; case "run" -> 2; default -> 4; };
+        cue(6, () -> srv("advance:" + c));
+        if (ending.equals("closed")) cue(6, () -> srv("advance:0"));
+        if (ending.equals("worn")) cue(6, () -> srv("advance:1"));
+        cue(6, () -> srv("advance:0"));
+        at += 30;
+        cue(2, () -> HatmanMod.LOG.info("[AUTOTEST] finale {} -> step={} ending={}", ending, Story.S.step, Story.S.ending));
+        if (ending.equals("burn")) {
+            expect("c5_fire");
+            cue(20, () -> shot("finale_fire"));
+            tp(22.5, 1, 55.5); at += 20; skipCut(); expect("credits");
+        } else if (ending.equals("run")) {
+            expect("c5_run");
+            at += 160;
+            cue(2, () -> shot("finale_run"));
+            tp(10.5, 1, 41.5); at += 10; tp(22.5, 1, 55.5); at += 20; skipCut(); expect("credits");
+        } else {
+            cue(30, () -> shot("finale_" + ending));
+            skipCut(); expect("credits");
+        }
+        cue(40, () -> shot("credits_" + ending));
+        close(); at += 30;
+        cue(2, () -> HatmanMod.LOG.info("[AUTOTEST] after credits active={}", Story.S.active));
+        cue(10, () -> srv("start"));
+        at += 60;
+        cue(2, () -> client(() -> { if (ClientState.cutId != null) com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", ClientState.cutId)); }));
+        at += 30;
     }
 
     public static void tick() {
