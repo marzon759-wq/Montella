@@ -435,7 +435,7 @@ public class HatmanEntity extends HatmanBase {
                         if (w.distanceToSqr(position()) < 14 * 14 && Math.abs(w.y - getY()) < 3) searchList.add(h);
                     }
                     searchList.sort((a, b) -> Double.compare(Story.worldCenter(a.pos).distanceToSqr(position()), Story.worldCenter(b.pos).distanceToSqr(position())));
-                    int max = getAnger() > 60 ? 3 : getAnger() > 25 ? 2 : 1;
+                    int max = story ? Story.searchDepth() : 2;
                     House.Hide mine = Story.hiddenIn(p);
                     // he always checks at least the hide he heard you get into
                     if (mine != null && Story.seenHiding()) {
@@ -580,6 +580,7 @@ public class HatmanEntity extends HatmanBase {
             BlockPos c = BlockPos.containing(getX() + fwd.x * i, getY() + 0.2, getZ() + fwd.z * i);
             BlockState s = level().getBlockState(c);
             if (s.getBlock() instanceof DoorBlock door && !s.getValue(DoorBlock.OPEN)) {
+                if (story && Story.isLockedDoor(c) && !Story.isBarred(c)) return;
                 if (Story.isBarred(c)) {
                     if (stateTicks % 26 == 0) {
                         say("hm.bang", 1.0f, 1.0f);
@@ -596,6 +597,7 @@ public class HatmanEntity extends HatmanBase {
                     say("fx.door_creak", 0.8f, 0.9f);
                 }
             } else if (s.getBlock() instanceof FenceGateBlock && !s.getValue(FenceGateBlock.OPEN)) {
+                if (story && Story.isLockedDoor(c)) return;
                 level().setBlock(c, s.setValue(FenceGateBlock.OPEN, true), 10);
                 say("fx.door_slam", 0.7f, 1.2f);
             }

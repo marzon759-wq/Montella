@@ -426,6 +426,8 @@ public final class House {
         set(28, y, 29, Blocks.BARREL);
         lampQ(22, y + 3, 24, 0);
         sconce(15, y + 2, 20, Direction.EAST);
+        sconce(15, y + 2, 28, Direction.EAST);
+        sconce(29, y + 2, 19, Direction.WEST);
         sconce(29, y + 2, 26, Direction.WEST);
         webs(15, 18, 29, 29, y + 3, 7);
 
@@ -478,6 +480,8 @@ public final class House {
         lampQ(7, y + 3, 24, 0);
         sconce(13, y + 2, 20, Direction.WEST);
         sconce(13, y + 2, 28, Direction.WEST);
+        lampQ(4, y + 3, 20, 1);
+        sconce(1, y + 2, 20, Direction.EAST);
         webs(1, 18, 13, 29, y + 3, 9);
 
         // ---------------- dining room
@@ -540,6 +544,8 @@ public final class House {
         set(12, y, 11, Blocks.BARREL);
         lampQ(7, y + 3, 6, 0);
         sconce(13, y + 2, 8, Direction.WEST);
+        lampQ(10, y + 3, 10, 0);
+        sconce(1, y + 2, 2, Direction.EAST);
         webs(1, 1, 13, 12, y + 3, 6);
 
         // ---------------- stair hall
@@ -632,6 +638,7 @@ public final class House {
         set(40, y, 12, Blocks.BARREL);
         lampQ(36, y + 3, 6, 1);
         sconce(31, y + 2, 10, Direction.EAST);
+        lampQ(34, y + 3, 10, 0);
         webs(31, 1, 41, 12, y + 3, 7);
     }
 
@@ -711,6 +718,7 @@ public final class House {
         door("dress", 14, y, 24, Direction.EAST, false);
         lampQ(7, y + 3, 24, 0);
         sconce(13, y + 2, 26, Direction.WEST);
+        lampQ(10, y + 3, 20, 0);
         sconce(1, y + 2, 27, Direction.EAST);
         webs(1, 18, 13, 29, y + 3, 8);
 
@@ -735,6 +743,8 @@ public final class House {
         desk(15, y, 21, Direction.EAST, "battery");
         variant(ModBlocks.HAT_STAND.get(), 15, y + 1, 21, Direction.EAST, 0);
         lampQ(22, y + 3, 23, 1);
+        lampQ(18, y + 3, 27, 0);
+        sconce(29, y + 2, 28, Direction.WEST);
         webs(15, 18, 29, 29, y + 3, 8);
 
         // ---------------- Thomas's room
@@ -761,6 +771,7 @@ public final class House {
         put(ModBlocks.STREAMER.get(), 38, y + 3, 24, Direction.EAST);
         lampQ(37, y + 3, 24, 0);
         sconce(31, y + 2, 22, Direction.EAST);
+        sconce(43, y + 2, 25, Direction.WEST);
         webs(31, 18, 43, 29, y + 3, 6);
 
         // ---------------- bathroom
@@ -776,7 +787,7 @@ public final class House {
         set(1, y, 10, Blocks.CAULDRON);
         set(6, y, 11, Blocks.BARREL);
         set(5, y + 3, 2, Blocks.CHAIN);
-        lampQ(3, y + 3, 6, 1);
+        lampQ(3, y + 3, 6, 0);
         webs(1, 1, 6, 12, y + 3, 4);
 
         // ---------------- guest room (Ruth slept here once)
@@ -846,6 +857,7 @@ public final class House {
         carpet(33, 4, 39, 10, y, Blocks.RED_CARPET);
         lampQ(36, y + 3, 6, 0);
         sconce(40, y + 2, 12, Direction.NORTH);
+        sconce(32, y + 2, 12, Direction.NORTH);
         webs(31, 1, 41, 12, y + 3, 7);
     }
 
@@ -903,9 +915,10 @@ public final class House {
         for (int[] h : new int[][]{{24, 21}, {25, 22}, {32, 9}, {29, 9}}) put(ModBlocks.HAT_BOX.get(), h[0], y, h[1], Direction.NORTH);
         put(ModBlocks.ARMCHAIR.get(), 36, y, 14, Direction.WEST);
         put(ModBlocks.CRT_TV.get(), 39, y, 12, Direction.WEST);
-        lampQ(8, y + 4, 15, 1);
+        lampQ(8, y + 4, 15, 0);
         lampQ(22, y + 4, 15, 0);
-        lampQ(36, y + 4, 15, 2);
+        lampQ(36, y + 4, 15, 1);
+        lampQ(15, y + 3, 20, 1);
         for (int i = 0; i < 40; i++) web(1 + rnd.nextInt(43), y + rnd.nextInt(4), 7 + rnd.nextInt(17));
     }
 
@@ -948,8 +961,9 @@ public final class House {
         set(19, y, 1, Blocks.BARREL);
         set(20, y, 1, Blocks.BARREL);
         set(24, y, 12, Blocks.COMPOSTER);
-        lampQ(21, y + 3, 6, 1);
+        lampQ(21, y + 3, 6, 0);
         sconce(25, y + 2, 12, Direction.NORTH);
+        sconce(15, y + 2, 4, Direction.EAST);
         webs(15, 1, 25, 12, y + 3, 9);
 
         // ---------------- the hatter's workshop
@@ -991,7 +1005,8 @@ public final class House {
         tag(9, y + 1, 12, "hatblock");
         variant(ModBlocks.HAT_STAND.get(), 5, y, 12, Direction.NORTH, 3);
         variant(ModBlocks.HAT_STAND.get(), 4, y, 12, Direction.NORTH, 4);
-        lampQ(7, y + 3, 6, 1);
+        lampQ(7, y + 3, 6, 0);
+        lampQ(11, y + 3, 10, 1);
         for (int i = 0; i < 26; i++) web(1 + rnd.nextInt(13), y + 1 + rnd.nextInt(3), 1 + rnd.nextInt(12));
 
         // ---------------- generator room
@@ -1010,7 +1025,8 @@ public final class House {
         set(34, y, 12, Blocks.BARREL);
         set(42, y, 11, Blocks.CAULDRON);
         fill(35, y + 3, 6, 41, y + 3, 6, Blocks.CHAIN.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X));
-        lampQ(37, y + 3, 7, 1);
+        lampQ(37, y + 3, 7, 0);
+        sconce(31, y + 2, 9, Direction.EAST);
         webs(31, 1, 43, 12, y + 3, 7);
 
         // ---------------- wine cellar
@@ -1034,7 +1050,8 @@ public final class House {
             set(22, yy, 30, Blocks.IRON_BARS);
             tag(22, yy, 30, "tunnelgate");
         }
-        lampQ(22, y + 3, 21, 1);
+        lampQ(22, y + 3, 17, 0);
+        lampQ(22, y + 3, 25, 1);
         webs(15, 14, 29, 29, y + 3, 10);
 
         // ---------------- cold room
@@ -1100,6 +1117,9 @@ public final class House {
         for (int x : new int[]{18, 26}) fill(x, 1, 34, x, 4, 34, log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
         fill(18, 0, 32, 26, 0, 34, Blocks.STONE_BRICKS);
         set(19, 1, 32, Blocks.POTTED_DEAD_BUSH);
+        set(22, 4, 33, Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
+        set(18, 4, 33, Blocks.CHAIN);
+        set(26, 4, 33, Blocks.CHAIN);
         set(25, 1, 32, Blocks.BARREL);
         // path to the gate
         for (int z = 35; z <= 57; z++)
@@ -1124,6 +1144,12 @@ public final class House {
         }
         set(20, 5, 52, Blocks.STONE_BRICK_WALL);
         set(20, 6, 52, Blocks.SOUL_LANTERN);
+        set(24, 5, 52, Blocks.STONE_BRICK_WALL);
+        set(24, 6, 52, Blocks.SOUL_LANTERN);
+        for (int[] lp : new int[][]{{-8, 22}, {52, 22}, {-8, 46}, {52, 46}, {8, 52}, {38, 52}}) {
+            set(lp[0], 4, lp[1], Blocks.STONE_BRICK_WALL);
+            set(lp[0], 5, lp[1], Blocks.SOUL_LANTERN);
+        }
         // hedge that hides the world outside, and a barrier so nobody wanders off
         for (int x = -12; x <= 56; x++)
             for (int z = -12; z <= 62; z++) {

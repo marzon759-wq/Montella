@@ -461,6 +461,14 @@ public final class Story {
         return S.f("bar:" + t.substring(5));
     }
 
+    /** doors the story keeps shut: he is a guest too, and will not force them */
+    public static boolean isLockedDoor(BlockPos world) {
+        if (!S.active) return false;
+        String t = House.HOT.get(local(world));
+        if (t == null || !t.startsWith("door:")) return false;
+        return locked(t.substring(5));
+    }
+
     private static void resend(ServerPlayer p, BlockPos pos) {
         p.connection.send(new ClientboundBlockUpdatePacket(p.serverLevel(), pos));
         p.connection.send(new ClientboundBlockUpdatePacket(p.serverLevel(), pos.above()));
@@ -566,6 +574,11 @@ public final class Story {
     }
 
     public static boolean seenHiding() { return seenHide; }
+
+    /** how many wardrobes he bothers to open: he learns from how often you hide */
+    public static int searchDepth() {
+        return 1 + (S.anger > 60 ? 2 : S.anger > 25 ? 1 : 0) + Math.min(2, S.v("hides") / 3);
+    }
 
     /** called while he is breathing at the slats of the wardrobe you are in */
     public static boolean hideDetected(ServerPlayer p, HatmanEntity e) {
@@ -1155,7 +1168,7 @@ public final class Story {
         int ev;
         if (lvl == 1) ev = roll < 62 ? 0 : roll < 80 ? 1 : 2;
         else if (lvl == 2) ev = roll < 34 ? 0 : roll < 48 ? 1 : roll < 70 ? 2 : 3;
-        else ev = roll < 22 ? 0 : roll < 32 ? 1 : roll < 46 ? 2 : roll < 74 ? 3 : 4;
+        else ev = roll < 18 ? 0 : roll < 26 ? 1 : roll < 38 ? 2 : roll < 60 ? 3 : roll < 80 ? 4 : 5;
         if (ev == lastEvent && ev != 0) ev = 0;
         lastEvent = ev;
         switch (ev) {
@@ -1184,6 +1197,16 @@ public final class Story {
                 e.stareLimit = Math.max(50, 150 - (int) S.anger - S.v("stares") * 12);
                 e.setState(HatmanEntity.STALK);
                 S.v("stares", S.v("stares") + 1);
+            }
+            case 5 -> { // the ambush: he is already standing where you are about to walk, perfectly still
+                Vec3 spot = findSpot(p, 8, 15, true, true);
+                if (spot == null) { hauntSound(p); return; }
+                Vec3 l = spot.subtract(S.ox, S.oy, S.oz);
+                HatmanEntity e = spawnHatman(l.x, l.y, l.z, 0);
+                if (e == null) return;
+                e.face(p.position());
+                e.huntSpeed = 4.8 + S.anger / 120.0;
+                e.setState(HatmanEntity.AMBUSH);
             }
             default -> { // the hunt: he comes up out of the floor and runs you down
                 Vec3 spot = findSpot(p, 9, 14, false, false);
@@ -1259,6 +1282,12 @@ public final class Story {
     // ================================================================== debug
     /** hooks for the automated test run */
     public static void test(ServerPlayer p, String cmd) {
+        if (cmd.startsWith("use:")) {
+            BlockPos l = House.first(cmd.substring(4));
+            if (l == null) HatmanMod.LOG.error("[AUTOTEST] no hotspot {}", cmd);
+            else interact(p, wp(l));
+            return;
+        }
         String[] a = cmd.split(":");
         switch (a[0]) {
             case "power" -> power(a[1].equals("on"));
@@ -1298,6 +1327,14 @@ public final class Story {
             case "mood" -> { S.anger = Float.parseFloat(a[1]); S.claim = Float.parseFloat(a[2]); }
             case "keypad" -> Net.toPlayer(p, Msg.of("keypad"));
             case "give" -> debugGiveAll(p);
+            case "advance" -> {
+                if (dlgId != null && dlgNode != null) {
+                    Dialogues.Node n = Dialogues.NODES.get(dlgNode);
+                    onChoice(p, dlgNode, n == null || n.choices.isEmpty() ? -2 : Integer.parseInt(a[1]));
+                }
+            }
+            case "unhide" -> { if (hiddenId != null) unhide(p); }
+            case "code" -> Steps.onKeypad(p, a[1]);
             default -> HatmanMod.LOG.warn("unknown test command {}", cmd);
         }
     }

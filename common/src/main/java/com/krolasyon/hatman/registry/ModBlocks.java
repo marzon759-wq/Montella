@@ -70,7 +70,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> CABINET = reg("cabinet", () -> new OpenableBlock(prop(), new double[]{1, 0, 3, 15, 13, 16}, true));
     public static final RegistryObject<Block> SAFE = reg("safe", () -> new OpenableBlock(prop().sound(SoundType.METAL), new double[]{1, 0, 3, 15, 16, 16}, true));
     public static final RegistryObject<Block> TRUNK = reg("trunk", () -> new OpenableBlock(prop(), new double[]{1, 0, 2, 15, 10, 14}, true));
-    public static final RegistryObject<Block> WARDROBE = reg("wardrobe", () -> new TallBlock(prop(), FULL, true));
+    public static final RegistryObject<Block> WARDROBE = reg("wardrobe", () -> new TallBlock(prop().isSuffocating((st, l, p) -> false).isViewBlocking((st, l, p) -> false), FULL, true));
     public static final RegistryObject<Block> CLOCK = reg("clock", () -> new TallBlock(prop(), new double[]{3, 0, 6, 13, 16, 16}, true));
     public static final RegistryObject<Block> MANNEQUIN = reg("mannequin", () -> new TallBlock(prop().sound(SoundType.WOOL), new double[]{4, 0, 5, 12, 16, 11}, true));
     public static final RegistryObject<Block> WALL_MASK = reg("wall_mask", () -> new VariantBlock(prop().sound(SoundType.STONE), new double[]{4, 3, 14, 12, 13, 16}, false));
@@ -81,8 +81,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> PHONE = reg("phone", () -> new ModeBlock(prop().sound(SoundType.METAL), new double[]{4, 0, 4, 12, 5, 12}, false));
     public static final RegistryObject<Block> GENERATOR = reg("generator", () -> new ModeBlock(prop().sound(SoundType.METAL), FULL, true));
     public static final RegistryObject<Block> MUSIC_BOX = reg("music_box", () -> new ModeBlock(prop(), new double[]{4, 0, 4, 12, 6, 12}, false));
-    public static final RegistryObject<Block> WALL_LAMP = reg("wall_lamp", () -> new ModeBlock(prop().sound(SoundType.GLASS).noCollission().lightLevel(s -> s.getValue(ModeBlock.MODE) == 1 ? 13 : s.getValue(ModeBlock.MODE) == 2 ? 5 : 0), new double[]{5, 3, 10, 11, 13, 16}, false));
-    public static final RegistryObject<Block> CEILING_LAMP = reg("ceiling_lamp", () -> new ModeBlock(prop().sound(SoundType.GLASS).noCollission().lightLevel(s -> s.getValue(ModeBlock.MODE) == 1 ? 14 : s.getValue(ModeBlock.MODE) == 2 ? 5 : 0), new double[]{4, 6, 4, 12, 16, 12}, false));
+    public static final RegistryObject<Block> WALL_LAMP = reg("wall_lamp", () -> new ModeBlock(prop().sound(SoundType.GLASS).noCollission().lightLevel(s -> s.getValue(ModeBlock.MODE) == 1 ? 14 : s.getValue(ModeBlock.MODE) == 2 ? 9 : 0), new double[]{5, 3, 10, 11, 13, 16}, false));
+    public static final RegistryObject<Block> CEILING_LAMP = reg("ceiling_lamp", () -> new ModeBlock(prop().sound(SoundType.GLASS).noCollission().lightLevel(s -> s.getValue(ModeBlock.MODE) == 1 ? 15 : s.getValue(ModeBlock.MODE) == 2 ? 10 : 0), new double[]{4, 6, 4, 12, 16, 12}, false));
 
     private ModBlocks() {}
 }

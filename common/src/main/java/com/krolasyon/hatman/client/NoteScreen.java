@@ -54,6 +54,8 @@ public class NoteScreen extends HScreen {
         g.fill(0, 0, width, height, 0xB0000000);
         int pw = paperW(), ph = paperH();
         int x = (width - pw) / 2, y = (height - ph) / 2;
+        g.flush();
+        Hud.blend();
         g.blit(PAPER, x, y, pw, ph, 0, 0, 256, 320, 256, 320);
         String title = I18n.get("note.hatman." + id + ".title");
         g.drawString(font, title, x + 22, y + 20, 0xFF2A2218, false);

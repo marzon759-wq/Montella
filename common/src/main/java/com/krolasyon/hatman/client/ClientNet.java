@@ -84,6 +84,8 @@ public final class ClientNet {
             }
             case "dlg_end" -> {
                 ClientState.dialogue = false;
+                DialogueScreen.pending = null;
+                if (ClientState.cutId == null) mc.options.hideGui = false;
                 if (mc.screen instanceof DialogueScreen) mc.setScreen(null);
             }
             case "cut" -> {
@@ -105,6 +107,8 @@ public final class ClientNet {
             case "keypad" -> mc.setScreen(new KeypadScreen());
             case "credits" -> mc.setScreen(new CreditsScreen(m.s("ending"), m.i("notes"), m.i("notesMax"), m.i("caught"), m.i("lies")));
             case "end" -> {
+                DialogueScreen.pending = null;
+                mc.options.hideGui = false;
                 ClientState.reset();
                 CutsceneScreen.release();
             }

@@ -23,9 +23,12 @@ public class DialogueScreen extends HScreen {
     private int shown = 0, nodeAge = 0, choiceAge = 0;
     private boolean answered = false;
     private int hover = -1;
+    /** the node the server is waiting on; re-opened if something else closes the screen */
+    public static Msg pending = null;
 
     public static void show(Msg m) {
         Minecraft mc = Minecraft.getInstance();
+        pending = m;
         DialogueScreen s = mc.screen instanceof DialogueScreen d ? d : new DialogueScreen();
         s.node = m.s("node");
         s.speaker = m.s("speaker");
@@ -42,6 +45,7 @@ public class DialogueScreen extends HScreen {
         s.choiceAge = 0;
         s.answered = false;
         ClientState.dialogue = true;
+        mc.options.hideGui = true;
         ClientState.anger = m.f("anger");
         if (mc.screen != s) mc.setScreen(s);
     }
@@ -169,6 +173,4 @@ public class DialogueScreen extends HScreen {
     @Override
     public boolean shouldCloseOnEsc() { return false; }
 
-    @Override
-    public void removed() { ClientState.dialogue = false; }
 }

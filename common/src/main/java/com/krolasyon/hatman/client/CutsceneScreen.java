@@ -36,6 +36,7 @@ public class CutsceneScreen extends HScreen {
         }
         updateCamera(0);
         if (cam != null) mc.setCameraEntity(cam);
+        mc.options.hideGui = true;
     }
 
     public static void release() {
@@ -44,6 +45,7 @@ public class CutsceneScreen extends HScreen {
             if (mc.player != null) mc.setCameraEntity(mc.player);
             if (prevType != null) mc.options.setCameraType(prevType);
             cam = null;
+            mc.options.hideGui = false;
         }
         ClientState.cutId = null;
         ClientState.cutFov = -1;

@@ -13,6 +13,10 @@ minecraft {
         configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'info'
+            if (mc_version == '1.20.1') {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            }
             mods { hatman { source sourceSets.main } }
         }
         client {

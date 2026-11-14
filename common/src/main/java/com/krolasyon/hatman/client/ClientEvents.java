@@ -49,6 +49,7 @@ public final class ClientEvents {
         }
         if (mc.isPaused()) return;
         ClientState.ticks++;
+        if (DialogueScreen.pending != null && mc.screen == null) DialogueScreen.show(DialogueScreen.pending);
         while (KEY_CAM.consumeClick()) {
             if (ClientState.active && ClientState.hasCam && ClientState.cutId == null) Net.toServer(Msg.of("cam"));
         }
@@ -110,11 +111,11 @@ public final class ClientEvents {
         } else {
             int light = mc.level.getMaxLocalRawBrightness(mc.player.blockPosition().above());
             boolean outside = ClientState.amb.equals("outside");
-            target = ClientState.nvOn ? 30 : outside ? 34 : light >= 9 ? 30 : light >= 5 ? 19 : 10;
+            target = ClientState.nvOn ? 32 : outside ? 52 : light >= 9 ? 36 : light >= 5 ? 22 : 11;
             if (ClientState.fire) target = Math.min(target, 22);
         }
         ClientState.fogFar += (target - ClientState.fogFar) * 0.04f;
-        e.setNearPlaneDistance(ClientState.fogFar * 0.12f);
+        e.setNearPlaneDistance(ClientState.fogFar * 0.22f);
         e.setFarPlaneDistance(ClientState.fogFar);
         e.setCanceled(true);
     }
@@ -127,9 +128,10 @@ public final class ClientEvents {
             e.setBlue(0.02f);
         } else {
             float f = ClientState.flashT > 0 ? 0.25f : 0f;
-            e.setRed(0.012f + f);
-            e.setGreen(0.014f + f);
-            e.setBlue(0.02f + f);
+            boolean outside = ClientState.amb.equals("outside");
+            e.setRed((outside ? 0.03f : 0.012f) + f);
+            e.setGreen((outside ? 0.04f : 0.014f) + f);
+            e.setBlue((outside ? 0.065f : 0.02f) + f);
         }
     }
 

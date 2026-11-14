@@ -585,6 +585,13 @@ final class Steps {
         S.v("beat", 1);
         obj("hide_child");
         think("c3_locked");
+        // he savours it: a moment's head start, just enough to reach the boy's wardrobe
+        if (hm != null && hm.isAlive()) {
+            hm.act("twitch", 20, "hm.twitch");
+            hm.stateTicks = -50;
+            hm.huntSpeed = 4.4;
+        }
+        flicker("F_CORRIDOR", 40);
     }
 
     // ---------------------------------------------------------------- chapter 2: the study door
@@ -608,7 +615,8 @@ final class Steps {
             return;
         }
         if (t == 2) {
-            if (!hatmanPresent()) spawnHatman(12.5, G1, 15.5, 90);
+            // wherever the chase left him, he arrives at this door
+            if (!hatmanPresent() || hm.position().distanceTo(w(7.5, G1, 14.6)) > 12) spawnHatman(13.5, G1, 15.5, 90);
             if (hm != null) hm.scriptMove(w(7.5, G1, 14.6), 5.2);
         }
         if (t == 50 || t == 80 || t == 104) {

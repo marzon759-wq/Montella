@@ -843,13 +843,14 @@ void main() {
     vec3 c = texture(DiffuseSampler, texCoord).rgb;
     float l = dot(c, vec3(0.30, 0.59, 0.11));
     // drained, cold, with crushed blacks
-    c = mix(vec3(l), c, 0.62);
+    c = mix(vec3(l), c, 0.70);
     c *= vec3(0.94, 0.98, 1.05);
-    c = max(vec3(0.0), c - 0.012) * 1.04;
+    // eyes adjust: lift the toe so pitch dark rooms keep a few blocks of shape
+    c = pow(c, vec3(0.80)) * 1.04;
     float n = hash(texCoord * InSize + vec2(t * 13.0, t * 29.0));
     c += (n - 0.5) * 0.045;
     vec2 d = texCoord - 0.5;
-    c *= 0.55 + 0.45 * smoothstep(0.86, 0.30, length(d));
+    c *= 0.74 + 0.26 * smoothstep(0.86, 0.30, length(d));
     fragColor = vec4(c, 1.0);
 }
 """

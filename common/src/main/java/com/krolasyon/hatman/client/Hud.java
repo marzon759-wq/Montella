@@ -1,6 +1,7 @@
 package com.krolasyon.hatman.client;
 
 import com.krolasyon.hatman.compat.Compat;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -31,8 +32,15 @@ public final class Hud {
         return ((int) (Math.max(0, Math.min(1, a)) * 255) << 24) | (rgb & 0xFFFFFF);
     }
 
+    static void blend() {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+    }
+
     static void noise(GuiGraphics g, int w, int h, float alpha) {
         tex();
+        g.flush();
+        blend();
         int f = (ClientState.ticks / 2) & 3;
         int ox = (ClientState.ticks * 37) % 64, oy = (ClientState.ticks * 53) % 64;
         g.setColor(1f, 1f, 1f, alpha);
@@ -55,7 +63,9 @@ public final class Hud {
         int t = ClientState.ticks;
 
         // ---- mood: vignette, heavier with fear
-        float vig = 0.55f + ClientState.fearSmooth * 0.4f + (ClientState.hidden ? 0.2f : 0f);
+        float vig = 0.34f + ClientState.fearSmooth * 0.5f + (ClientState.hidden ? 0.2f : 0f);
+        g.flush();
+        blend();
         g.setColor(1f, 1f, 1f, Math.min(1f, vig));
         g.blit(VIGNETTE, 0, 0, w, h, 0, 0, 256, 256, 256, 256);
         g.setColor(1f, 1f, 1f, 1f);
@@ -93,6 +103,8 @@ public final class Hud {
 
         // ---- inside a wardrobe
         if (ClientState.hidden) {
+            g.flush();
+            blend();
             g.blit(SLATS, 0, 0, w, h, 0, 0, 64, 64, 64, 64);
             String s = I18n.get("msg.hatman.hide_exit");
             g.drawString(font, s, (w - font.width(s)) / 2, h - 34, 0x90FFFFFF, true);

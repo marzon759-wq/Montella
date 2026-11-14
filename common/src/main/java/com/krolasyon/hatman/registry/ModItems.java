@@ -32,6 +32,8 @@ public final class ModItems {
             STORY.put(id, ITEMS.register(id, () -> new Item(new Item.Properties().stacksTo(stack))));
         }
         for (RegistryObject<Block> b : ModBlocks.ALL) {
+            // the camcorder on Ruth's desk is a prop; the item of the same name is the real thing
+            if (STORY.containsKey(b.getId().getPath())) continue;
             ITEMS.register(b.getId().getPath(), () -> new BlockItem(b.get(), new Item.Properties()));
         }
     }
@@ -45,7 +47,7 @@ public final class ModItems {
             .displayItems((params, out) -> {
                 for (RegistryObject<Item> i : STORY.values()) out.accept(i.get());
                 out.accept(HATMAN_EGG.get());
-                for (RegistryObject<Block> b : ModBlocks.ALL) out.accept(b.get());
+                for (RegistryObject<Block> b : ModBlocks.ALL) if (!STORY.containsKey(b.getId().getPath())) out.accept(b.get());
             }).build());
 
     public static Item story(String id) {

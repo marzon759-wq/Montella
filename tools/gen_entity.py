@@ -803,7 +803,7 @@ def guest_anims():
     A = {}
     a = Anim(7.0, loop=True)
     w = TAU / 7.0
-    a.fn("root", "position", lambda t: [0, -6, 0])
+    a.fn("root", "position", lambda t: [0, -3.5, 0])
     a.fn("body", "rotation", lambda t: [3 + 0.6 * sin(w * t), 0, 0])
     a.fn("head", "rotation", lambda t: [8 + 1.0 * sin(w * t + 1), 0, 0])
     for s, sg in (("l", 1), ("r", -1)):
