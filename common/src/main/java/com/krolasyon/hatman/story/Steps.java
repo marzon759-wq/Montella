@@ -111,6 +111,7 @@ final class Steps {
             }
             case "c1_gen" -> obj("generator");
             case "c1_phone" -> {
+                S.flags.remove("phone_answered");
                 obj("phone");
                 S.haunt = 0;
                 setMode("phone", 1);
@@ -247,6 +248,7 @@ final class Steps {
                 spawnRuth(lvl);
             }
             case "c4_cold" -> {
+                S.flags.remove("ruth_talking");
                 S.cpStep = "";
                 obj("ruth");
                 spawnRuth(lvl);
@@ -531,7 +533,10 @@ final class Steps {
             }
             case "c4_chase" -> tickBigChase(p, lvl, l, room, t);
             case "c4_cold" -> {
-                if (ruth != null && ruth.isAlive() && ruth.distanceTo(p) < 4.2 && t > 40) startDialogue("d4", "r1");
+                if (!S.f("met_ruth") && !S.f("ruth_talking") && ruth != null && ruth.isAlive() && ruth.distanceTo(p) < 4.2 && t > 40) {
+                    S.flags.add("ruth_talking");
+                    startDialogue("d4", "r1");
+                }
             }
             case "c5_walk" -> {
                 String want = has("original_face") ? "dining" : "dining_safe";
@@ -735,8 +740,8 @@ final class Steps {
             S.v("beat", 3);
             if (hm == null || hm.distanceTo(p) > 8) {
                 setDoor(lvl, "generator", true);
-                sndAt(30.5, B1 + 1, 6.5, "fx.wood_break", 1.4f, 1f);
-                hunter(32.5, B1, 6.5, 5.1, false);
+                sndAt(30.5, B1 + 1, 11.5, "fx.wood_break", 1.4f, 1f);
+                hunter(32.5, B1, 11.5, 5.1, false);
             }
             think("c4_block");
             obj("hatblock");
@@ -818,7 +823,8 @@ final class Steps {
                 later(56, () -> cutscene("power"));
             }
             case "phone" -> {
-                if (S.step.equals("c1_phone")) {
+                if (S.step.equals("c1_phone") && !S.f("phone_answered")) {
+                    S.flags.add("phone_answered");
                     setMode("phone", 0);
                     snd("fx.phone_pick", 1f, 1f);
                     obj("");

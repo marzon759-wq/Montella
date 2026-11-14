@@ -22,7 +22,6 @@ import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 /** Client glue: Forge 1.20.1 / GeckoLib 4.4 */
 public final class ClientCompat {
@@ -63,7 +62,6 @@ public final class ClientCompat {
         public HatmanRenderer(EntityRendererProvider.Context ctx) {
             super(ctx, new HatmanModel());
             this.shadowRadius = 0.0f;
-            addRenderLayer(new AutoGlowingGeoLayer<>(this));
         }
 
         @Override

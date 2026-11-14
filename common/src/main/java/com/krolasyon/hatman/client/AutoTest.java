@@ -174,6 +174,12 @@ public final class AutoTest {
             cue(12, () -> shot("screen_jumpscare"));
         }
         if (mode.contains("story")) story();
+        if (mode.contains("safe")) {
+            cue(20, () -> { srv("give"); srv("step:c5_walk"); });
+            tp(3.5, 7, 21.5); use("safe"); close(); cue(4, () -> srv("code:0731"));
+            for (int i = 0; i < 12; i++) close();
+            tp(36.5, 1, 19.5); at += 20; skipCut(); expect("c5_talk");
+        }
         if (mode.contains("quick")) {
             cue(10, () -> srv("step:c3_talk"));
             cue(10, () -> srv("tp:34.5,7,9.5,-60,0"));
@@ -186,6 +192,17 @@ public final class AutoTest {
             cue(10, () -> { srv("kill"); srv("step:c2_evidence"); srv("power:off"); srv("nv:on"); srv("tp:2.5,1,15.5,-90,0"); srv("hm:14.5,1,15.5,90,1"); });
             cue(60, () -> shot("q_nv"));
             cue(5, () -> srv("nv:off"));
+        }
+        if (mode.contains("audit")) {
+            cue(20, () -> srv("audit"));
+            cue(10, () -> { srv("step:tour"); srv("power:on"); srv("gm:spec"); srv("obj"); });
+            view("ext_front", 22.5, 9, 62.0, 180, 8);
+            view("ext_front2", 40.0, 6, 52.0, 140, 6);
+            view("ext_side_e", 60.0, 10, 15.0, 90, 10);
+            view("ext_back", 22.5, 12, -16.0, 0, 14);
+            view("ext_side_w", -16.0, 10, 15.0, -90, 10);
+            view("ext_aerial", 60.0, 34, 62.0, 135, 30);
+            view("ext_porch", 22.5, 2, 37.0, 180, -10);
         }
         if (mode.contains("trailer2")) trailer2();
         else if (mode.contains("trailer")) trailer();
@@ -200,7 +217,11 @@ public final class AutoTest {
     private static void expect(String step) {
         cue(4, () -> {
             if (Story.S.step.equals(step)) HatmanMod.LOG.info("[AUTOTEST] OK   step {}", step);
-            else HatmanMod.LOG.error("[AUTOTEST] EXPECT FAIL wanted {} got {} (t={})", step, Story.S.step, Story.S.t);
+            else {
+                var pl = Minecraft.getInstance().player;
+                HatmanMod.LOG.error("[AUTOTEST] EXPECT FAIL wanted {} got {} (t={}) player local {} {} {} screen={}", step, Story.S.step, Story.S.t,
+                        pl == null ? 0 : pl.getX() - Story.S.ox, pl == null ? 0 : pl.getY() - Story.S.oy, pl == null ? 0 : pl.getZ() - Story.S.oz, Minecraft.getInstance().screen);
+            }
         });
     }
 
@@ -215,7 +236,7 @@ public final class AutoTest {
     }
 
     private static void close() {
-        cue(8, () -> client(() -> Minecraft.getInstance().setScreen(null)));
+        cue(8, () -> client(() -> { if (Minecraft.getInstance().screen != null) Minecraft.getInstance().setScreen(null); }));
         at += 4;
     }
 
@@ -271,7 +292,8 @@ public final class AutoTest {
         tp(17.5, 7, 9.5); at += 10; tp(36.5, 1, 8.5); at += 50; tp(20.5, -5, 6.5); at += 10;
         tp(9.5, -5, 10.5); use("hatblock"); tp(7.5, -5, 16.5); expect("c4_cold");
         at += 60; talk(0, 8); at += 130; expect("c5_walk");
-        tp(3.5, 7, 21.5); use("safe"); close(); cue(4, () -> srv("code:0731")); at += 80; close(); at += 20; close();
+        tp(3.5, 7, 21.5); use("safe"); close(); cue(4, () -> srv("code:0731"));
+        for (int i = 0; i < 12; i++) close();
         tp(36.5, 1, 19.5); at += 6; skipCut(); expect("c5_talk");
         talk(0, 8); at += 20;
         cue(4, () -> HatmanMod.LOG.info("[AUTOTEST] ending={} step={}", Story.S.ending, Story.S.step));

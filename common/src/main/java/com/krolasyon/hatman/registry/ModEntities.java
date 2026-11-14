@@ -13,7 +13,7 @@ public final class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, HatmanMod.MODID);
 
     public static final RegistryObject<EntityType<HatmanEntity>> HATMAN = ENTITIES.register("hatman",
-            () -> EntityType.Builder.<HatmanEntity>of(HatmanEntity::new, MobCategory.MISC).sized(0.6f, 1.9f).clientTrackingRange(12).updateInterval(1).build("hatman"));
+            () -> EntityType.Builder.<HatmanEntity>of(HatmanEntity::new, MobCategory.MISC).sized(0.7f, 1.95f).clientTrackingRange(12).updateInterval(1).build("hatman"));
     public static final RegistryObject<EntityType<GuestEntity>> GUEST = ENTITIES.register("guest",
             () -> EntityType.Builder.<GuestEntity>of(GuestEntity::new, MobCategory.MISC).sized(0.6f, 1.8f).clientTrackingRange(10).build("guest"));
 

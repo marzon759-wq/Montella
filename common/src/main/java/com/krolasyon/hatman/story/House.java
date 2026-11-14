@@ -159,6 +159,7 @@ public final class House {
 
     private void lampQ(int x, int y, int z, int q) {
         set(x, y, z, ModBlocks.CEILING_LAMP.get());
+        if (lvl != null) for (int k = 1; k <= 8 && lvl.getBlockState(o.offset(x, y + k, z)).isAir(); k++) set(x, y + k, z, Blocks.CHAIN);
         LAMPS.add(new Lamp(new BlockPos(x, y, z), room, q));
     }
 
@@ -267,16 +268,42 @@ public final class House {
         return (h < 22 ? Blocks.CRACKED_STONE_BRICKS : h < 36 ? Blocks.MOSSY_STONE_BRICKS : Blocks.STONE_BRICKS).defaultBlockState();
     }
 
+    /** the outside of the house: dark plinth, stone ground floor, a timber belt, half-timbered upper floor */
+    private BlockState skin(int x, int y, int z, boolean alongX) {
+        int along = alongX ? x : z;
+        if (y <= 1) return (hash(x, y, z) % 4 == 0 ? Blocks.CRACKED_DEEPSLATE_BRICKS : Blocks.DEEPSLATE_BRICKS).defaultBlockState();
+        if (y <= 5) return stone(x, y, z);
+        if (y == 6 || y == 11) return log(Blocks.STRIPPED_DARK_OAK_LOG, alongX ? Direction.Axis.X : Direction.Axis.Z);
+        if (Math.floorMod(along + 1, 4) == 0) return log(Blocks.DARK_OAK_LOG, Direction.Axis.Y);
+        // diagonal braces in the bays next to the corners
+        int bay = Math.floorMod(along + 1, 4);
+        if ((along < 6 || along > (alongX ? 38 : 24)) && bay == (y - 6) % 4) return Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        return (hash(x, y, z) % 9 == 0 ? Blocks.STRIPPED_SPRUCE_WOOD : Blocks.SPRUCE_PLANKS).defaultBlockState();
+    }
+
     private BlockState floorState(int x, int y, int z) {
         int h = hash(x, y, z) % 100;
         return (h < 12 ? ModBlocks.ROTTEN_PLANKS.get() : h < 30 ? Blocks.SPRUCE_PLANKS : Blocks.DARK_OAK_PLANKS).defaultBlockState();
     }
 
     private void window(int x, int fy, int z, Direction out) {
+        int ox = x + out.getStepX(), oz = z + out.getStepZ();
+        int fx = ox + out.getStepX(), fz = oz + out.getStepZ();
+        Direction side = out.getClockWise();
         for (int y = fy + 2; y <= fy + 3; y++) {
             set(x, y, z, ModBlocks.BOARDED_WINDOW.get());
-            set(x + out.getStepX(), y, z + out.getStepZ(), Blocks.TINTED_GLASS);
+            set(ox, y, oz, Blocks.GRAY_STAINED_GLASS_PANE);
+            // shutters, hanging open, one of them broken
+            for (int k : new int[]{1, -1}) {
+                if (k == -1 && hash(x, fy, z) % 3 == 0 && y == fy + 2) continue;
+                BlockState sh = Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING, out).setValue(TrapDoorBlock.OPEN, true);
+                set(fx + side.getStepX() * k, y, fz + side.getStepZ() * k, sh);
+            }
         }
+        if (lvl != null && lvl.getBlockState(o.offset(fx, fy + 1, fz)).isAir())
+            set(fx, fy + 1, fz, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, out.getOpposite()).setValue(StairBlock.HALF, Half.TOP));
+        if (lvl != null && lvl.getBlockState(o.offset(fx, fy + 4, fz)).isAir())
+            set(fx, fy + 4, fz, Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM));
     }
 
     // ------------------------------------------------------------------ the build
@@ -334,18 +361,27 @@ public final class House {
                 }
             for (int y = fy; y <= fy + 5; y++) {
                 for (int x = -1; x <= 45; x++) {
-                    set(x, y, -1, stone(x, y, -1));
-                    set(x, y, 31, stone(x, y, 31));
+                    set(x, y, -1, skin(x, y, -1, true));
+                    set(x, y, 31, skin(x, y, 31, true));
                 }
                 for (int z = -1; z <= 31; z++) {
-                    set(-1, y, z, stone(-1, y, z));
-                    set(45, y, z, stone(45, y, z));
+                    set(-1, y, z, skin(-1, y, z, false));
+                    set(45, y, z, skin(45, y, z, false));
                 }
             }
         }
         // corner posts and a belt course
-        for (int[] c : new int[][]{{-1, -1}, {45, -1}, {-1, 31}, {45, 31}, {14, 31}, {30, 31}, {14, -1}, {30, -1}})
-            fill(c[0], 0, c[1], c[0], 11, c[1], log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
+        for (int[] c : new int[][]{{-1, -1}, {45, -1}, {-1, 31}, {45, 31}})
+            fill(c[0], 0, c[1], c[0], 12, c[1], log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
+        // a moulded cornice between the floors
+        for (int x = -2; x <= 46; x++) {
+            set(x, F, -2, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH).setValue(StairBlock.HALF, Half.TOP));
+            if (x < 17 || x > 27) set(x, F, 32, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH).setValue(StairBlock.HALF, Half.TOP));
+        }
+        for (int z = -1; z <= 31; z++) {
+            set(-2, F, z, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST).setValue(StairBlock.HALF, Half.TOP));
+            set(46, F, z, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST).setValue(StairBlock.HALF, Half.TOP));
+        }
         // interior partitions for both floors
         for (int fy : new int[]{G, F}) {
             wall(1, 13, 43, 13, fy);
@@ -370,12 +406,12 @@ public final class House {
         for (int x = 0; x <= 44; x++)
             for (int z = 0; z <= 30; z++) set(x, A, z, hash(x, A, z) % 5 == 0 ? ModBlocks.ROTTEN_PLANKS.get().defaultBlockState() : Blocks.SPRUCE_PLANKS.defaultBlockState());
         for (int x = -1; x <= 45; x++) {
-            set(x, A, -1, stone(x, A, -1));
-            set(x, A, 31, stone(x, A, 31));
+            set(x, A, -1, Blocks.DARK_OAK_PLANKS);
+            set(x, A, 31, Blocks.DARK_OAK_PLANKS);
         }
         for (int z = -1; z <= 31; z++) {
-            set(-1, A, z, stone(-1, A, z));
-            set(45, A, z, stone(45, A, z));
+            set(-1, A, z, Blocks.DARK_OAK_PLANKS);
+            set(45, A, z, Blocks.DARK_OAK_PLANKS);
         }
         for (int z = -3; z <= 33; z++) {
             int d = Math.min(z + 3, 33 - z);
@@ -387,16 +423,25 @@ public final class House {
             // gable ends
             for (int yy = A + 1; yy < y + (d % 2 == 0 ? 0 : 1); yy++) {
                 if (z >= -1 && z <= 31) {
-                    set(-1, yy, z, stone(-1, yy, z));
-                    set(45, yy, z, stone(45, yy, z));
+                    BlockState g = Math.floorMod(z, 4) == 3 ? log(Blocks.DARK_OAK_LOG, Direction.Axis.Y) : Blocks.SPRUCE_PLANKS.defaultBlockState();
+                    set(-1, yy, z, g);
+                    set(45, yy, z, g);
                     if (z >= 0 && z <= 30) {
                         set(0, yy, z, Blocks.SPRUCE_PLANKS);
                         set(44, yy, z, Blocks.SPRUCE_PLANKS);
                     }
                 }
             }
+            // bargeboard: the dark trim that follows the edge of the roof over each gable
+            for (int bx : new int[]{-2, 46}) set(bx, y, z, Blocks.DARK_OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, d % 2 == 0 ? SlabType.BOTTOM : SlabType.TOP));
         }
         for (int x = -3; x <= 47; x++) set(x, A + 1 + 9, 15, Blocks.DEEPSLATE_TILES);
+        // round attic windows in both gables
+        for (int gx : new int[]{-1, 45}) {
+            for (int dz = -1; dz <= 1; dz++) for (int dy = 0; dy <= 1; dy++) set(gx, A + 4 + dy, 15 + dz, Blocks.DARK_OAK_PLANKS);
+            set(gx, A + 4, 15, Blocks.GRAY_STAINED_GLASS_PANE);
+            set(gx, A + 5, 15, Blocks.GRAY_STAINED_GLASS_PANE);
+        }
         // chimneys
         fill(2, A + 1, 23, 3, A + 12, 24, Blocks.BRICKS);
         fill(40, A + 1, 6, 41, A + 12, 7, Blocks.BRICKS);
@@ -435,8 +480,9 @@ public final class House {
         room("G_CORRIDOR", 1, y, 14, 43, 16);
         carpet(2, 15, 42, 15, y, Blocks.GRAY_CARPET);
         for (int x = 3; x <= 42; x += 6) {
-            sconce(x, y + 2, 14, Direction.SOUTH);
-            sconce(x + 3 > 43 ? 43 : x + 3, y + 2, 16, Direction.NORTH);
+            if (x < 19 || x > 25) sconce(x, y + 2, 14, Direction.SOUTH);
+            int x2 = x + 3 > 43 ? 43 : x + 3;
+            if (x2 < 19 || x2 > 25) sconce(x2, y + 2, 16, Direction.NORTH);
         }
         cab(4, y, 14, Direction.SOUTH, "note:doctor");
         set(4, y + 1, 14, Blocks.POTTED_WITHER_ROSE);
@@ -687,8 +733,8 @@ public final class House {
         paper(9, y, 15, Direction.EAST, 1, "litter");
         paper(34, y, 16, Direction.NORTH, 1, "litter");
         for (int x = 5; x <= 41; x += 9) {
-            sconce(x, y + 2, 14, Direction.SOUTH);
-            sconce(x + 4, y + 2, 16, Direction.NORTH);
+            if (x < 19 || x > 25) sconce(x, y + 2, 14, Direction.SOUTH);
+            if (x + 4 < 19 || x + 4 > 25) sconce(x + 4, y + 2, 16, Direction.NORTH);
         }
         webs(1, 14, 43, 16, y + 3, 12);
 
@@ -948,7 +994,7 @@ public final class House {
         air(27, y, 9, 28, -1, 9);
         fill(27, y, 9, 28, -1, 9, Blocks.STONE_BRICKS);
         door("workshop", 14, y, 6, Direction.EAST, false);
-        door("generator", 30, y, 6, Direction.WEST, false);
+        door("generator", 30, y, 11, Direction.WEST, false);
         door("winecellar", 22, y, 13, Direction.SOUTH, false);
         set(16, y, 1, Blocks.BARREL);
         set(17, y, 1, Blocks.BARREL);
@@ -1116,6 +1162,10 @@ public final class House {
         fill(18, 5, 32, 26, 5, 34, Blocks.DEEPSLATE_TILE_SLAB.defaultBlockState());
         for (int x : new int[]{18, 26}) fill(x, 1, 34, x, 4, 34, log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
         fill(18, 0, 32, 26, 0, 34, Blocks.STONE_BRICKS);
+        for (int x = 20; x <= 24; x++) set(x, 0, 35, Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
+        for (int x : new int[]{18, 26}) for (int z = 32; z <= 33; z++) set(x, 1, z, Blocks.DARK_OAK_FENCE);
+        for (int x = 18; x <= 26; x++) if (x < 20 || x > 24) set(x, 1, 34, Blocks.DARK_OAK_FENCE);
+        for (int x = 17; x <= 27; x++) set(x, 5, 35, Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH).setValue(StairBlock.HALF, Half.TOP));
         set(19, 1, 32, Blocks.POTTED_DEAD_BUSH);
         set(22, 4, 33, Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
         set(18, 4, 33, Blocks.CHAIN);
@@ -1210,15 +1260,29 @@ public final class House {
     }
 
     private void tree(int x, int z, int h) {
-        fill(x, 1, z, x, h, z, log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
+        fill(x, 0, z, x, h, z, log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
+        set(x, 0, z, Blocks.ROOTED_DIRT);
         Random r = new Random(x * 31L + z);
-        for (int i = 0; i < 5; i++) {
-            int by = h - r.nextInt(4);
-            int dx = r.nextInt(3) - 1, dz = r.nextInt(3) - 1;
-            if (dx == 0 && dz == 0) dx = 1;
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        int branches = 3 + r.nextInt(2);
+        for (int i = 0; i < branches; i++) {
+            Direction d = dirs[(i + r.nextInt(2)) % 4];
+            int bx = x, by = h - 1 - r.nextInt(3), bz = z;
             int len = 2 + r.nextInt(3);
-            for (int k = 1; k <= len; k++)
-                set(x + dx * k, by + k / 2, z + dz * k, log(Blocks.DARK_OAK_LOG, dx != 0 ? Direction.Axis.X : Direction.Axis.Z));
+            for (int k = 0; k < len; k++) {
+                // every block touches the previous one: step out, sometimes up
+                bx += d.getStepX();
+                bz += d.getStepZ();
+                set(bx, by, bz, log(Blocks.DARK_OAK_LOG, d.getAxis()));
+                if (k > 0 && r.nextInt(2) == 0) {
+                    by++;
+                    set(bx, by, bz, log(Blocks.DARK_OAK_LOG, Direction.Axis.Y));
+                }
+            }
+            // a twig at the end
+            Direction t = d.getClockWise();
+            if (r.nextBoolean()) set(bx + t.getStepX(), by + 1, bz + t.getStepZ(), Blocks.DARK_OAK_FENCE);
         }
+        set(x, h + 1, z, Blocks.DARK_OAK_FENCE);
     }
 }

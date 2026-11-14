@@ -98,6 +98,7 @@ public class HatmanEntity extends HatmanBase {
         if (flag(F_SIT)) return "sit";
         if (flag(F_CRAWL)) return "crawl";
         if (flag(F_FROZEN)) return "freeze";
+        if (flag(F_DUCK)) return flag(F_MOVING) ? "duck_walk" : "duck_idle";
         if (flag(F_MOVING)) return flag(F_RUN) ? "run" : getState() == STALK ? "stalk" : "walk";
         return "idle";
     }
@@ -236,12 +237,12 @@ public class HatmanEntity extends HatmanBase {
     public boolean observedBy(ServerPlayer p) {
         if (p == null) return false;
         Vec3 eye = p.getEyePosition();
-        Vec3 chest = position().add(0, 1.3, 0);
+        Vec3 chest = position().add(0, 2.0, 0);
         double dist = eye.distanceTo(chest);
         if (dist > 40) return false;
         Vec3 dir = chest.subtract(eye).normalize();
         if (dir.dot(p.getViewVector(1f)) < 0.55) return false;
-        if (!los(eye, chest) && !los(eye, position().add(0, 2.3, 0))) return false;
+        if (!los(eye, chest) && !los(eye, position().add(0, 3.0, 0))) return false;
         boolean nv = Story.nvOn(p);
         if (flag(F_CAMONLY)) return nv;
         if (dist < 3.5) return true;
@@ -253,7 +254,7 @@ public class HatmanEntity extends HatmanBase {
     /** can I see the player */
     public boolean sees(ServerPlayer p) {
         if (p == null || Story.hiddenIn(p) != null) return false;
-        Vec3 eye = position().add(0, 2.4, 0);
+        Vec3 eye = position().add(0, 3.1, 0);
         Vec3 t = p.getEyePosition();
         double d = eye.distanceTo(t);
         if (d > 26) return false;
@@ -558,7 +559,7 @@ public class HatmanEntity extends HatmanBase {
         Vec3 fwd = Vec3.directionFromRotation(0, getYRot());
         for (int i = 0; i <= 1 && !low; i++) {
             BlockPos c = BlockPos.containing(getX() + fwd.x * i * 0.9, getY(), getZ() + fwd.z * i * 0.9);
-            for (int dy = 2; dy <= 2; dy++) {
+            for (int dy = 2; dy <= 3; dy++) {
                 BlockState s = level().getBlockState(c.above(dy));
                 if (!s.getCollisionShape(level(), c.above(dy)).isEmpty()) low = true;
             }
@@ -608,7 +609,7 @@ public class HatmanEntity extends HatmanBase {
         if (!flag(F_MOVING) || flag(F_CAMONLY)) { stepTimer = 0; return; }
         int st = getState();
         if (st == STALK) return; // the stalker makes no sound at all
-        int every = flag(F_RUN) ? 6 : 12;
+        int every = flag(F_RUN) ? 6 : flag(F_DUCK) ? 12 : 15;
         if (++stepTimer >= every) {
             stepTimer = 0;
             say("hm.step", flag(F_RUN) ? 1.0f : 0.55f, flag(F_RUN) ? 1.05f : 0.85f);

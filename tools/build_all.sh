@@ -3,6 +3,7 @@
 set -e
 cd "$(dirname "$0")/.."
 python3 tools/gen_entity.py
+python3 tools/gen_hatman.py
 python3 tools/gen_assets.py
 python3 tools/gen_lang.py
 mkdir -p dist

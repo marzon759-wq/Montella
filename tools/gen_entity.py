@@ -833,13 +833,8 @@ def write_json(path, obj):
 
 
 def main():
-    hm = build_hatman()
-    write_json(f"{OUT}/geo/entity/hatman.geo.json", hm.geo())
+    # the Hatman himself is built by gen_hatman.py from the original model
     os.makedirs(f"{OUT}/textures/entity", exist_ok=True)
-    hm.tex.img.save(f"{OUT}/textures/entity/hatman.png")
-    hm.glow.save(f"{OUT}/textures/entity/hatman_glowmask.png")
-    write_json(f"{OUT}/animations/entity/hatman.animation.json",
-               {"format_version": "1.8.0", "animations": {"animation.hatman." + k: v.json() for k, v in hatman_anims().items()}})
     for v in range(3):
         g = build_guest(v)
         if v == 0:

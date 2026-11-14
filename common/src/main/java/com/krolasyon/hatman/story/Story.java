@@ -1330,6 +1330,7 @@ public final class Story {
             case "gm" -> p.setGameMode(a[1].equals("spec") ? GameType.SPECTATOR : GameType.ADVENTURE);
             case "obj" -> obj(a.length > 1 ? a[1] : "");
             case "cut" -> cutscene(a[1]);
+            case "audit" -> HouseAudit.run(p.serverLevel(), origin());
             case "advance" -> {
                 if (dlgId != null && dlgNode != null) {
                     Dialogues.Node n = Dialogues.NODES.get(dlgNode);

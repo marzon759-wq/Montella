@@ -75,7 +75,7 @@ public class DialogueScreen extends HScreen {
             for (Entity e : mc.level.entitiesForRendering()) {
                 if (e instanceof HatmanEntity h && h.distanceTo(mc.player) < 18) {
                     double dx = h.getX() - mc.player.getX(), dz = h.getZ() - mc.player.getZ();
-                    double dy = (h.getY() + (h.flag(HatmanEntity.F_SIT) ? 1.9 : 2.5)) - mc.player.getEyeY();
+                    double dy = (h.getY() + (h.flag(HatmanEntity.F_SIT) ? 2.3 : 3.1)) - mc.player.getEyeY();
                     float yaw = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90f;
                     float pitch = (float) -(Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * Mth.RAD_TO_DEG);
                     mc.player.setYRot(mc.player.getYRot() + Mth.wrapDegrees(yaw - mc.player.getYRot()) * 0.15f);

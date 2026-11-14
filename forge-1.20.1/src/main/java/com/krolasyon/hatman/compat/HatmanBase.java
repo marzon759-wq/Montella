@@ -63,8 +63,7 @@ public abstract class HatmanBase extends PathfinderMob implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
-        reg.add(new AnimationController<>(this, "move", 6, st -> st.setAndContinue(RawAnimation.begin().thenLoop("animation.hatman." + loopAnim()))));
-        reg.add(new AnimationController<>(this, "posture", 7, st -> st.setAndContinue(RawAnimation.begin().thenLoop(isDucking() ? "animation.hatman.duck" : "animation.hatman.upright"))));
+        reg.add(new AnimationController<>(this, "move", 8, st -> st.setAndContinue(RawAnimation.begin().thenLoop("animation.hatman." + loopAnim()))));
         AnimationController<HatmanBase> act = new AnimationController<>(this, "action", 3, st -> PlayState.STOP);
         for (String a : actionNames()) {
             boolean hold = a.equals("lean_in") || a.equals("offer") || a.equals("bow") || a.equals("vanish");
