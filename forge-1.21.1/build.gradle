@@ -21,6 +21,7 @@ minecraft {
         }
         client {
             if (System.getenv('HATMAN_AUTOTEST') != null) property 'hatman.autotest', System.getenv('HATMAN_AUTOTEST')
+            if (System.getenv('HATMAN_SIZE') != null) args '--width', System.getenv('HATMAN_SIZE').split('x')[0], '--height', System.getenv('HATMAN_SIZE').split('x')[1]
         }
         server { args '--nogui' }
     }

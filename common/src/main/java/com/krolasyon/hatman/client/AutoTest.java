@@ -205,6 +205,9 @@ public final class AutoTest {
             view("ext_porch", 22.5, 2, 37.0, 180, -10);
         }
         if (mode.contains("gameplay")) gameplay();
+        if (mode.contains("promoall")) { promo(); promo2(); }
+        else if (mode.contains("promo2")) promo2();
+        else if (mode.contains("promo")) promo();
         if (mode.contains("trailer2")) trailer2();
         else if (mode.contains("trailer")) trailer();
         if (mode.contains("finale")) for (String e : new String[]{"closed", "newface", "worn", "burn", "run"}) finale(e);
@@ -541,6 +544,95 @@ public final class AutoTest {
                 .cutStart().cutEnd().mark("final").talk(0, 0).cutStart().mark("ending").cutEnd()
                 .until(() -> Minecraft.getInstance().screen instanceof CreditsScreen, 200, "credits").mark("credits").wait(500)
                 .run(() -> { HatmanMod.LOG.info("[AUTOTEST] finished"); Minecraft.getInstance().stop(); });
+    }
+
+    private static void gui(boolean hide) { cue(0, () -> client(() -> Minecraft.getInstance().options.hideGui = hide)); }
+
+    private static void pose(String name, String setup, double x, double y, double z, float yaw, float pitch, int settle) {
+        cue(4, () -> { srv("kill"); for (String c : setup.split(";")) if (!c.isEmpty()) srv(c); });
+        cue(6, () -> srv("tp:" + x + "," + y + "," + z + "," + yaw + "," + pitch));
+        cue(settle, () -> shot(name));
+    }
+
+    /** posed screenshots for the mod page */
+    private static void promo() {
+        cue(60, () -> client(() -> { if (ClientState.cutId != null) com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", ClientState.cutId)); }));
+        cue(10, () -> { srv("sflag:nohaunt"); srv("step:tour"); srv("gm:spec"); });
+        at += 200;
+        cue(0, () -> { srv("power:on"); srv("obj"); });
+        gui(true);
+        // the hero: he stands in the opening at the end of the hall
+        pose("p_foyer", "hm:22.5,1,18.2,0", 22.5, 1.2, 27.8, 180, -9, 50);
+        cue(4, () -> srv("act:hat_tip"));
+        cue(22, () -> shot("p_hattip"));
+        // supper
+        pose("p_dining", "hm:42.5,1,24.5,90;flag:8:1", 32.2, 1.55, 24.5, -90, 5, 60);
+        pose("p_dining2", "hm:42.5,1,24.5,90;flag:8:1", 34.0, 2.6, 20.0, -55, 18, 40);
+        // scream in the corridor
+        pose("p_scream", "hm:24.5,1,15.5,-90", 31.5, 1.0, 15.5, 90, -14, 30);
+        cue(2, () -> srv("act:scream"));
+        cue(16, () -> shot("p_scream"));
+        // emerging from the floor
+        pose("p_emerge0", "hm:25.5,1,15.5,-90", 32.5, 1.0, 15.5, 90, -8, 10);
+        cue(2, () -> srv("act:emerge"));
+        cue(30, () -> shot("p_emerge"));
+        // the masks
+        pose("p_masks", "hm:30.5,7,15.5,90", 2.5, 7.3, 15.4, -90, -2, 40);
+        // the attic fitting room
+        pose("p_attic", "hm:6.5,13,13.5,-60", 16.5, 13.4, 16.5, 120, -4, 40);
+        // the grab, close
+        pose("p_grab0", "hm:24.5,1,15.5,-90", 28.2, 1.0, 15.5, 90, -18, 10);
+        cue(2, () -> srv("act:grab"));
+        cue(5, () -> shot("p_grab"));
+        // outside, lightning
+        pose("p_exterior", "hm:22.5,1,33.6,0", 9.5, 3.5, 48.5, 155, -6, 40);
+        cue(2, () -> srv("fx:flash:8"));
+        cue(3, () -> shot("p_exterior_flash"));
+        pose("p_exterior2", "hm:22.5,1,33.6,0", 22.5, 1.6, 50.5, 180, -8, 40);
+        // night vision
+        cue(4, () -> { srv("power:off"); srv("gm:spec"); });
+        gui(false);
+        pose("p_nv", "nv:on;hm:15.5,1,15.5,90;flag:16:1", 2.5, 1.0, 15.5, -90, -4, 60);
+        pose("p_nv2", "nv:on;hm:8.5,1,15.5,90;act:twitch", 2.5, 1.0, 15.5, -90, -10, 14);
+        cue(4, () -> { srv("nv:off"); srv("power:on"); srv("kill"); });
+        // the conversation in the library
+        cue(10, () -> { srv("gm:adv"); srv("step:c3_talk"); srv("tp:34.6,7,9.6,-60,-10"); });
+        at += 175;
+        cue(0, () -> shot("p_dialogue"));
+        cue(5, () -> srv("advance:0"));
+        at += 120;
+        cue(0, () -> shot("p_dialogue2"));
+        cue(10, () -> { srv("note:confession"); });
+        cue(30, () -> shot("p_note"));
+        close();
+    }
+
+    private static void promo2() {
+        cue(60, () -> client(() -> { if (ClientState.cutId != null) com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", ClientState.cutId)); }));
+        cue(10, () -> { srv("sflag:nohaunt"); srv("step:tour"); srv("gm:spec"); });
+        at += 200;
+        cue(0, () -> { srv("power:on"); srv("obj"); });
+        gui(true);
+        // low angle hero shots: he looms
+        pose("h_hero", "hm:22.5,1,19.0,0", 22.5, 0.6, 23.4, 180, -32, 50);
+        pose("h_hero2", "hm:22.5,1,19.0,0", 21.3, 0.4, 22.2, 200, -38, 30);
+        cue(2, () -> srv("act:hat_tip"));
+        cue(22, () -> shot("h_hattip"));
+        pose("h_lean", "hm:22.5,1,19.4,0", 22.5, 1.0, 22.6, 180, -12, 10);
+        cue(2, () -> srv("act:lean_in"));
+        cue(38, () -> shot("h_lean"));
+        pose("h_offer", "hm:22.5,1,19.4,0", 22.5, 1.0, 23.4, 180, -14, 10);
+        cue(2, () -> srv("act:offer"));
+        cue(64, () -> shot("h_offer"));
+        // at the head of the table, seen past the guests
+        pose("h_table", "hm:42.5,1,24.5,90;flag:8:1", 37.5, 2.3, 22.1, -75, 12, 50);
+        pose("h_table2", "hm:42.5,1,24.5,90;flag:8:1", 39.6, 1.6, 26.6, -125, 8, 40);
+        // attic, lit
+        pose("h_attic", "hm:12.5,13,15.5,-90;flag:16:1", 18.5, 13.3, 13.0, 110, -10, 40);
+        // crawling in the cellar tunnel under night vision
+        gui(false);
+        pose("h_crawl", "nv:on;hm:18.5,-5,34.5,90;hunt", 11.2, -5, 34.5, -90, 0, 30);
+        cue(4, () -> { srv("nv:off"); srv("kill"); });
     }
 
     public static void tick() {
