@@ -26,7 +26,7 @@ Story-driven analog horror. Whatever he asks you - do not lie to him.
 ## 3. Logo / Project avatar (Kare logo)
 
 Yükle: **`logo_400x400.png`**
-(Daha büyük istenirse `logo_800x800.png`)
+(Daha büyük istenirse `logo_800x800.png` ya da `logo_1024x1024.png`)
 
 ## 4. Categories (Kategoriler)
 
@@ -47,7 +47,7 @@ Yükle: **`logo_400x400.png`**
 ## 7. Description (Uzun açıklama)
 
 Editörde **Markdown** seçeneğini seç ve aşağıdaki çerçevenin içini olduğu gibi yapıştır.
-İlk satırdaki banner için önce `banner_1920x1080.jpg`'yi **Images** sekmesine yükle, oradaki bağlantıyı `BANNER_LINKI` yerine koy (ya da editörün "resim ekle" düğmesiyle en üste ekle).
+İlk satırdaki kapak için önce `cover_1920x1080.jpg`'yi **Images** sekmesine yükle, oradaki bağlantıyı `BANNER_LINKI` yerine koy (ya da editörün "resim ekle" düğmesiyle en üste ekle).
 
 ```markdown
 ![The Hatman: Hollow House](BANNER_LINKI)
@@ -119,11 +119,12 @@ Başlamak için: **`/hatman basla`**. Kamera: **V** tuşu.
 ## 8. Images (Galeri)
 
 **Images** sekmesinden şu dosyaları sırayla yükle. Her biri için başlık (Title) ve açıklama (Description) aşağıda.
-`banner_1920x1080.jpg`'yi **Featured** (öne çıkan) olarak işaretle.
+`cover_1920x1080.jpg`'yi **Featured** (öne çıkan) olarak işaretle. Alternatif kapak: `cover_nightvision_1920x1080.jpg`.
 
 | Dosya | Title | Description |
 |---|---|---|
-| banner_1920x1080.jpg | The Hatman: Hollow House | Whatever he asks you — do not lie to him. |
+| cover_1920x1080.jpg | The Hatman: Hollow House | Whatever he asks you — do not lie to him. |
+| cover_nightvision_1920x1080.jpg | Night shot | The camera sees him. You don't. |
 | 01_supper.jpg | The table is set | Thirty masked guests. One empty chair. Yours. |
 | 02_scream.jpg | He does not like liars | Lie to him and the house goes dark. |
 | 03_emerge.jpg | He does not walk. He arrives. | Up through the floor, down from the ceiling. |
