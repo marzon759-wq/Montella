@@ -1327,6 +1327,9 @@ public final class Story {
             case "mood" -> { S.anger = Float.parseFloat(a[1]); S.claim = Float.parseFloat(a[2]); }
             case "keypad" -> Net.toPlayer(p, Msg.of("keypad"));
             case "give" -> debugGiveAll(p);
+            case "gm" -> p.setGameMode(a[1].equals("spec") ? GameType.SPECTATOR : GameType.ADVENTURE);
+            case "obj" -> obj(a.length > 1 ? a[1] : "");
+            case "cut" -> cutscene(a[1]);
             case "advance" -> {
                 if (dlgId != null && dlgNode != null) {
                     Dialogues.Node n = Dialogues.NODES.get(dlgNode);

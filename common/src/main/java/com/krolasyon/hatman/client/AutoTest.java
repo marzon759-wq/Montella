@@ -68,7 +68,7 @@ public final class AutoTest {
                 cues.add(new Object[]{at + t, (Runnable) () -> shot("intro_" + tt)});
             }
             at += 700;
-        } else if (!mode.contains("story")) {
+        } else if (!mode.contains("story") && !mode.contains("trailer")) {
             cue(60, () -> Minecraft.getInstance().execute(() -> com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", "intro"))));
             at += 60;
         } else {
@@ -187,6 +187,8 @@ public final class AutoTest {
             cue(60, () -> shot("q_nv"));
             cue(5, () -> srv("nv:off"));
         }
+        if (mode.contains("trailer2")) trailer2();
+        else if (mode.contains("trailer")) trailer();
         if (mode.contains("finale")) for (String e : new String[]{"closed", "newface", "worn", "burn", "run"}) finale(e);
         cue(60, () -> {
             HatmanMod.LOG.info("[AUTOTEST] finished");
@@ -313,6 +315,99 @@ public final class AutoTest {
         at += 60;
         cue(2, () -> client(() -> { if (ClientState.cutId != null) com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", ClientState.cutId)); }));
         at += 30;
+    }
+
+    private static void mark(String name) {
+        cue(0, () -> HatmanMod.LOG.info("[AUTOTEST] MARK {} {}", name, System.currentTimeMillis()));
+    }
+
+    /** a sequence of staged scenes, recorded from the screen for the promo video */
+    private static void trailer() {
+        // the intro cutscene plays from the start: give it its full length
+        mark("intro");
+        at += 690;
+        // corridor: he stands at the far end, then walks, then runs
+        cue(10, () -> { srv("step:tour"); srv("power:on"); srv("gm:spec"); srv("obj"); srv("kill"); });
+        cue(10, () -> srv("tp:42.5,1,15.5,90,2"));
+        cue(10, () -> { srv("hm:5.5,1,15.5,-90"); });
+        at += 30;
+        mark("corridor");
+        at += 90;
+        cue(0, () -> srv("move:30.5,1,15.5,1.6"));
+        at += 150;
+        cue(0, () -> srv("fx:static:8"));
+        mark("chase");
+        cue(4, () -> { srv("kill"); srv("hm:12.5,1,15.5,-90"); });
+        cue(10, () -> srv("act:scream"));
+        cue(40, () -> srv("move:41.5,1,15.5,5.6"));
+        at += 120;
+        cue(0, () -> srv("kill"));
+        // night vision: dark corridor, he is only visible on the camera
+        cue(5, () -> { srv("power:off"); srv("nv:on"); srv("tp:2.5,1,15.5,-90,0"); });
+        cue(10, () -> srv("hm:24.5,1,15.5,90"));
+        cue(5, () -> srv("flag:16:1"));
+        at += 20;
+        mark("nv");
+        at += 90;
+        cue(0, () -> { srv("kill"); srv("hm:9.5,1,15.5,90"); srv("fx:static:6"); });
+        cue(4, () -> srv("flag:16:1"));
+        cue(40, () -> srv("act:twitch"));
+        at += 60;
+        cue(0, () -> { srv("kill"); srv("nv:off"); srv("power:on"); srv("gm:adv"); });
+        // the wardrobe
+        cue(10, () -> srv("step:c3_hide"));
+        cue(30, () -> srv("hide:master2"));
+        mark("hide");
+        at += 700;
+        cue(0, () -> srv("unhide"));
+        // the last supper, the question, the countdown, the chase
+        cue(10, () -> { srv("kill"); srv("mood:0:0"); srv("step:c5_walk"); });
+        cue(20, () -> srv("tp:36.5,1,19.5,0,0"));
+        mark("supper");
+        at += 410;
+        mark("dialogue");
+        cue(80, () -> srv("advance:0"));
+        cue(90, () -> srv("advance:0"));
+        cue(160, () -> srv("advance:2"));
+        cue(70, () -> srv("advance:0"));
+        mark("run");
+        at += 260;
+        mark("end");
+    }
+
+    private static void trailer2() {
+        mark("intro");
+        at += 700;
+        cue(10, () -> { srv("power:off"); srv("cut:power"); });
+        mark("power");
+        at += 390;
+        cue(10, () -> { srv("power:on"); srv("cut:tv"); });
+        mark("tv");
+        at += 360;
+        cue(10, () -> { srv("step:tour"); srv("power:on"); srv("gm:spec"); srv("obj"); srv("kill"); });
+        cue(10, () -> srv("tp:42.5,1,15.5,90,2"));
+        cue(5, () -> srv("hm:27.5,1,15.5,-90"));
+        cue(5, () -> srv("flag:16:1"));
+        at += 20;
+        mark("corridor");
+        at += 70;
+        cue(0, () -> { srv("fx:static:6"); srv("kill"); srv("hm:33.5,1,15.5,-90"); });
+        cue(2, () -> srv("act:emerge"));
+        mark("emerge");
+        at += 60;
+        cue(0, () -> srv("act:scream"));
+        cue(36, () -> srv("move:41.8,1,15.5,5.6"));
+        at += 50;
+        mark("emerge_end");
+        cue(0, () -> { srv("kill"); srv("gm:adv"); srv("cut:fitting"); });
+        mark("fitting");
+        at += 330;
+        cue(0, () -> { srv("tp:22.5,1,27.5,180,-6"); srv("hm:22.5,1,21.5,0"); });
+        at += 30;
+        cue(0, () -> srv("act:hat_tip"));
+        mark("hattip");
+        at += 60;
+        mark("end");
     }
 
     public static void tick() {
