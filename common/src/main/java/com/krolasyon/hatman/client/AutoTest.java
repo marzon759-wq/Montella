@@ -205,6 +205,7 @@ public final class AutoTest {
             view("ext_porch", 22.5, 2, 37.0, 180, -10);
         }
         if (mode.contains("gameplay")) gameplay();
+        if (mode.contains("cover")) cover();
         if (mode.contains("promoall")) { promo(); promo2(); }
         else if (mode.contains("promo2")) promo2();
         else if (mode.contains("promo")) promo();
@@ -633,6 +634,42 @@ public final class AutoTest {
         gui(false);
         pose("h_crawl", "nv:on;hm:18.5,-5,34.5,90;hunt", 11.2, -5, 34.5, -90, 0, 30);
         cue(4, () -> { srv("nv:off"); srv("kill"); });
+    }
+
+    /** dramatic close-ups for the cover image */
+    private static void cover() {
+        cue(60, () -> client(() -> { if (ClientState.cutId != null) com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", ClientState.cutId)); }));
+        cue(10, () -> { srv("sflag:nohaunt"); srv("step:tour"); srv("gm:spec"); });
+        at += 200;
+        cue(0, () -> { srv("power:on"); srv("obj"); });
+        gui(true);
+        String hm = "hm:24.5,1,15.5,-90";
+        pose("c_up", hm, 26.4, 0.2, 15.5, 90, -55, 40);
+        pose("c_up2", hm, 26.0, 0.5, 15.1, 80, -50, 40);
+        pose("c_lean0", hm, 26.7, 1.0, 15.5, 90, -6, 6);
+        cue(2, () -> srv("act:lean_in"));
+        cue(44, () -> shot("c_lean"));
+        pose("c_tilt0", hm, 26.2, 1.3, 15.5, 90, -40, 6);
+        cue(2, () -> srv("act:head_tilt"));
+        cue(16, () -> shot("c_tilt"));
+        pose("c_scream0", hm, 27.6, 0.4, 15.5, 90, -32, 6);
+        cue(2, () -> srv("act:scream"));
+        cue(15, () -> shot("c_scream"));
+        pose("c_grab0", hm, 27.2, 0.8, 15.5, 90, -24, 6);
+        cue(2, () -> srv("act:grab"));
+        cue(6, () -> shot("c_grab"));
+        // the same, in the dark, through the camera
+        cue(4, () -> { srv("power:off"); });
+        gui(false);
+        pose("c_nv", "nv:on;" + hm + ";flag:16:1", 26.6, 0.6, 15.5, 90, -45, 50);
+        pose("c_nv_lean0", "nv:on;" + hm, 26.7, 1.0, 15.5, 90, -6, 6);
+        cue(2, () -> srv("act:lean_in"));
+        cue(44, () -> shot("c_nv_lean"));
+        cue(4, () -> { srv("nv:off"); });
+        gui(true);
+        // silhouette: dark corridor, one lamp behind him
+        pose("c_dark", hm, 27.5, 0.8, 15.5, 90, -28, 40);
+        cue(4, () -> srv("power:on"));
     }
 
     public static void tick() {
