@@ -68,7 +68,7 @@ public final class AutoTest {
                 cues.add(new Object[]{at + t, (Runnable) () -> shot("intro_" + tt)});
             }
             at += 700;
-        } else if (!mode.contains("story") && !mode.contains("trailer")) {
+        } else if (!mode.contains("story") && !mode.contains("trailer") && !mode.contains("gameplay")) {
             cue(60, () -> Minecraft.getInstance().execute(() -> com.krolasyon.hatman.net.Net.toServer(com.krolasyon.hatman.net.Msg.of("cut_done").s("id", "intro"))));
             at += 60;
         } else {
@@ -204,10 +204,11 @@ public final class AutoTest {
             view("ext_aerial", 60.0, 34, 62.0, 135, 30);
             view("ext_porch", 22.5, 2, 37.0, 180, -10);
         }
+        if (mode.contains("gameplay")) gameplay();
         if (mode.contains("trailer2")) trailer2();
         else if (mode.contains("trailer")) trailer();
         if (mode.contains("finale")) for (String e : new String[]{"closed", "newface", "worn", "burn", "run"}) finale(e);
-        cue(60, () -> {
+        if (!mode.contains("gameplay")) cue(60, () -> {
             HatmanMod.LOG.info("[AUTOTEST] finished");
             Minecraft.getInstance().stop();
         });
@@ -432,8 +433,119 @@ public final class AutoTest {
         mark("end");
     }
 
+    private static PlayDriver drive = null;
+
+    /** a full playthrough driven like a player, for the gameplay video */
+    private static void gameplay() {
+        PlayDriver d = new PlayDriver(AutoTest::srv);
+        drive = d;
+        double[][] none = {};
+        d.mark("intro").cutStart().srv("sflag:nohaunt").srv("speedcap:3.9").cutEnd()
+                // ---------------- chapter 1
+                .mark("enter").pitch(4)
+                .walk(false, PlayDriver.P(22.5, 1, 45), PlayDriver.P(22.5, 1, 36))
+                .srv("open:front")
+                .walk(false, PlayDriver.P(22.5, 1, 32.5), PlayDriver.P(22.5, 1, 29), PlayDriver.P(22.5, 1, 26.5))
+                .wait(40).look(22.5, 2.2, 30.5, 40).wait(30)
+                .walk(false, PlayDriver.P(22.5, 1, 20), PlayDriver.P(22.5, 1, 15.5), PlayDriver.P(9, 1, 15.5), PlayDriver.P(7.5, 1, 15.2))
+                .srv("open:study")
+                .walk(false, PlayDriver.P(7.5, 1, 12.3), PlayDriver.P(6.5, 1, 6), PlayDriver.P(5.5, 1, 3.2))
+                .wait(20).lookAtTag("camcorder", 25).use("camcorder").wait(90)
+                .read("note:case_file", 110).step("c1_key").wait(20)
+                .mark("corridor")
+                .walk(false, PlayDriver.P(6.5, 1, 7), PlayDriver.P(7.5, 1, 12.3), PlayDriver.P(7.5, 1, 15.5), PlayDriver.P(12, 1, 15.5))
+                .wait(30).cam(true).wait(20)
+                .look(41.5, 3.0, 15.5, 90).wait(30)
+                .walk(false, PlayDriver.P(20, 1, 15.5), PlayDriver.P(22.5, 1, 17.5), PlayDriver.P(18.5, 1, 23.5))
+                .cam(false).lookAtTag("drawer:item:cellar_key", 20).use("drawer:item:cellar_key").wait(40)
+                .step("c1_cellar")
+                .mark("cellar")
+                .walk(false, PlayDriver.P(22.5, 1, 17.5), PlayDriver.P(22.5, 1, 14.5), PlayDriver.P(22.5, 1, 12.3), PlayDriver.P(27.5, 1, 12.0), PlayDriver.P(28.5, 1, 11.4))
+                .use("door:cellar").srv("open:cellar").cam(true).pitch(12)
+                .walk(false, PlayDriver.P(28.5, 1, 9.5), PlayDriver.P(28.0, 0, 8), PlayDriver.P(28.0, -3, 5), PlayDriver.P(28.0, -5, 2.4))
+                .pitch(3).wait(70)
+                .walk(false, PlayDriver.P(24.5, -5, 4.5), PlayDriver.P(22.5, -5, 10.5), PlayDriver.P(22.5, -5, 12.2))
+                .srv("open:winecellar")
+                .walk(false, PlayDriver.P(22.5, -5, 14.5), PlayDriver.P(21.5, -5, 22), PlayDriver.P(20.5, -5, 29.0))
+                .lookAtTag("drawer:item:fuel_can", 20).use("drawer:item:fuel_can").wait(30).step("c1_gen")
+                .mark("generator")
+                .walk(false, PlayDriver.P(21.5, -5, 22), PlayDriver.P(22.5, -5, 13.5), PlayDriver.P(26.5, -5, 11.6), PlayDriver.P(29.5, -5, 11.5))
+                .srv("open:generator")
+                .walk(false, PlayDriver.P(31.5, -5, 11.5), PlayDriver.P(35.5, -5, 7.5), PlayDriver.P(37.5, -5, 4.2))
+                .lookAtTag("generator", 20).use("generator").cam(false).cutStart().mark("power").cutEnd()
+                // ---------------- the telephone
+                .mark("phone").tp(22.5, 1, 20.5, 180).pitch(4)
+                .walk(false, PlayDriver.P(19.5, 1, 22.0), PlayDriver.P(18.0, 1, 22.3))
+                .lookAtTag("phone", 25).use("phone").talk(0, 0).step("c2_evidence").wait(40)
+                // ---------------- chapter 2
+                .mark("tv")
+                .walk(false, PlayDriver.P(22.5, 1, 17.5), PlayDriver.P(22.5, 1, 15.5), PlayDriver.P(8.5, 1, 15.5), PlayDriver.P(7.5, 1, 16.2))
+                .srv("open:living")
+                .walk(false, PlayDriver.P(7.5, 1, 18.5), PlayDriver.P(9.5, 1, 20.8), PlayDriver.P(11.5, 1, 21.2))
+                .cutStart().cutEnd().wait(20)
+                .use("note:guest_list").wait(10).run(() -> Minecraft.getInstance().setScreen(null)).use("drawer:note:maid").wait(10).run(() -> Minecraft.getInstance().setScreen(null))
+                .step("c2_clock").srv("tp:27.0,1,23.5,-90,6").wait(5).lookAtTag("clock", 25).use("clock").wait(120)
+                .mark("workshop").tp(16.5, -5, 6.5, 90).srv("open:workshop").pitch(3)
+                .walk(false, PlayDriver.P(13.5, -5, 6.5), PlayDriver.P(11.5, -5, 4.5), PlayDriver.P(10.5, -5, 3.0))
+                .read("ledger", 120).step("c2_chase")
+                .mark("chase1")
+                .walk(true, PlayDriver.P(12.5, -5, 6.5), PlayDriver.P(15.5, -5, 6.5), PlayDriver.P(23.5, -5, 3.0), PlayDriver.P(27.5, -5, 2.4),
+                        PlayDriver.P(27.5, -1, 6.5), PlayDriver.P(27.5, 0, 8.4), PlayDriver.P(28.5, 1, 9.6), PlayDriver.P(28.5, 1, 11.4), PlayDriver.P(26.5, 1, 12.2),
+                        PlayDriver.P(22.5, 1, 12.6), PlayDriver.P(22.5, 1, 15.5), PlayDriver.P(9.5, 1, 15.5), PlayDriver.P(7.5, 1, 14.6), PlayDriver.P(7.5, 1, 12.2))
+                .use("door:study").step("c2_door").walk(false, PlayDriver.P(6.5, 1, 9.5)).look(7.5, 2.0, 13.0, 30)
+                .talk(0, 0).step("c3_up")
+                // ---------------- chapter 3
+                .mark("upstairs").pitch(4)
+                .walk(false, PlayDriver.P(7.5, 1, 12.3), PlayDriver.P(7.5, 1, 15.5), PlayDriver.P(21.5, 1, 15.5), PlayDriver.P(22.5, 1, 12.6))
+                .use("door:stairgate").pitch(-12)
+                .walk(false, PlayDriver.P(22.5, 1, 11.2), PlayDriver.P(22.5, 3, 8.5), PlayDriver.P(22.5, 6, 5.2), PlayDriver.P(22.5, 7, 3.5))
+                .pitch(3).cutStart().mark("masquerade").cutEnd()
+                .walk(false, PlayDriver.P(22.5, 7, 12.5), PlayDriver.P(25.0, 7, 15.0))
+                .read("plate_ruth", 90).step("c3_trail")
+                .walk(false, PlayDriver.P(36.5, 7, 15.5), PlayDriver.P(37.5, 7, 16.0)).srv("open:child")
+                .walk(false, PlayDriver.P(37.5, 7, 18.5), PlayDriver.P(35.0, 7, 20.2))
+                .wait(30).read("drawer:note:diary", 110)
+                .use("drawer:note:ruth_bag").wait(8).run(() -> Minecraft.getInstance().setScreen(null)).use("drawer:note:mirror_note").wait(8).run(() -> Minecraft.getInstance().setScreen(null))
+                .step("c3_master")
+                .mark("master").tp(7.5, 7, 15.5, 0)
+                .walk(false, PlayDriver.P(7.5, 7, 18.5), PlayDriver.P(8.5, 7, 24.5), PlayDriver.P(8.5, 7, 27.2))
+                .lookAtTag("recorder", 20).use("recorder").step("c3_hide")
+                .walk(true, PlayDriver.P(10.5, 7, 22.5), PlayDriver.P(12.2, 7, 21.5)).lookAtTag("wardrobe:master2", 10).use("wardrobe:master2")
+                .mark("hide").step("c3_sneak").wait(40).srv("unhide").wait(10)
+                .srv("open:dress")
+                .walk(false, PlayDriver.P(13.0, 7, 24.5), PlayDriver.P(16.0, 7, 24.5), PlayDriver.P(18.6, 7, 24.5))
+                .step("c3_chase").mark("chase2")
+                .srv("open:dressing")
+                .walk(true, PlayDriver.P(21.5, 7, 22.0), PlayDriver.P(22.5, 7, 18.5), PlayDriver.P(22.5, 7, 15.5), PlayDriver.P(36.5, 7, 15.5), PlayDriver.P(37.5, 7, 14.4))
+                .use("door:library").srv("open:child")
+                .walk(true, PlayDriver.P(37.5, 7, 16.6), PlayDriver.P(38.5, 7, 19.5), PlayDriver.P(42.0, 7, 20.5))
+                .use("wardrobe:child").step("c3_lib").wait(30).srv("unhide").wait(10)
+                .walk(false, PlayDriver.P(39.5, 7, 19.0), PlayDriver.P(37.5, 7, 16.5), PlayDriver.P(37.5, 7, 13.5), PlayDriver.P(37.5, 7, 11.0))
+                .mark("library").talk(0, 0, 0).step("c4_attic")
+                // ---------------- chapter 4
+                .mark("attic").tp(22.5, 7, 12.5, 90).srv("open:hatch").pitch(-30)
+                .walk(false, PlayDriver.P(17.0, 7, 9.5), PlayDriver.P(16.2, 7, 9.5), PlayDriver.L(15.5, 13, 9.5))
+                .walk(false, PlayDriver.P(17.0, 13, 9.5)).pitch(3).cutStart().cutEnd()
+                .walk(false, PlayDriver.P(19.5, 13, 9.2)).read("badge", 110).step("c4_mirrors").step("c4_chase").mark("chase3").wait(30)
+                .walk(true, PlayDriver.P(17.5, 13, 9.5), PlayDriver.P(16.2, 13, 9.5))
+                .wait(40)
+                .tp(13.0, -5, 10.5, 180).lookAtTag("hatblock", 15).use("hatblock").wait(20)
+                .walk(true, PlayDriver.P(7.5, -5, 12.0), PlayDriver.P(7.5, -5, 16.0)).step("c4_cold")
+                .mark("ruth").walk(false, PlayDriver.P(7.5, -5, 17.6)).talk(2).step("c5_walk")
+                // ---------------- chapter 5
+                .mark("safe").tp(3.5, 7, 21.0, 90).wait(10).lookAtTag("safe", 20).use("safe").code("0731")
+                .until(() -> Minecraft.getInstance().screen instanceof NoteScreen, 120, "safe note")
+                .add(a -> { if (!(Minecraft.getInstance().screen instanceof NoteScreen ns)) return true; if (a > 0 && a % 110 == 0) ns.mouseClicked(0, 0, 0); return false; })
+                .mark("supper").tp(37.5, 1, 15.5, 0).pitch(3)
+                .walk(false, PlayDriver.P(37.5, 1, 16.6)).srv("open:dining").walk(false, PlayDriver.P(37.5, 1, 19.3))
+                .cutStart().cutEnd().mark("final").talk(0, 0).cutStart().mark("ending").cutEnd()
+                .until(() -> Minecraft.getInstance().screen instanceof CreditsScreen, 200, "credits").mark("credits").wait(500)
+                .run(() -> { HatmanMod.LOG.info("[AUTOTEST] finished"); Minecraft.getInstance().stop(); });
+    }
+
     public static void tick() {
         if (mode == null) return;
+        if (drive != null && Minecraft.getInstance().player != null && n > 80) drive.tick();
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) {
             if (!created && mc.screen instanceof TitleScreen && ++menuTicks > 40) {

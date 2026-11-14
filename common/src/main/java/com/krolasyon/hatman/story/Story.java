@@ -1141,7 +1141,7 @@ public final class Story {
     private static int lastEvent = -1;
 
     private static void haunt(ServerPlayer p) {
-        if (S.haunt <= 0 || hiddenId != null) return;
+        if (S.haunt <= 0 || hiddenId != null || S.f("nohaunt")) return;
         if (hatmanPresent()) {
             // lamps choke when he is in the room
             if (age % 14 == 0 && !hm.cameraOnly()) {
@@ -1331,6 +1331,10 @@ public final class Story {
             case "obj" -> obj(a.length > 1 ? a[1] : "");
             case "cut" -> cutscene(a[1]);
             case "audit" -> HouseAudit.run(p.serverLevel(), origin());
+            case "open" -> { unlock(a[1]); setDoor(a[1], true); }
+            case "speedcap" -> HatmanEntity.speedCap = Double.parseDouble(a[1]);
+            case "sflag" -> S.flags.add(a[1]);
+            case "battery" -> { S.battery = 100; for (int i = 0; i < 4; i++) give("battery"); }
             case "advance" -> {
                 if (dlgId != null && dlgNode != null) {
                     Dialogues.Node n = Dialogues.NODES.get(dlgNode);

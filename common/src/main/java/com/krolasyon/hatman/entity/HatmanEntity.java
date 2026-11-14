@@ -210,7 +210,11 @@ public class HatmanEntity extends HatmanBase {
         return Math.sqrt(0.0227 * mps) / attr;
     }
 
+    /** development only: an upper limit on his speed, for recordings */
+    public static double speedCap = 0;
+
     private void go(Vec3 t, double mps) {
+        if (speedCap > 0) mps = Math.min(mps, speedCap);
         if (repath-- <= 0 || getNavigation().isDone()) {
             getNavigation().moveTo(t.x, t.y, t.z, speedMod(mps));
             repath = 6;

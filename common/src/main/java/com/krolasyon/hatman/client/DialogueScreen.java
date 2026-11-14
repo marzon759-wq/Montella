@@ -52,6 +52,12 @@ public class DialogueScreen extends HScreen {
 
     private boolean textDone() { return shown >= text.length(); }
 
+    /** for the automated playthrough */
+    String nodeId() { return node; }
+    boolean ready() { return textDone() && !answered; }
+    int choiceCount() { return choices.size(); }
+    int textLength() { return text.length(); }
+
     @Override
     public void tick() {
         super.tick();
