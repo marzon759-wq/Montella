@@ -27,11 +27,11 @@ import java.util.Set;
  * long branches that rise and then arch back down like a willow. Clumps of purple leaves sit on top of the arches,
  * dark vines (some with glowing cyan buds) drape from their undersides, and glowing lichen creeps up the bark.
  *
- * Every block stays within 14 blocks horizontally of the origin, so the tree never writes outside the 3x3 chunk
+ * Every block stays within 16 blocks horizontally of the origin, so the tree never writes outside the 3x3 chunk
  * area a feature is allowed to touch.
  */
 public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> {
-    private static final int MAX_REACH = 14;
+    private static final int MAX_REACH = 16;
 
     public GiantVeilwoodTreeFeature(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
@@ -105,15 +105,15 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
             }
 
             // the arching branches
-            int branches = 5 + rand.nextInt(4);
+            int branches = 6 + rand.nextInt(4);
             double branchStart = rand.nextDouble() * Math.PI * 2;
             for (int i = 0; i < branches; i++) {
                 double angle = branchStart + i * (Math.PI * 2 / branches) + (rand.nextDouble() - 0.5) * 0.5;
                 double startY = height * (0.55 + rand.nextDouble() * 0.4);
                 double t = startY / height;
                 double sx = leanX * t * t, sz = leanZ * t * t;
-                double len = 7 + rand.nextDouble() * 4;
-                double peak = 3 + rand.nextDouble() * 5;
+                double len = 9 + rand.nextDouble() * 5;
+                double peak = 4 + rand.nextDouble() * 6;
                 arch(sx, startY, sz, angle, len, peak, 2, true);
             }
 
@@ -143,6 +143,7 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
             double total = len + tipDrop * 0.4;
             double lastLeaf = -10;
             boolean forked = false;
+            BlockPos last = null;
             for (double d = 0.5; d <= total; d += 0.25) {
                 double y;
                 double h;
@@ -157,9 +158,13 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
                 }
                 double x = sx + dirX * h, z = sz + dirZ * h;
                 if (!within(x, z, 1)) break;
-                BlockPos p = put(x, y, z, wood, true);
-                if (p != null && thickness > 1 && d < len * 0.35) put(x, y + 0.6, z, wood, true);
-                if (p != null && d > 1.5) vineAnchors.add(p);
+                BlockPos p = connect(last, x, y, z);
+                if (p != null) last = p;
+                if (p != null && thickness > 1 && d < len * 0.5) {
+                    put(x, y + 1, z, wood, true);
+                    if (d < len * 0.25) { put(x + 1, y, z, wood, true); put(x, y, z + 1, wood, true); }
+                }
+                if (p != null && d > 1.0) vineAnchors.add(p);
 
                 if (d - lastLeaf > 2.2 && d > 2) {
                     double r = d < len ? 2.2 + rand.nextDouble() * 1.4 : 1.6;
@@ -174,6 +179,28 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
             }
         }
 
+        /** Places a branch block and fills the gap to the previous one so the branch is always face-connected. */
+        BlockPos connect(BlockPos last, double x, double y, double z) {
+            BlockPos target = origin.offset(Mth.floor(x), Mth.floor(y), Mth.floor(z));
+            if (last != null) {
+                BlockPos cur = last;
+                int guard = 0;
+                while (!cur.equals(target) && guard++ < 8) {
+                    int dx = Integer.signum(target.getX() - cur.getX());
+                    int dy = Integer.signum(target.getY() - cur.getY());
+                    int dz = Integer.signum(target.getZ() - cur.getZ());
+                    cur = dx != 0 ? cur.offset(dx, 0, 0) : dz != 0 ? cur.offset(0, 0, dz) : cur.offset(0, dy, 0);
+                    putAbs(cur);
+                }
+                return target;
+            }
+            return putAbs(target) ? target : null;
+        }
+
+        boolean putAbs(BlockPos p) {
+            return put(p.getX() - origin.getX() + 0.5, p.getY() - origin.getY() + 0.5, p.getZ() - origin.getZ() + 0.5, wood, true) != null;
+        }
+
         /** A squashed leaf ellipsoid; ragged at the edges, its underside sprouting vines. */
         void blob(double cx, double cy, double cz, double r, double ry, double glimmerChance) {
             int ir = (int) Math.ceil(r), iry = (int) Math.ceil(ry);
@@ -186,7 +213,7 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
                         if (!within(x, z, 0)) continue;
                         BlockState s = rand.nextFloat() < glimmerChance ? glimmerLeaves : leaves;
                         BlockPos p = put(x, cy + dy, z, s, false);
-                        if (p != null && dy <= 0 && rand.nextInt(4) == 0) vineAnchors.add(p);
+                        if (p != null && dy <= 0 && rand.nextInt(3) == 0) vineAnchors.add(p);
                     }
         }
 
@@ -229,10 +256,10 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
         void hangVines() {
             Block vine = ModBlocks.VEIL_VINES.get();
             for (BlockPos anchor : vineAnchors) {
-                if (rand.nextInt(3) == 0) continue;
+                if (rand.nextInt(5) == 0) continue;
                 BlockPos start = anchor.below();
                 if (!level.isEmptyBlock(start)) continue;
-                int len = 2 + rand.nextInt(rand.nextInt(4) == 0 ? 16 : 8);
+                int len = 3 + rand.nextInt(rand.nextInt(3) == 0 ? 20 : 10);
                 List<BlockPos> run = new ArrayList<>();
                 BlockPos p = start;
                 for (int i = 0; i < len && level.isEmptyBlock(p) && !level.isOutsideBuildHeight(p); i++) {
@@ -243,7 +270,7 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
                 while (run.size() > 1 && !level.isEmptyBlock(run.get(run.size() - 1).below(2))) run.remove(run.size() - 1);
                 for (int i = 0; i < run.size(); i++) {
                     boolean end = i == run.size() - 1;
-                    boolean glow = end ? rand.nextInt(3) == 0 : rand.nextInt(14) == 0;
+                    boolean glow = end ? rand.nextInt(2) == 0 : rand.nextInt(9) == 0;
                     level.setBlock(run.get(i), vine.defaultBlockState().setValue(VeilVineBlock.END, end).setValue(VeilVineBlock.GLOW, glow), Block.UPDATE_CLIENTS);
                 }
             }
@@ -252,7 +279,7 @@ public class GiantVeilwoodTreeFeature extends Feature<NoneFeatureConfiguration> 
         void lichen() {
             BlockState base = ModBlocks.GLIMMER_LICHEN.get().defaultBlockState();
             for (BlockPos w : woodBlocks) {
-                if (rand.nextInt(9) != 0) continue;
+                if (rand.nextInt(14) != 0) continue;
                 Direction d = Direction.from2DDataValue(rand.nextInt(4));
                 if (rand.nextInt(5) == 0) d = Direction.DOWN;
                 BlockPos p = w.relative(d);

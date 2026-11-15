@@ -13,7 +13,7 @@ import terrablender.api.RegionType;
 import java.util.function.Consumer;
 
 /**
- * Valdoria's overworld region. It is a copy of the vanilla layout in which the temperate forests are replaced by the
+ * Valdoria's overworld region. It is a copy of the vanilla layout in which the temperate forests, plains and meadows are replaced by the
  * Glimmerveil Forest, so the forest shows up as large, continuous areas wherever those forests would be.
  */
 public class ValdoriaRegion extends Region {
@@ -29,6 +29,8 @@ public class ValdoriaRegion extends Region {
             builder.replaceBiome(Biomes.BIRCH_FOREST, ValdoriaBiomes.GLIMMERVEIL_FOREST);
             builder.replaceBiome(Biomes.OLD_GROWTH_BIRCH_FOREST, ValdoriaBiomes.GLIMMERVEIL_FOREST);
             builder.replaceBiome(Biomes.FLOWER_FOREST, ValdoriaBiomes.GLIMMERVEIL_FOREST);
+            builder.replaceBiome(Biomes.PLAINS, ValdoriaBiomes.GLIMMERVEIL_FOREST);
+            builder.replaceBiome(Biomes.MEADOW, ValdoriaBiomes.GLIMMERVEIL_FOREST);
         });
     }
 }

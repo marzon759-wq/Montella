@@ -39,9 +39,10 @@ public final class AutoTest {
         SHOTS.add(new Shot("vd_up_east", 0, 0, 0, -90, -30, 6000));
         SHOTS.add(new Shot("vd_level_south", 0, 0, 0, 0, -8, 6000));
         SHOTS.add(new Shot("vd_level_west", 0, 0, 0, 90, -12, 6000));
-        SHOTS.add(new Shot("vd_dusk_up", 0, 0, 0, 135, -35, 13000));
+        SHOTS.add(new Shot("vd_up_south", 0, 0, 0, 20, -25, 6000));
+        SHOTS.add(new Shot("vd_dusk_up", 0, 0, 0, 135, -35, 12500));
         SHOTS.add(new Shot("vd_night_up", 0, 0, 0, 45, -30, 18000));
-        SHOTS.add(new Shot("vd_aerial", 0, 45, 0, 30, 40, 6000));
+        SHOTS.add(new Shot("vd_aerial", 0, 70, 0, 30, 35, 6000));
     }
 
     private static boolean created;
@@ -50,6 +51,10 @@ public final class AutoTest {
     private static BlockPos target;
     private static int stage;
     private static int wait;
+
+    private static boolean isForest(ServerLevel level, int x, int z) {
+        return level.getUncachedNoiseBiome(x >> 2, 80 >> 2, z >> 2).is(ValdoriaBiomes.GLIMMERVEIL_FOREST);
+    }
 
     public static boolean enabled() {
         return System.getProperty("valdoria.autotest") != null;
@@ -93,25 +98,24 @@ public final class AutoTest {
                 stage = -1;
                 server.execute(() -> {
                     ServerLevel level = server.overworld();
-                    Pair<BlockPos, Holder<Biome>> found = level.findClosestBiome3d(h -> h.is(ValdoriaBiomes.GLIMMERVEIL_FOREST),
-                            BlockPos.containing(0, 80, 0), 6400, 32, 64);
-                    if (found == null) {
+                    // scan the biome noise (no chunk generation needed) for the spot deepest inside a Glimmerveil Forest
+                    int best = -1;
+                    BlockPos bestPos = null;
+                    for (int x = -3000; x <= 3000; x += 96)
+                        for (int z = -3000; z <= 3000; z += 96) {
+                            if (!isForest(level, x, z)) continue;
+                            int score = 0;
+                            for (int ox = -96; ox <= 96; ox += 32)
+                                for (int oz = -96; oz <= 96; oz += 32)
+                                    if (isForest(level, x + ox, z + oz)) score++;
+                            int dist = (Math.abs(x) + Math.abs(z)) / 600;
+                            if (score - dist > best) { best = score - dist; bestPos = new BlockPos(x, 80, z); }
+                        }
+                    if (bestPos == null) {
                         ValdoriaMod.LOG.error("[AUTOTEST] Glimmerveil Forest not found");
                         mc.execute(mc::stop);
                         return;
                     }
-                    BlockPos p = found.getFirst();
-                    // walk a bit further in so we are deep inside the forest, not at its border
-                    int best = 0;
-                    BlockPos bestPos = p;
-                    for (int dx = -192; dx <= 192; dx += 48)
-                        for (int dz = -192; dz <= 192; dz += 48) {
-                            int score = 0;
-                            for (int ox = -64; ox <= 64; ox += 32)
-                                for (int oz = -64; oz <= 64; oz += 32)
-                                    if (level.getBiome(p.offset(dx + ox, 0, dz + oz)).is(ValdoriaBiomes.GLIMMERVEIL_FOREST)) score++;
-                            if (score > best) { best = score; bestPos = p.offset(dx, 0, dz); }
-                        }
                     target = bestPos;
                     ValdoriaMod.LOG.info("[AUTOTEST] Glimmerveil Forest at {} (score {})", target, best);
                     server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "gamerule doDaylightCycle false");
@@ -126,8 +130,20 @@ public final class AutoTest {
                 stage = -1;
                 server.execute(() -> {
                     ServerLevel level = server.overworld();
-                    int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, target.getX(), target.getZ());
-                    target = new BlockPos(target.getX(), y, target.getZ());
+                    // find an open spot on the forest floor (not inside a trunk, not in water)
+                    BlockPos found = null;
+                    for (int r = 0; r <= 24 && found == null; r++)
+                        for (int dx = -r; dx <= r && found == null; dx++)
+                            for (int dz = -r; dz <= r && found == null; dz++) {
+                                if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                                int x = target.getX() + dx, z = target.getZ() + dz;
+                                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                                BlockPos g = new BlockPos(x, y, z);
+                                var below = level.getBlockState(g.below());
+                                if (below.is(net.minecraft.tags.BlockTags.DIRT) && level.getFluidState(g).isEmpty()
+                                        && level.getBlockState(g.above()).isAir() && level.getBlockState(g.above(2)).isAir()) found = g;
+                            }
+                    target = found != null ? found : new BlockPos(target.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, target.getX(), target.getZ()), target.getZ());
                     ValdoriaMod.LOG.info("[AUTOTEST] ground at {}", target);
                     mc.execute(() -> { stage = 2; wait = 5; });
                 });

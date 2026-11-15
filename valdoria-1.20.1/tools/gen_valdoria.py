@@ -198,16 +198,15 @@ def lichen(seed):
     r = random.Random(seed)
     img = new()
     px = img.load()
-    for _ in range(14):
+    # faint dark-teal crust with a few tiny bright points of light
+    for _ in range(18):
         x, y = r.randrange(16), r.randrange(16)
-        size = r.choice((1, 1, 2))
-        for dx in range(size):
-            for dy in range(size):
-                px[(x + dx) % 16, (y + dy) % 16] = CYAN[r.randrange(3)] + (255,)
-    for _ in range(26):
-        x, y = r.randrange(16), r.randrange(16)
-        if px[x, y][3] == 0:
-            px[x, y] = hexrgb("#2b8f96") + (255,)
+        px[x, y] = hexrgb("#1f5b63") + (255,)
+    for _ in range(7):
+        x, y = r.randrange(1, 15), r.randrange(1, 15)
+        px[x, y] = CYAN[2] + (255,)
+        if r.random() < 0.5:
+            px[x + 1, y] = CYAN[0] + (255,)
     return img
 
 
@@ -747,8 +746,8 @@ def build_worldgen():
         "temperature": 0.6,
         "downfall": 0.8,
         "effects": {
-            "sky_color": 0x5EC4CF,
-            "fog_color": 0x3F9FAE,
+            "sky_color": 0x4FB3C0,
+            "fog_color": 0x2E8C9A,
             "water_color": 0x2F8FA0,
             "water_fog_color": 0x0D2A33,
             "grass_color": 0x2F6E6A,
