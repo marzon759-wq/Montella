@@ -280,7 +280,7 @@ public class GodzillaEntity extends TitanEntity {
             thighL.rx -= (0.6f + w * 0.3f * struggle) * f; thighR.rx -= (0.3f - w * 0.3f * struggle) * f;
             shinL.rx += 0.5f * f; shinR.rx += 0.7f * f;
             for (int i = 0; i <= TAIL; i++) {
-                tail[i].rx -= 0.035f * f;
+                tail[i].rx += 0.045f * f;
                 tail[i].ry += Mth.sin(age * 0.3f - i * 0.5f) * 0.06f * struggle * f;
             }
             if (st == S.GET_UP) {
