@@ -209,6 +209,18 @@ public final class AutoTest {
             }
             default -> {
                 if (stage < 2) return;
+                if ("trailer".equals(System.getProperty("valdoria.autotest"))) {
+                    if (stage == 2) {
+                        Trailer.start(target);
+                        stage = 3;
+                    }
+                    if (!Trailer.tick(c -> cmd(expand(c)))) {
+                        ValdoriaMod.LOG.info("[AUTOTEST] finished");
+                        stage = -1;
+                        mc.stop();
+                    }
+                    return;
+                }
                 int i = (stage - 2) / 2;
                 if (i >= SHOTS.size()) {
                     ValdoriaMod.LOG.info("[AUTOTEST] finished");
