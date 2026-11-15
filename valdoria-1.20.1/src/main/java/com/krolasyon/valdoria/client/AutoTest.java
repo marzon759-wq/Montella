@@ -107,7 +107,14 @@ public final class AutoTest {
         return level.getUncachedNoiseBiome(x >> 2, 80 >> 2, z >> 2).is(ValdoriaBiomes.GLIMMERVEIL_FOREST);
     }
 
+    private static boolean filtered;
+
     public static boolean enabled() {
+        if (!filtered) {
+            filtered = true;
+            String only = System.getProperty("valdoria.autotest", "1");
+            if (!only.equals("1")) SHOTS.removeIf(s -> !s.name().startsWith(only));
+        }
         return System.getProperty("valdoria.autotest") != null;
     }
 

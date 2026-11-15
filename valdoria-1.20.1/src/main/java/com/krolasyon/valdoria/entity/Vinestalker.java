@@ -151,6 +151,7 @@ public class Vinestalker extends Monster {
             }
             case DROPPING -> {
                 if (onGround() || isInWater()) {
+                    Ecology.log("vinestalker {} landed", getId());
                     setState(State.GROUND);
                     chaseTicks = 0;
                 }
@@ -226,6 +227,7 @@ public class Vinestalker extends Monster {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance diff, MobSpawnType reason, SpawnGroupData data, CompoundTag tag) {
         SpawnGroupData r = super.finalizeSpawn(level, diff, reason, data, tag);
         BlockPos hang = isNoAi() ? null : findHangSpotAbove(blockPosition());
+        Ecology.log("vinestalker {} spawned, hang spot above: {}", getId(), hang);
         if (hang != null) {
             anchor = hang;
             setState(State.ASCENDING);
@@ -301,6 +303,7 @@ public class Vinestalker extends Monster {
             if (state == State.GROUND && getTarget() == null && foot != null
                     && distanceToSqr(Vec3.atBottomCenterOf(foot)) < 2.5) {
                 setState(State.ASCENDING);
+                Ecology.log("vinestalker {} climbing up to {}", getId(), anchor);
                 idleTicks = 0;
             }
             foot = null;
