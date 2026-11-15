@@ -81,28 +81,46 @@
         "weight": 5,
         "minCount": 1,
         "maxCount": 1
+      },
+      {
+        "type": "valdoria:vinestalker",
+        "weight": 70,
+        "minCount": 1,
+        "maxCount": 2
       }
     ],
     "creature": [
       {
-        "type": "minecraft:rabbit",
+        "type": "valdoria:veilstag",
+        "weight": 14,
+        "minCount": 3,
+        "maxCount": 6
+      },
+      {
+        "type": "valdoria:gloomlynx",
         "weight": 4,
         "minCount": 2,
         "maxCount": 3
       },
       {
-        "type": "minecraft:fox",
-        "weight": 8,
+        "type": "minecraft:rabbit",
+        "weight": 4,
         "minCount": 2,
-        "maxCount": 4
+        "maxCount": 3
       }
     ],
     "ambient": [
       {
+        "type": "valdoria:lumen_moth",
+        "weight": 40,
+        "minCount": 5,
+        "maxCount": 9
+      },
+      {
         "type": "minecraft:bat",
-        "weight": 10,
-        "minCount": 8,
-        "maxCount": 8
+        "weight": 5,
+        "minCount": 4,
+        "maxCount": 6
       }
     ],
     "axolotls": [],

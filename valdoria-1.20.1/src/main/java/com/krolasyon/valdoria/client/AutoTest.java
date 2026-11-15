@@ -31,7 +31,11 @@ import java.util.List;
 public final class AutoTest {
     private AutoTest() {}
 
-    private record Shot(String name, double dx, double dy, double dz, float yaw, float pitch, long time) {}
+    private record Shot(String name, double dx, double dy, double dz, float yaw, float pitch, long time, int settle, String... cmds) {
+        Shot(String name, double dx, double dy, double dz, float yaw, float pitch, long time) {
+            this(name, dx, dy, dz, yaw, pitch, time, 0);
+        }
+    }
 
     private static final List<Shot> SHOTS = new ArrayList<>();
     static {
@@ -43,6 +47,26 @@ public final class AutoTest {
         SHOTS.add(new Shot("vd_dusk_up", 0, 0, 0, 135, -35, 12500));
         SHOTS.add(new Shot("vd_night_up", 0, 0, 0, 45, -30, 18000));
         SHOTS.add(new Shot("vd_aerial", 0, 70, 0, 30, 35, 6000));
+        // --- creatures ---
+        SHOTS.add(new Shot("cr_herd", 0, 0, 0, 180, 4, 6000, 120,
+                "kill @e[type=!player,distance=..64]",
+                "summon valdoria:veilstag {x} {y} {z-8}", "summon valdoria:veilstag {x+2} {y} {z-10}", "summon valdoria:veilstag {x-3} {y} {z-9}",
+                "summon valdoria:veilstag {x+4} {y} {z-12}", "summon valdoria:veilstag {x-1} {y} {z-7} {Age:-24000}",
+                "summon valdoria:lumen_moth {x} {y+3} {z-5}", "summon valdoria:lumen_moth {x+1} {y+3} {z-5}", "summon valdoria:lumen_moth {x-1} {y+4} {z-6}",
+                "summon valdoria:lumen_moth {x} {y+2} {z-4}", "summon valdoria:lumen_moth {x+2} {y+4} {z-6}", "summon valdoria:lumen_moth {x-2} {y+3} {z-4}"));
+        SHOTS.add(new Shot("cr_herd_later", 0, 1.5, 4, 180, 10, 6000, 300));
+        SHOTS.add(new Shot("cr_moths", 0, 0, 0, 180, -15, 13500, 60));
+        SHOTS.add(new Shot("cr_lynx_day", 0, 0, 0, 0, 12, 6000, 200,
+                "summon valdoria:gloomlynx {x} {y} {z+6}", "summon valdoria:gloomlynx {x+2} {y} {z+7}", "summon valdoria:gloomlynx {x-2} {y} {z+8}"));
+        SHOTS.add(new Shot("cr_lynx_close", 0, 0.5, 3, 0, 20, 6000, 40));
+        SHOTS.add(new Shot("cr_hunt_night", 0, 0, 0, 180, 5, 18000, 120,
+                "kill @e[type=valdoria:gloomlynx]",
+                "summon valdoria:gloomlynx {x+5} {y} {z-4} {Satiety:0}", "summon valdoria:gloomlynx {x+6} {y} {z-6} {Satiety:0}"));
+        SHOTS.add(new Shot("cr_hunt_night2", 0, 0, 0, 180, 5, 18000, 60));
+        SHOTS.add(new Shot("cr_stalker", 3, 0, 0, -90, -45, 6000, 160,
+                "kill @e[type=!player,distance=..64]",
+                "summon valdoria:vinestalker {x} {y} {z}", "summon valdoria:vinestalker {x+1} {y} {z-3}"));
+        SHOTS.add(new Shot("cr_stalker_ground", 0, 0, 5, 180, 0, 6000, 40, "summon valdoria:vinestalker {x} {y} {z+1}"));
     }
 
     private static boolean created;
@@ -51,6 +75,23 @@ public final class AutoTest {
     private static BlockPos target;
     private static int stage;
     private static int wait;
+
+    private static String expand(String c) {
+        StringBuilder out = new StringBuilder();
+        int i = 0;
+        while (i < c.length()) {
+            int a = c.indexOf('{', i);
+            if (a < 0 || c.indexOf('}', a) < 0 || "xyz".indexOf(c.charAt(a + 1)) < 0) { out.append(c.substring(i)); break; }
+            int b = c.indexOf('}', a);
+            out.append(c, i, a);
+            String expr = c.substring(a + 1, b);
+            int base = switch (expr.charAt(0)) { case 'x' -> target.getX(); case 'y' -> target.getY(); default -> target.getZ(); };
+            int off = expr.length() > 1 ? Integer.parseInt(expr.substring(1).replace("+", "")) : 0;
+            out.append(base + off);
+            i = b + 1;
+        }
+        return out.toString();
+    }
 
     private static boolean isForest(ServerLevel level, int x, int z) {
         return level.getUncachedNoiseBiome(x >> 2, 80 >> 2, z >> 2).is(ValdoriaBiomes.GLIMMERVEIL_FOREST);
@@ -160,9 +201,10 @@ public final class AutoTest {
                 Shot s = SHOTS.get(i);
                 if ((stage - 2) % 2 == 0) {
                     cmd("time set " + s.time);
+                    for (String c : s.cmds) cmd(expand(c));
                     cmd("tp @a " + (target.getX() + 0.5 + s.dx) + " " + (target.getY() + 0.2 + s.dy) + " " + (target.getZ() + 0.5 + s.dz) + " " + s.yaw + " " + s.pitch);
                     mc.player.getAbilities().flying = s.dy > 0;
-                    wait = s.dy > 0 ? 200 : 80;
+                    wait = s.settle > 0 ? s.settle : s.dy > 0 ? 200 : 80;
                 } else {
                     Screenshot.grab(mc.gameDirectory, s.name + ".png", mc.getMainRenderTarget(), c -> {});
                     ValdoriaMod.LOG.info("[AUTOTEST] shot {}", s.name);

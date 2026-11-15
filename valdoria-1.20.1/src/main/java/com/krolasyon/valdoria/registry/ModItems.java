@@ -1,7 +1,10 @@
 package com.krolasyon.valdoria.registry;
 
 import com.krolasyon.valdoria.ValdoriaMod;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.BlockItem;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -26,5 +29,16 @@ public final class ModItems {
                     : ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
             TAB_ORDER.add(item);
         }
+    }
+
+    public static final RegistryObject<Item> VEILSTAG_SPAWN_EGG = egg("veilstag", ModEntities.VEILSTAG, 0x2A1E31, 0x5FF3FF);
+    public static final RegistryObject<Item> LUMEN_MOTH_SPAWN_EGG = egg("lumen_moth", ModEntities.LUMEN_MOTH, 0x9FE8E0, 0x8F52C0);
+    public static final RegistryObject<Item> GLOOMLYNX_SPAWN_EGG = egg("gloomlynx", ModEntities.GLOOMLYNX, 0x3B3550, 0x7CF5FF);
+    public static final RegistryObject<Item> VINESTALKER_SPAWN_EGG = egg("vinestalker", ModEntities.VINESTALKER, 0x140E19, 0x6B379B);
+
+    private static RegistryObject<Item> egg(String name, RegistryObject<? extends EntityType<? extends Mob>> type, int bg, int fg) {
+        RegistryObject<Item> item = ITEMS.register(name + "_spawn_egg", () -> new ForgeSpawnEggItem(type, bg, fg, new Item.Properties()));
+        TAB_ORDER.add(item);
+        return item;
     }
 }

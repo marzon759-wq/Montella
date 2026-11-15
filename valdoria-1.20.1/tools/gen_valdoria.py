@@ -632,6 +632,7 @@ def build_tags():
     tag(MC, "blocks", "mineable/pickaxe", V("violetstone", "violetstone_bricks", "mossy_violetstone_bricks",
                                              "violetstone_brick_stairs", "violetstone_brick_slab", "violetstone_brick_wall"))
     tag(MC, "blocks", "climbable", V("veil_vines"))
+    tag(MC, "blocks", "animals_spawnable_on", V("duskgrass_block"))
     tag(MC, "blocks", "replaceable_by_trees", V("veil_fern", "tall_veil_fern", "veil_vines", "glimmer_lichen"))
     tag(MC, "blocks", "sword_efficient", V("veil_vines", "veil_fern", "tall_veil_fern", "shimmercap"))
     tag(MC, "blocks", "enderman_holdable", V("shimmercap"))
@@ -740,7 +741,8 @@ def build_worldgen():
         {"type": "minecraft:creeper", "weight": 100, "minCount": 4, "maxCount": 4},
         {"type": "minecraft:slime", "weight": 100, "minCount": 4, "maxCount": 4},
         {"type": "minecraft:enderman", "weight": 10, "minCount": 1, "maxCount": 4},
-        {"type": "minecraft:witch", "weight": 5, "minCount": 1, "maxCount": 1}]
+        {"type": "minecraft:witch", "weight": 5, "minCount": 1, "maxCount": 1},
+        {"type": f"{NS}:vinestalker", "weight": 70, "minCount": 1, "maxCount": 2}]
     wg("biome", "glimmerveil_forest", {
         "has_precipitation": True,
         "temperature": 0.6,
@@ -759,9 +761,12 @@ def build_worldgen():
         "spawners": {
             "monster": monsters,
             "creature": [
-                {"type": "minecraft:rabbit", "weight": 4, "minCount": 2, "maxCount": 3},
-                {"type": "minecraft:fox", "weight": 8, "minCount": 2, "maxCount": 4}],
-            "ambient": [{"type": "minecraft:bat", "weight": 10, "minCount": 8, "maxCount": 8}],
+                {"type": f"{NS}:veilstag", "weight": 14, "minCount": 3, "maxCount": 6},
+                {"type": f"{NS}:gloomlynx", "weight": 4, "minCount": 2, "maxCount": 3},
+                {"type": "minecraft:rabbit", "weight": 4, "minCount": 2, "maxCount": 3}],
+            "ambient": [
+                {"type": f"{NS}:lumen_moth", "weight": 40, "minCount": 5, "maxCount": 9},
+                {"type": "minecraft:bat", "weight": 5, "minCount": 4, "maxCount": 6}],
             "axolotls": [], "underground_water_creature": [{"type": "minecraft:glow_squid", "weight": 10, "minCount": 4, "maxCount": 6}],
             "water_creature": [], "water_ambient": [], "misc": []},
         "spawn_costs": {},
@@ -817,9 +822,49 @@ NAMES = {
 }
 
 
+CREATURES = {
+    "veilstag": ("Veilstag", "Peçe Geyiği"),
+    "lumen_moth": ("Lumen Moth", "Işıltı Güvesi"),
+    "gloomlynx": ("Gloomlynx", "Alacakaranlık Vaşağı"),
+    "vinestalker": ("Vinestalker", "Sarmaşık Pusucusu"),
+}
+
+
+def build_creatures():
+    def eloot(name, pools):
+        W(os.path.join(D, "loot_tables", "entities", name + ".json"),
+          {"type": "minecraft:entity", "pools": pools, "random_sequence": f"{NS}:entities/{name}"})
+
+    def drop(item_, lo, hi, looting=True, smelt=False, chance=None):
+        fns = [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}}]
+        if smelt:
+            fns.append({"function": "minecraft:furnace_smelt", "conditions": [{"condition": "minecraft:entity_properties", "entity": "this",
+                                                                             "predicate": {"flags": {"is_on_fire": True}}}]})
+        if looting:
+            fns.append({"function": "minecraft:looting_enchant", "count": {"type": "minecraft:uniform", "min": 0.0, "max": 1.0}})
+        p = {"rolls": 1, "bonus_rolls": 0.0, "entries": [{"type": "minecraft:item", "name": item_, "functions": fns}]}
+        if chance:
+            p["conditions"] = [{"condition": "minecraft:random_chance_with_looting", "chance": chance, "looting_multiplier": 0.05}]
+        return p
+
+    eloot("veilstag", [drop("minecraft:leather", 0.0, 2.0), drop("minecraft:mutton", 1.0, 3.0, smelt=True),
+                       drop(f"{NS}:shimmercap", 1.0, 1.0, looting=False, chance=0.15)])
+    eloot("gloomlynx", [drop("minecraft:rabbit_hide", 1.0, 2.0), drop("minecraft:glow_ink_sac", 1.0, 1.0, chance=0.3)])
+    eloot("vinestalker", [drop("minecraft:string", 1.0, 3.0), drop(f"{NS}:veil_vines", 1.0, 3.0),
+                          drop("minecraft:spider_eye", 1.0, 1.0, chance=0.35)])
+    eloot("lumen_moth", [drop("minecraft:glowstone_dust", 1.0, 1.0, looting=False, chance=0.35)])
+    for n in CREATURES:
+        im(n + "_spawn_egg", {"parent": "minecraft:item/template_spawn_egg"})
+
+
 def build_lang():
     en = {"itemGroup.valdoria": "Valdoria", f"biome.{NS}.glimmerveil_forest": "Glimmerveil Forest"}
     tr = {"itemGroup.valdoria": "Valdoria: Yedi Diyar", f"biome.{NS}.glimmerveil_forest": "Işıltılı Peçe Ormanı"}
+    for k, (e, t) in CREATURES.items():
+        en[f"entity.{NS}.{k}"] = e
+        tr[f"entity.{NS}.{k}"] = t
+        en[f"item.{NS}.{k}_spawn_egg"] = e + " Spawn Egg"
+        tr[f"item.{NS}.{k}_spawn_egg"] = t + " Çağırma Yumurtası"
     for k, (e, t) in NAMES.items():
         en[f"block.{NS}.{k}"] = e
         tr[f"block.{NS}.{k}"] = t
@@ -833,5 +878,6 @@ if __name__ == "__main__":
     build_tags()
     build_recipes()
     build_worldgen()
+    build_creatures()
     build_lang()
     print("Valdoria resources generated in", os.path.normpath(ROOT))

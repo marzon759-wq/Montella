@@ -1,6 +1,7 @@
 package com.krolasyon.valdoria;
 
 import com.krolasyon.valdoria.registry.ModBlocks;
+import com.krolasyon.valdoria.registry.ModEntities;
 import com.krolasyon.valdoria.registry.ModFeatures;
 import com.krolasyon.valdoria.registry.ModItems;
 import com.krolasyon.valdoria.registry.ModParticles;
@@ -27,6 +28,7 @@ public class ValdoriaMod {
         ModBlocks.BLOCKS.register(bus);
         ModItems.ITEMS.register(bus);
         ModFeatures.FEATURES.register(bus);
+        ModEntities.ENTITIES.register(bus);
         ModParticles.PARTICLES.register(bus);
         ModTabs.TABS.register(bus);
         bus.addListener(this::commonSetup);
