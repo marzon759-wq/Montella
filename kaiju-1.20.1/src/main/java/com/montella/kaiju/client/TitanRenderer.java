@@ -63,7 +63,7 @@ public abstract class TitanRenderer<T extends TitanEntity> extends EntityRendere
         ps.mulPose(Axis.YP.rotationDegrees(-body));
         out.pose = ps.last();
         out.light = light;
-        out.overlay = LivingEntityRenderer.getOverlayCoords(e, 0);
+        out.overlay = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
         out.r = out.g = out.b = out.a = 1;
         IntPredicate vis = visible(e);
         for (int m = 0; m < mats.length; m++) {

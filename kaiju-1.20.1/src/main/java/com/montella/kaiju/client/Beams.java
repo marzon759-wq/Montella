@@ -45,9 +45,9 @@ public final class Beams {
         Vector3f a = new Vector3f(from);
         if (power < 1f) a.lerp(to, (1 - power) * 0.35f);
         float spread = 1f + (1 - power) * 1.5f;
-        tube(vc, m, a, to, 2.6f * p * spread, 3.4f * p * spread, 0.05f, 0.25f, 0.9f, 0.18f * power, 6, age * 0.05f);
-        tube(vc, m, a, to, 1.5f * p, 1.9f * p, 0.15f, 0.6f, 1.0f, 0.45f * power, 6, age * 0.1f);
-        tube(vc, m, a, to, 0.65f * p, 0.8f * p, 0.85f, 0.95f, 1.0f, 0.9f * power, 4, 0);
+        tube(vc, m, a, to, 3.8f * p * spread, 5.0f * p * spread, 0.05f, 0.25f, 0.9f, 0.2f * power, 6, age * 0.05f);
+        tube(vc, m, a, to, 2.2f * p, 2.8f * p, 0.15f, 0.6f, 1.0f, 0.5f * power, 6, age * 0.1f);
+        tube(vc, m, a, to, 1.0f * p, 1.2f * p, 0.85f, 0.95f, 1.0f, 0.95f * power, 4, 0);
         // spiral
         Vector3f d = new Vector3f(to).sub(a);
         float len = d.length();
