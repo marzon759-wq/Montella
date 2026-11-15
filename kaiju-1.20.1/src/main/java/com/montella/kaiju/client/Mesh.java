@@ -18,6 +18,8 @@ import java.util.function.IntPredicate;
  * Everything is regenerated every frame from the posed skeleton.
  */
 public final class Mesh {
+    /** World size (blocks) of one texture tile. */
+    public static float TILE = 3.0f;
     /** Writes vertices with a fixed material colour. */
     public static final class Out {
         public VertexConsumer vc;
@@ -119,13 +121,15 @@ public final class Mesh {
                     N[i][k] = tn(r.j, cx / Math.max(r.rx, 0.01f), sy / Math.max(r.ry, 0.01f), 0);
                 }
             }
+            float uR = uRep;
+            if (uR <= 0) { Ring r0 = rings.get(0); uR = Math.max(1, Math.round((float) (Math.PI * (r0.rx + r0.ry)) / TILE)); }
             for (int i = 0; i < n - 1; i++) {
                 for (int k = 0; k < sides; k++) {
                     double mid = Math.PI * 2 * (k + 0.5) / sides; // 0 at the belly line
                     double a = Math.min(mid, Math.PI * 2 - mid);
                     boolean belly = a < bellyHalfAngle;
                     if (bellyMat == -2 ? !belly : (bellyMat >= 0 && belly)) continue;
-                    float u0 = uRep * k / sides, u1 = uRep * (k + 1) / sides;
+                    float u0 = uR * k / sides, u1 = uR * (k + 1) / sides;
                     o.quad(P[i][k], P[i + 1][k], P[i + 1][k + 1], P[i][k + 1], N[i][k], N[i + 1][k], N[i + 1][k + 1], N[i][k + 1],
                             u0, vv[i], u0, vv[i + 1], u1, vv[i + 1], u1, vv[i]);
                 }
@@ -136,7 +140,7 @@ public final class Mesh {
                 Vector3f tn = new Vector3f(tip).sub(rings.get(i).j.world.getTranslation(new Vector3f())).normalize();
                 float vt = vv[i] + tip.distance(tp(rings.get(i).j, rings.get(i).x, rings.get(i).y, rings.get(i).z)) * vScale;
                 for (int k = 0; k < sides; k++) {
-                    float u0 = uRep * k / sides, u1 = uRep * (k + 1) / sides;
+                    float u0 = uR * k / sides, u1 = uR * (k + 1) / sides;
                     o.quad(P[i][k], tip, tip, P[i][k + 1], N[i][k], tn, tn, N[i][k + 1], u0, vv[i], u0, vt, u1, vt, u1, vv[i]);
                 }
             }
@@ -158,8 +162,9 @@ public final class Mesh {
             this.mat = mat; this.j = j; this.cx = cx; this.cy = cy; this.cz = cz;
             this.rx = rx; this.ryUp = ryUp; this.ryDown = ryDown; this.rzF = rzF; this.rzB = rzB;
             this.lat = 10; this.lon = 14;
-            float size = Math.max(rx, Math.max(ryUp + ryDown, rzF + rzB) * 0.5f);
-            this.uRep = Math.max(1, Math.round(size * 0.9f)); this.vRep = Math.max(1, Math.round(size * 0.5f));
+            float circ = (float) (Math.PI * (rx + (rzF + rzB) * 0.5f));
+            float mer = (float) (Math.PI * (ryUp + ryDown) * 0.5f);
+            this.uRep = Math.max(1, Math.round(circ / TILE)); this.vRep = Math.max(1, mer / TILE);
         }
 
         public Blob(int mat, Joint j, float cx, float cy, float cz, float rx, float ry, float rz) { this(mat, j, cx, cy, cz, rx, ry, ry, rz, rz); }

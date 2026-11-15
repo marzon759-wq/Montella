@@ -39,21 +39,22 @@ public final class GodzillaMesh {
         Joint pelvis = s.get("pelvis"), spine = s.get("spine"), chest = s.get("chest"), n0 = s.get("neck0"), n1 = s.get("neck1"),
                 n2 = s.get("neck2"), head = s.get("head"), jaw = s.get("jaw");
 
-        // ---- torso: hips, belly, barrel chest, shoulders, pecs
-        bellyBlob(m, pelvis, 0, 0.6f, -0.3f, 5.0f, 3.6f, 3.4f, 4.4f, 4.7f, 0.55f);
-        bellyBlob(m, spine, 0, 1.8f, 0.4f, 4.9f, 3.7f, 3.4f, 4.9f, 4.3f, 0.45f);
-        bellyBlob(m, chest, 0, 1.6f, 0.6f, 4.7f, 3.7f, 3.2f, 4.5f, 3.7f, 0.45f);
-        blob(m, SKIN, chest, 0, 4.0f, 0.2f, 4.1f, 2.8f, 1.8f, 3.6f, 3.4f);
-        blob(m, SKIN, chest, 2.1f, 2.9f, 3.1f, 2.2f, 1.6f, 1.6f, 1.4f, 1.2f);
-        blob(m, SKIN, chest, -2.1f, 2.9f, 3.1f, 2.2f, 1.6f, 1.6f, 1.4f, 1.2f);
-        blob(m, SKIN, spine, 3.9f, 1.0f, 0, 1.6f, 3.2f, 3.0f, 3.2f, 3.0f);
-        blob(m, SKIN, spine, -3.9f, 1.0f, 0, 1.6f, 3.2f, 3.0f, 3.2f, 3.0f);
-
-        // ---- neck: thick, merges into the shoulders
-        Tube neck = m.add(new Tube(SKIN, 14, 4, 0.45f).belly(BELLY, 1.0f))
-                .ring(n0, 0, 0, -1.4f, 4.1f, 3.8f).ring(n0, 0, 0, 0.2f, 3.6f, 3.4f).ring(n1, 3.1f, 2.95f)
+        // ---- torso + neck: one continuous skinned body with a ridged belly down the front
+        Joint ta = s.get("torsoA"), tb = s.get("torsoB"), tc = s.get("torsoC");
+        Tube body = m.add(new Tube(SKIN, 18, 0, 1f / Mesh.TILE).belly(BELLY, 0.85f))
+                .ring(ta, 0, 0.6f, -3.4f, 2.6f, 2.4f).ring(ta, 0, 0.2f, -2.4f, 4.6f, 4.0f).ring(ta, 0, 0f, -0.8f, 5.3f, 4.7f)
+                .ring(ta, 0, -0.2f, 1.0f, 5.4f, 4.9f).ring(tb, 0, -0.5f, 0.8f, 5.3f, 5.0f).ring(tb, 0, -0.5f, 2.6f, 5.1f, 4.8f)
+                .ring(tc, 0, -0.4f, 0.6f, 4.95f, 4.5f).ring(tc, 0, -0.2f, 2.4f, 4.75f, 4.1f).ring(tc, 0, 0f, 3.8f, 4.45f, 3.8f)
+                .ring(n0, 0, 0, -1.2f, 4.0f, 3.7f).ring(n0, 0, 0, 0.3f, 3.55f, 3.3f).ring(n1, 3.1f, 2.95f)
                 .ring(n2, 2.6f, 2.45f).ring(head, 0, 0.35f, -0.5f, 1.95f, 1.75f);
-        m.add(neck.bellyPart());
+        m.add(body.bellyPart());
+        // muscle masses over the skin tube
+        blob(m, SKIN, chest, 2.3f, 2.8f, 3.0f, 2.1f, 1.5f, 1.6f, 1.4f, 1.6f);
+        blob(m, SKIN, chest, -2.3f, 2.8f, 3.0f, 2.1f, 1.5f, 1.6f, 1.4f, 1.6f);
+        blob(m, SKIN, chest, 3.4f, 3.6f, 0.4f, 1.6f, 1.8f, 2.0f, 2.2f, 2.0f);
+        blob(m, SKIN, chest, -3.4f, 3.6f, 0.4f, 1.6f, 1.8f, 2.0f, 2.2f, 2.0f);
+        blob(m, SKIN, pelvis, 3.3f, -0.2f, -0.4f, 2.4f, 2.6f, 2.2f, 3.0f, 3.0f);
+        blob(m, SKIN, pelvis, -3.3f, -0.2f, -0.4f, 2.4f, 2.6f, 2.2f, 3.0f, 3.0f);
 
         // ---- head: compact skull, heavy brow, broad snout
         blob(m, SKIN, head, 0, 0.45f, 0.9f, 1.75f, 1.45f, 1.0f, 2.0f, 1.8f);
@@ -83,7 +84,7 @@ public final class GodzillaMesh {
         for (String sd : new String[]{"L", "R"}) {
             Joint a0 = s.get("arm" + sd + "0"), a1 = s.get("arm" + sd + "1"), hd = s.get("hand" + sd);
             blob(m, SKIN, a0, 0, 0, 0.3f, 1.5f, 1.5f, 1.5f, 1.4f, 1.2f);
-            m.add(new Tube(SKIN, 10, 2, 0.5f)).ring(a0, 1.25f, 1.15f).ring(a0, 0, 0, 1.5f, 1.15f, 1.05f).ring(a1, 0.95f, 0.9f)
+            m.add(new Tube(SKIN, 10, 0, 1f / Mesh.TILE)).ring(a0, 1.25f, 1.15f).ring(a0, 0, 0, 1.5f, 1.15f, 1.05f).ring(a1, 0.95f, 0.9f)
                     .ring(a1, 0, 0, 1.3f, 0.8f, 0.75f).ring(hd, 0.68f, 0.55f);
             blob(m, SKIN, a1, 0, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
             blob(m, SKIN, hd, 0, 0, 0.6f, 0.75f, 0.42f, 0.42f, 0.85f, 0.4f);
@@ -98,9 +99,11 @@ public final class GodzillaMesh {
         for (String sd : new String[]{"L", "R"}) {
             Joint th = s.get("thigh" + sd), sh = s.get("shin" + sd), ft = s.get("foot" + sd);
             float side = sd.equals("L") ? 1 : -1;
-            blob(m, SKIN, th, side * 0.3f, 0.3f, 2.1f, 3.0f, 3.3f, 3.0f, 3.6f, 3.2f);
+            m.add(new Tube(SKIN, 14, 0, 1f / Mesh.TILE)).ring(th, 0, 0, -1.2f, 2.9f, 3.0f).ring(th, 0, 0.1f, 1.0f, 3.0f, 3.3f)
+                    .ring(th, 0, 0.2f, 3.0f, 2.6f, 2.9f).ring(sh, 0, 0, -0.4f, 2.2f, 2.4f);
+            blob(m, SKIN, th, side * 0.4f, 0.6f, 1.6f, 2.4f, 2.6f, 2.4f, 2.8f, 2.6f);
             blob(m, SKIN, sh, 0, 0, 0.1f, 2.2f, 2.2f, 2.2f, 2.0f, 1.6f);
-            m.add(new Tube(SKIN, 12, 3, 0.45f)).ring(sh, 0, -0.2f, 0.3f, 2.25f, 2.4f).ring(sh, 0, -0.1f, 2.0f, 1.95f, 2.15f).ring(sh, 0, 0, 3.6f, 1.7f, 1.8f).ring(ft, 0, 0.3f, -0.1f, 1.6f, 1.25f);
+            m.add(new Tube(SKIN, 12, 0, 1f / Mesh.TILE)).ring(sh, 0, -0.2f, 0.3f, 2.25f, 2.4f).ring(sh, 0, -0.1f, 2.0f, 1.95f, 2.15f).ring(sh, 0, 0, 3.6f, 1.7f, 1.8f).ring(ft, 0, 0.3f, -0.1f, 1.6f, 1.25f);
             blob(m, SKIN, sh, 0, -0.9f, 1.6f, 1.6f, 1.2f, 1.4f, 1.8f, 1.6f);
             blob(m, SKIN, ft, 0, -0.35f, 0.9f, 1.75f, 0.8f, 0.7f, 2.4f, 1.3f);
             blob(m, SKIN, ft, 0, 0.3f, -0.1f, 1.55f, 1.0f, 0.8f, 1.4f, 1.3f);
@@ -113,7 +116,7 @@ public final class GodzillaMesh {
         }
 
         // ---- tail: long, heavy, tapering, dragging behind
-        Tube tail = m.add(new Tube(SKIN, 12, 3, 0.4f).belly(BELLY, 0.85f)).ring(s.get("tail0"), 0, 0, -1.6f, 3.9f, 3.6f);
+        Tube tail = m.add(new Tube(SKIN, 12, 0, 1f / Mesh.TILE).belly(BELLY, 0.85f)).ring(s.get("tail0"), 0, 0, -1.6f, 3.9f, 3.6f);
         for (int i = 0; i <= GodzillaEntity.TAIL; i++) {
             float r = GodzillaEntity.TAIL_R[i];
             tail.ring(s.get("tail" + i), r, r * 0.93f);

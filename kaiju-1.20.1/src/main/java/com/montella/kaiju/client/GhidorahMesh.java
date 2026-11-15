@@ -71,13 +71,19 @@ public final class GhidorahMesh {
         s.resetPose();
         s.compute();
 
-        // ---- body: upright, deep-chested
-        bellyBlob(m, pelvis, 0, 0.5f, -0.1f, 3.9f, 3.0f, 2.9f, 3.4f, 3.7f, 0.5f);
-        bellyBlob(m, spine, 0, 1.6f, 0.3f, 3.7f, 3.0f, 3.0f, 3.7f, 3.2f, 0.45f);
-        bellyBlob(m, chest, 0, 2.0f, 0.4f, 4.1f, 3.2f, 2.8f, 3.7f, 3.0f, 0.45f);
-        blob(m, SKIN, chest, 0, 3.6f, 0.1f, 4.3f, 1.8f, 1.6f, 2.9f, 2.7f);
+        // ---- body: one upright skinned trunk with a ridged belly
+        Joint ta = s.get("torsoA"), tb = s.get("torsoB"), tc = s.get("torsoC");
+        Tube body = m.add(new Tube(SKIN, 16, 0, 1f / Mesh.TILE).belly(BELLY, 0.85f))
+                .ring(ta, 0, 0.5f, -3.0f, 2.0f, 1.9f).ring(ta, 0, 0.2f, -2.0f, 3.6f, 3.2f).ring(ta, 0, 0, -0.4f, 4.1f, 3.7f)
+                .ring(ta, 0, -0.2f, 1.2f, 4.0f, 3.7f).ring(tb, 0, -0.4f, 1.0f, 3.9f, 3.7f).ring(tb, 0, -0.4f, 2.6f, 3.9f, 3.5f)
+                .ring(tc, 0, -0.3f, 0.8f, 4.1f, 3.4f).ring(tc, 0, -0.1f, 2.5f, 4.3f, 3.2f).ring(tc, 0, 0.2f, 3.8f, 4.0f, 2.8f)
+                .ring(tc, 0, 0.3f, 4.8f, 2.6f, 2.0f);
+        body.glow(G_CRACKLE, 0);
+        m.add(body.bellyPart()).glow(G_CRACKLE, 0);
         blob(m, SKIN, chest, 2.7f, 3.0f, -0.9f, 1.8f, 1.6f, 1.5f, 1.8f, 1.8f);
         blob(m, SKIN, chest, -2.7f, 3.0f, -0.9f, 1.8f, 1.6f, 1.5f, 1.8f, 1.8f);
+        blob(m, SKIN, pelvis, 2.6f, -0.2f, -0.2f, 1.9f, 2.0f, 1.8f, 2.4f, 2.4f);
+        blob(m, SKIN, pelvis, -2.6f, -0.2f, -0.2f, 1.9f, 2.0f, 1.8f, 2.4f, 2.4f);
         // back spines
         for (int k = 0; k < 6; k++) {
             Joint j = k < 3 ? chest : spine;
@@ -91,7 +97,7 @@ public final class GhidorahMesh {
             Joint[] n = new Joint[GhidorahEntity.NECK + 1];
             for (int i = 0; i <= GhidorahEntity.NECK; i++) n[i] = s.get("n" + h + "_" + i);
             Joint hd = s.get("h" + h), jw = s.get("j" + h);
-            Tube neck = m.add(new Tube(SKIN, 12, 3, 0.55f).belly(BELLY, 0.95f));
+            Tube neck = m.add(new Tube(SKIN, 12, 0, 1f / Mesh.TILE).belly(BELLY, 0.95f));
             neck.glow(G_CRACKLE, 0);
             neck.ring(n[0], 0, 0, -1.6f, 2.1f, 2.0f);
             for (int i = 0; i <= GhidorahEntity.NECK; i++) neck.ring(n[i], GhidorahEntity.NECK_R[i], GhidorahEntity.NECK_R[i] * 0.95f);
@@ -113,7 +119,7 @@ public final class GhidorahMesh {
             float sd = w == 0 ? 1 : -1;
             Joint w0 = s.get("w" + n + "0"), w1 = s.get("w" + n + "1"), w2 = s.get("w" + n + "2");
             blob(m, SKIN, w0, 0, 0, 0.6f, 1.4f, 1.3f, 1.3f, 1.6f, 1.0f);
-            m.add(new Tube(SKIN, 8, 2, 0.4f)).ring(w0, 0.95f, 0.9f).ring(w0, 0, 0, 4.6f, 0.62f, 0.6f).ring(w1, 0.6f, 0.58f)
+            m.add(new Tube(SKIN, 8, 0, 1f / Mesh.TILE)).ring(w0, 0.95f, 0.9f).ring(w0, 0, 0, 4.6f, 0.62f, 0.6f).ring(w1, 0.6f, 0.58f)
                     .ring(w1, 0, 0, 5.6f, 0.45f, 0.42f).ring(w2, 0.5f, 0.45f).glow(G_CRACKLE, 0);
             blob(m, SKIN, w1, 0, 0, 0, 0.75f, 0.7f, 0.7f, 0.7f, 0.7f);
             blob(m, SKIN, w2, 0, 0, 0, 0.6f, 0.55f, 0.55f, 0.6f, 0.6f);
@@ -127,7 +133,7 @@ public final class GhidorahMesh {
             for (int k = 0; k < 4; k++) {
                 Joint f = s.get("f" + n + k), fb = s.get("f" + n + k + "b");
                 float len = GhidorahEntity.FINGER_LEN[k];
-                m.add(new Tube(SKIN, 6, 1, 0.4f)).ring(f, 0.32f, 0.3f).ring(fb, 0.24f, 0.22f).tip(fb, 0, 0, len * 0.5f);
+                m.add(new Tube(SKIN, 6, 0, 1f / Mesh.TILE)).ring(f, 0.32f, 0.3f).ring(fb, 0.24f, 0.22f).tip(fb, 0, 0, len * 0.5f);
                 M[k] = vtx(mem, fb, 0, 0, 0);
                 T[k] = vtx(mem, fb, 0, 0, len * 0.5f);
             }
@@ -145,9 +151,10 @@ public final class GhidorahMesh {
         for (String sd : new String[]{"L", "R"}) {
             Joint th = s.get("thigh" + sd), sh = s.get("shin" + sd), ft = s.get("foot" + sd);
             float side = sd.equals("L") ? 1 : -1;
-            blob(m, SKIN, th, side * 0.2f, 0.2f, 2.0f, 2.4f, 2.6f, 2.4f, 3.0f, 2.7f);
+            m.add(new Tube(SKIN, 12, 0, 1f / Mesh.TILE)).ring(th, 0, 0, -1.0f, 2.3f, 2.4f).ring(th, 0, 0.1f, 1.0f, 2.4f, 2.6f)
+                    .ring(th, 0, 0.2f, 3.0f, 2.0f, 2.2f).ring(sh, 0, 0, -0.3f, 1.7f, 1.8f).glow(G_CRACKLE, 0);
             blob(m, SKIN, sh, 0, 0, 0, 1.7f, 1.7f, 1.7f, 1.6f, 1.4f);
-            m.add(new Tube(SKIN, 10, 2, 0.45f)).ring(sh, 0, -0.1f, 0.3f, 1.6f, 1.7f).ring(sh, 0, 0, 2.2f, 1.3f, 1.4f).ring(sh, 0, 0, 3.7f, 1.1f, 1.15f)
+            m.add(new Tube(SKIN, 10, 0, 1f / Mesh.TILE)).ring(sh, 0, -0.1f, 0.3f, 1.6f, 1.7f).ring(sh, 0, 0, 2.2f, 1.3f, 1.4f).ring(sh, 0, 0, 3.7f, 1.1f, 1.15f)
                     .ring(ft, 0, 0.3f, -0.1f, 1.1f, 0.9f).glow(G_CRACKLE, 0);
             blob(m, SKIN, ft, 0, -0.1f, 0.6f, 1.25f, 0.6f, 0.5f, 1.6f, 1.0f);
             for (int k = -1; k <= 1; k++) {
@@ -160,7 +167,7 @@ public final class GhidorahMesh {
 
         // ---- twin tails with rattles
         for (int k = 0; k < 2; k++) {
-            Tube tail = m.add(new Tube(SKIN, 10, 2, 0.5f).belly(BELLY, 0.85f));
+            Tube tail = m.add(new Tube(SKIN, 10, 0, 1f / Mesh.TILE).belly(BELLY, 0.85f));
             tail.glow(G_CRACKLE, 0);
             tail.ring(s.get("t" + k + "_0"), 0, 0, -1.2f, 2.3f, 2.2f);
             for (int i = 0; i <= GhidorahEntity.TAIL; i++) {
@@ -202,7 +209,7 @@ public final class GhidorahMesh {
     public static Mesh severed(Skeleton s) {
         Mesh m = new Mesh();
         Joint n = s.get("n"), h = s.get("h"), j = s.get("j");
-        Tube neck = m.add(new Tube(SKIN, 10, 2, 0.55f));
+        Tube neck = m.add(new Tube(SKIN, 10, 0, 1f / Mesh.TILE));
         neck.ring(n, 0, 0, -2.0f, 1.0f, 0.95f).ring(n, 0, 0, 0, 0.98f, 0.93f).ring(h, 0, 0.3f, -0.3f, 0.95f, 0.9f);
         m.add(new Blob(MOUTH, n, 0, 0, -2.0f, 0.98f, 0.93f, 0.93f, 0.2f, 0.25f)).glow(G_WOUND, 0);
         head(m, h, j, 1);

@@ -74,27 +74,27 @@ public final class AutoTest {
         at = 40;
         cue(0, () -> { cmd("time set 6000"); cmd("gamerule doDaylightCycle false"); cmd("weather clear"); cmd("gamerule doMobSpawning false"); cmd("gamemode creative @p"); cmd("effect give @p night_vision 9999 0 true"); });
         if (mode.contains("model")) {
-            cue(20, () -> { cmd("summon kaiju:godzilla 0 -60 0 {Rotation:[0f,0f]}"); cmd("summon kaiju:king_ghidorah 40 -60 0 {Rotation:[0f,0f]}"); });
+            cue(20, () -> { cmd("summon kaiju:godzilla 0 -60 0 {Rotation:[0f,0f]}"); cmd("summon kaiju:king_ghidorah 60 -60 0 {Rotation:[0f,0f]}"); });
             cue(40, () -> {});
-            view("model_godzilla_front", 0, -48, 34, 180, 8);
-            view("model_godzilla_side", 32, -48, 2, 90, 8);
-            view("model_godzilla_back", -18, -45, -30, -30, 10);
-            view("model_godzilla_3q", -22, -46, 26, -140, 8);
-            view("model_ghidorah_front", 40, -46, 38, 180, 8);
-            view("model_ghidorah_side", 74, -46, 2, 90, 8);
-            view("model_ghidorah_3q", 18, -44, 30, -140, 10);
-            view("model_ghidorah_head", 45, -33, 12, 160, 5);
-            view("model_godzilla_head", 5, -36, 12, 160, 5);
+            view("model_godzilla_front", 0, -47, 46, 180, 2);
+            view("model_godzilla_side", 46, -47, 0, 90, 2);
+            view("model_godzilla_back", -32, -44, -36, -42, 4);
+            view("model_godzilla_3q", -32, -46, 32, -135, 2);
+            view("model_ghidorah_front", 60, -46, 46, 180, 0);
+            view("model_ghidorah_side", 106, -46, 0, 90, 0);
+            view("model_ghidorah_3q", 28, -44, 32, -135, 2);
+            view("model_ghidorah_head", 66, -35, 15, 160, -3);
+            view("model_godzilla_head", 6, -38, 14, 160, 0);
             cue(5, () -> forceState(GodzillaEntity.class, com.montella.kaiju.entity.S.ROAR, 30));
             cue(0, () -> forceState(GhidorahEntity.class, com.montella.kaiju.entity.S.ROAR, 40));
-            view("pose_roar_g", -22, -46, 26, -140, 8);
-            view("pose_roar_k", 18, -44, 30, -140, 10);
+            view("pose_roar_g", -32, -46, 32, -135, 2);
+            view("pose_roar_k", 28, -44, 32, -135, 2);
             cue(5, () -> forceState(GodzillaEntity.class, com.montella.kaiju.entity.S.CHARGE_BEAM, 28));
-            view("pose_charge_g", -22, -46, 26, -140, 8);
+            view("pose_charge_g", -32, -46, 32, -135, 2);
             cue(5, () -> forceState(GhidorahEntity.class, com.montella.kaiju.entity.S.FLY, 0));
-            view("pose_fly_k", 40, -30, 50, 180, 20);
+            view("pose_fly_k", 60, -30, 60, 180, 10);
             cue(5, () -> forceState(GodzillaEntity.class, com.montella.kaiju.entity.S.FALLEN, 100));
-            view("pose_fallen_g", -30, -50, 20, -120, 15);
+            view("pose_fallen_g", -34, -46, 24, -125, 10);
         }
         if (mode.contains("fight")) {
             cue(20, () -> { cmd("tp @p 0 -55 0 0 10"); cmd("kaiju fight"); });

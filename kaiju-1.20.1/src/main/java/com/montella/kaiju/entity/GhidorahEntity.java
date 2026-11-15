@@ -59,6 +59,9 @@ public class GhidorahEntity extends TitanEntity {
         pelvis = s.add("pelvis", "root", 0, 8.0f, 0);
         spine = s.add("spine", "pelvis", 0, 2.4f, 0.3f).rest(0.06f, 0, 0);
         chest = s.add("chest", "spine", 0, 3.8f, 0.3f).rest(-0.04f, 0, 0);
+        s.add("torsoA", "pelvis", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
+        s.add("torsoB", "spine", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
+        s.add("torsoC", "chest", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
         float[][] base = {{0, 3.5f, 0.7f}, {2.5f, 2.8f, 0.5f}, {-2.5f, 2.8f, 0.5f}};
         float[] baseYaw = {0, 0.38f, -0.38f};
         for (int h = 0; h < 3; h++) {

@@ -47,6 +47,9 @@ public class GodzillaEntity extends TitanEntity {
         pelvis = s.add("pelvis", "root", 0, 10.2f, -0.6f);
         spine = s.add("spine", "pelvis", 0, 2.6f, 0.4f).rest(0.12f, 0, 0);
         chest = s.add("chest", "spine", 0, 4.2f, 0.2f).rest(0.08f, 0, 0);
+        s.add("torsoA", "pelvis", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
+        s.add("torsoB", "spine", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
+        s.add("torsoC", "chest", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
         neck0 = s.add("neck0", "chest", 0, 4.4f, 0.9f).rest(-1.05f, 0, 0);
         neck1 = s.add("neck1", "neck0", 0, 0, 1.9f).rest(0.15f, 0, 0);
         neck2 = s.add("neck2", "neck1", 0, 0, 1.8f).rest(0.2f, 0, 0);
