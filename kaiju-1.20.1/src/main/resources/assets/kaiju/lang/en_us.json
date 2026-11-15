@@ -1,0 +1,8 @@
+{
+  "entity.kaiju.godzilla": "Godzilla",
+  "entity.kaiju.king_ghidorah": "King Ghidorah",
+  "entity.kaiju.severed_head": "Severed Ghidorah Head",
+  "item.kaiju.godzilla_spawn_egg": "Godzilla Spawn Egg",
+  "item.kaiju.king_ghidorah_spawn_egg": "King Ghidorah Spawn Egg",
+  "kaiju.command.fight": "The titans have awakened."
+}

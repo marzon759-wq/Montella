@@ -182,8 +182,7 @@ public abstract class TitanEntity extends PathfinderMob {
         float f = Mth.lerp(partial, prevFall, fall);
         float yawRel = (hitYaw() - Mth.rotLerp(partial, yBodyRotO, yBodyRot)) * Mth.DEG_TO_RAD;
         // direction the body is pushed towards, in model space
-        float dx = -Mth.sin(-yawRel), dz = Mth.cos(-yawRel);
-        dx = Mth.sin(yawRel) * -1f; dz = Mth.cos(yawRel);
+        float dx = -Mth.sin(yawRel), dz = Mth.cos(yawRel);
         skel.rootMatrix.identity();
         float ease = f;
         skel.rootMatrix.translate(0, liftWhenLying * Mth.sin(ease * Mth.HALF_PI), 0);
@@ -280,8 +279,11 @@ public abstract class TitanEntity extends PathfinderMob {
     }
 
     // ------------------------------------------------------------------ server logic
+    public static final boolean FROZEN = Boolean.getBoolean("kaiju.freeze");
+
     protected void serverTick() {
         pose(1f);
+        if (FROZEN) { if (state() != S.ROAR && state() != S.FLY) stateTime = Math.min(stateTime, 400); return; }
         int st = state();
         if (beamCooldown > 0) beamCooldown--;
         if (attackCooldown > 0) attackCooldown--;
@@ -301,6 +303,12 @@ public abstract class TitanEntity extends PathfinderMob {
         if (wasAirborne && !air && st == S.FLUNG) {
             setState(S.FALLEN);
             playSound(SoundEvents.GENERIC_EXPLODE, 5f, 0.5f);
+            if (lastFallVelocity < -0.9f) {
+                hurt(damageSources().fall(), -lastFallVelocity * 30f);
+                level().broadcastEntityEvent(this, EV_SHAKE_HUGE);
+                dust((ServerLevel) level(), position(), getBbWidth() * 1.5, 200);
+                if (griefing()) crater(blockPosition(), 6);
+            }
         }
         if (air) lastFallVelocity = (float) getDeltaMovement().y;
         wasAirborne = air;

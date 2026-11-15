@@ -1,0 +1,8 @@
+{
+  "entity.kaiju.godzilla": "Godzilla",
+  "entity.kaiju.king_ghidorah": "King Ghidorah",
+  "entity.kaiju.severed_head": "Kopmuş Ghidorah Kafası",
+  "item.kaiju.godzilla_spawn_egg": "Godzilla Çağırma Yumurtası",
+  "item.kaiju.king_ghidorah_spawn_egg": "King Ghidorah Çağırma Yumurtası",
+  "kaiju.command.fight": "Titanlar uyandı."
+}

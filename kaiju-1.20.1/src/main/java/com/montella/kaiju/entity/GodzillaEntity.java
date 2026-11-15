@@ -574,8 +574,9 @@ public class GodzillaEntity extends TitanEntity {
                 fling(e, away.normalize().scale(power).add(0, 0.5 + power * 0.25, 0), 60 * power);
             }
             if (griefing()) crater(blockPosition(), 7);
-            setState(S.GET_UP);
-            if (fall < 0.5f) setState(S.IDLE);
+            if (!onGround()) setState(S.FLUNG);
+            else if (fall > 0.5f) setState(S.GET_UP);
+            else setState(S.IDLE);
             beamCooldown = Math.max(beamCooldown, 100);
         }
     }
