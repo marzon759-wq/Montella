@@ -1,0 +1,9 @@
+{
+  "itemGroup.titanclash": "Titan Clash",
+  "entity.titanclash.korgath": "Korgath",
+  "entity.titanclash.azhdar": "Azhdar",
+  "item.titanclash.korgath_spawn_egg": "Korgath Spawn Egg",
+  "item.titanclash.azhdar_spawn_egg": "Azhdar Spawn Egg",
+  "titanclash.fight": "Two titans have risen. Keep your distance.",
+  "titanclash.cleared": "Removed %s titan(s)."
+}

@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="titanclash"
+version="${mod_version}"
+displayName="Titan Clash"
+authors="krolasyon"
+description='''
+Two original colossal titans that fight each other with real weight: Korgath, the magma-spined reptile,
+and Azhdar, the three-headed storm hydra. Spawn eggs are in the Titan Clash tab, or use /titans fight.
+'''
+
+[[dependencies.titanclash]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.titanclash]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="NONE"
+    side="BOTH"

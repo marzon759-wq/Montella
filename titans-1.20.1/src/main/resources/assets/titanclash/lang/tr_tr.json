@@ -1,0 +1,9 @@
+{
+  "itemGroup.titanclash": "Titan Clash",
+  "entity.titanclash.korgath": "Korgath",
+  "entity.titanclash.azhdar": "Ejderha Azhdar",
+  "item.titanclash.korgath_spawn_egg": "Korgath Çağırma Yumurtası",
+  "item.titanclash.azhdar_spawn_egg": "Azhdar Çağırma Yumurtası",
+  "titanclash.fight": "İki titan uyandı. Mesafeni koru.",
+  "titanclash.cleared": "%s titan kaldırıldı."
+}
