@@ -126,7 +126,7 @@ public class Vinestalker extends Monster {
                     setDeltaMovement(Vec3.ZERO);
                     setState(State.HANGING);
                     Ecology.log("vinestalker {} is hanging at {}", getId(), blockPosition());
-                } else if (!level().getBlockState(above).isAir() && !level().getBlockState(above).canBeReplaced()) {
+                } else if (!passable(level().getBlockState(above), above)) {
                     setState(State.GROUND);
                 }
             }
@@ -169,6 +169,11 @@ public class Vinestalker extends Monster {
                 }
             }
         }
+    }
+
+    /** Air, vines, plants: anything it can climb straight through. */
+    private boolean passable(BlockState s, BlockPos pos) {
+        return !s.is(BlockTags.LEAVES) && s.getCollisionShape(level(), pos).isEmpty();
     }
 
     private static boolean canHangFrom(BlockState s) {
@@ -230,10 +235,10 @@ public class Vinestalker extends Monster {
 
     /** Looks straight up for leaves/wood with enough open air underneath. */
     private BlockPos findHangSpotAbove(BlockPos feet) {
-        for (int y = 3; y <= 22; y++) {
+        for (int y = 1; y <= 40; y++) {
             BlockPos p = feet.above(y);
             BlockState s = level().getBlockState(p);
-            if (s.isAir() || s.canBeReplaced()) continue;
+            if (passable(s, p)) continue;
             return canHangFrom(s) && y >= 4 ? p.below() : null;
         }
         return null;
