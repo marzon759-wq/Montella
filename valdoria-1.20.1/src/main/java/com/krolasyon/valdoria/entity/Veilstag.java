@@ -156,6 +156,7 @@ public class Veilstag extends Animal implements GeoEntity {
                             || (Ecology.isHuntablePlayer(e) && e.isSprinting() && distanceToSqr(e) < 49 && !Ecology.isShimmercap(((Player) e).getMainHandItem()))));
             for (LivingEntity t : threats) {
                 if (hasLineOfSight(t)) {
+                    Ecology.log("veilstag {} spotted {}", getId(), t.getType().toShortString());
                     raiseAlarm(t.position());
                     break;
                 }
@@ -176,6 +177,7 @@ public class Veilstag extends Animal implements GeoEntity {
     public boolean hurt(DamageSource source, float amount) {
         boolean hurt = super.hurt(source, amount);
         if (hurt && !level().isClientSide) {
+            Ecology.log("veilstag {} hurt by {}", getId(), source.getMsgId());
             Vec3 from = source.getEntity() != null ? source.getEntity().position() : position();
             raiseAlarm(from);
             // a grown stag that is attacked by a predator may stand its ground

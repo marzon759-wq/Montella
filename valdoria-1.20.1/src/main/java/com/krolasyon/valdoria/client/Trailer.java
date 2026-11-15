@@ -68,7 +68,7 @@ final class Trailer {
         String clearItems = "kill @e[type=item]";
         // 1. descend from above the purple canopy into the forest
         SCENES.add(new Scene("intro", 220, 6000)
-                .at(0, clear, "gamemode spectator @a")
+                .at(0, "gamerule doMobSpawning false", clear, "gamemode spectator @a")
                 .cam(-34, 62, 46, 145, 32).cam(-16, 34, 24, 160, 22).cam(-4, 10, 8, 175, 4).cam(0, 2.2, 4, 180, -4));
         // 2. look up into the vine curtains and the glow
         SCENES.add(new Scene("vines", 160, 6000)
@@ -109,8 +109,12 @@ final class Trailer {
     private static int scene = -1;
     private static int tick;
 
+    /** Game slow-motion factor: the game runs this many times slower while recording, the video is sped up again. */
+    static final int SLOWMO = Integer.getInteger("valdoria.slowmo", 6);
+
     static void start(BlockPos target) {
         origin = target;
+        slowDown();
         scene = 0;
         tick = 0;
         ValdoriaMod.LOG.info("[AUTOTEST] MARK trailer_start {}", System.currentTimeMillis());
@@ -153,6 +157,33 @@ final class Trailer {
             tick = 0;
         }
         return true;
+    }
+
+    /**
+     * Software rendering only manages a few frames per second, so the whole game (client and integrated server) is
+     * slowed down {@link #SLOWMO} times; every game tick then gets that many more rendered frames, and the recording
+     * is sped back up to real time afterwards.
+     */
+    private static void slowDown() {
+        if (SLOWMO <= 1) return;
+        try {
+            java.lang.reflect.Field tf = Minecraft.class.getDeclaredField("timer");
+            tf.setAccessible(true);
+            Object timer = tf.get(Minecraft.getInstance());
+            java.lang.reflect.Field ms = timer.getClass().getDeclaredField("msPerTick");
+            ms.setAccessible(true);
+            ms.setFloat(timer, 50.0F * SLOWMO);
+        } catch (ReflectiveOperationException e) {
+            ValdoriaMod.LOG.error("[AUTOTEST] could not slow the client timer", e);
+        }
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ServerTickEvent e) -> {
+            if (e.phase != net.minecraftforge.event.TickEvent.Phase.END || scene < 0) return;
+            try {
+                Thread.sleep(50L * (SLOWMO - 1));
+            } catch (InterruptedException ignored) {
+            }
+        });
+        ValdoriaMod.LOG.info("[AUTOTEST] slow motion x{}", SLOWMO);
     }
 
     @SuppressWarnings("unused")
