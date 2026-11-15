@@ -125,6 +125,7 @@ public class Vinestalker extends Monster {
                 if (canHangFrom(level().getBlockState(above)) || getY() > anchor.getY() + 1) {
                     setDeltaMovement(Vec3.ZERO);
                     setState(State.HANGING);
+                    Ecology.log("vinestalker {} is hanging at {}", getId(), blockPosition());
                 } else if (!level().getBlockState(above).isAir() && !level().getBlockState(above).canBeReplaced()) {
                     setState(State.GROUND);
                 }
@@ -144,6 +145,7 @@ public class Vinestalker extends Monster {
                         Vec3 to = prey.position().subtract(position());
                         setDeltaMovement(to.x * 0.12, -0.4, to.z * 0.12);
                         playSound(SoundEvents.SPIDER_AMBIENT, 1.0F, 0.6F);
+                        Ecology.log("vinestalker {} ambushed {}", getId(), prey.getType().toShortString());
                     }
                 }
             }
@@ -218,7 +220,7 @@ public class Vinestalker extends Monster {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance diff, MobSpawnType reason, SpawnGroupData data, CompoundTag tag) {
         SpawnGroupData r = super.finalizeSpawn(level, diff, reason, data, tag);
-        BlockPos hang = findHangSpotAbove(blockPosition());
+        BlockPos hang = isNoAi() ? null : findHangSpotAbove(blockPosition());
         if (hang != null) {
             anchor = hang;
             setState(State.ASCENDING);

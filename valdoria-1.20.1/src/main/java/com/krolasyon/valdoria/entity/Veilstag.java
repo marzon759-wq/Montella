@@ -119,6 +119,7 @@ public class Veilstag extends Animal {
 
     /** Alarms this stag and every stag within earshot. */
     public void raiseAlarm(Vec3 from) {
+        Ecology.log("veilstag {} raised the alarm", getId());
         for (Veilstag s : level().getEntitiesOfClass(Veilstag.class, getBoundingBox().inflate(24, 8, 24))) {
             s.alarmTicks = 100 + s.random.nextInt(60);
             s.alarmFrom = from;
@@ -200,6 +201,7 @@ public class Veilstag extends Animal {
                 if (eatTicks == 0) level().broadcastEntityEvent(Veilstag.this, EVENT_GRAZE);
                 if (++eatTicks == 30) {
                     level().destroyBlock(food, false);
+                    Ecology.log("veilstag {} grazed", getId());
                     heal(2.0F);
                     if (isBaby()) ageUp(60);
                     eatTicks = 40;

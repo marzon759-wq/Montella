@@ -47,26 +47,36 @@ public final class AutoTest {
         SHOTS.add(new Shot("vd_dusk_up", 0, 0, 0, 135, -35, 12500));
         SHOTS.add(new Shot("vd_night_up", 0, 0, 0, 45, -30, 18000));
         SHOTS.add(new Shot("vd_aerial", 0, 70, 0, 30, 35, 6000));
-        // --- creatures ---
-        SHOTS.add(new Shot("cr_herd", 0, 0, 0, 180, 4, 6000, 120,
-                "kill @e[type=!player,distance=..64]",
+        // --- creatures: portraits (frozen, right in front of the camera) ---
+        SHOTS.add(new Shot("pt_veilstag", 0, 0, 0, 180, 8, 6000, 60, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:veilstag {x} {y} {z-5} {NoAI:1b,Rotation:[120f,0f]}",
+                "summon valdoria:veilstag {x+2} {y} {z-4} {NoAI:1b,Age:-24000,Rotation:[150f,0f]}"));
+        SHOTS.add(new Shot("pt_gloomlynx", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:gloomlynx {x} {y} {z-3} {NoAI:1b,Rotation:[120f,0f]}"));
+        SHOTS.add(new Shot("pt_gloomlynx_night", 0, 0, 0, 180, 18, 18000, 40));
+        SHOTS.add(new Shot("pt_vinestalker", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:vinestalker {x} {y} {z-4} {NoAI:1b,Rotation:[150f,0f]}"));
+        SHOTS.add(new Shot("pt_lumen_moth", 0, 0, 0, 180, 10, 13000, 60, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:lumen_moth {x} {y+1} {z-2} {NoAI:1b,Rotation:[150f,0f]}",
+                "summon valdoria:lumen_moth {x+1} {y+2} {z-3} {NoAI:1b,Rotation:[60f,0f]}"));
+        // --- creatures: live behaviour ---
+        SHOTS.add(new Shot("cr_herd", 0, 0, 0, 180, 4, 6000, 120, "kill @e[type=!player,distance=..64]",
                 "summon valdoria:veilstag {x} {y} {z-8}", "summon valdoria:veilstag {x+2} {y} {z-10}", "summon valdoria:veilstag {x-3} {y} {z-9}",
                 "summon valdoria:veilstag {x+4} {y} {z-12}", "summon valdoria:veilstag {x-1} {y} {z-7} {Age:-24000}",
                 "summon valdoria:lumen_moth {x} {y+3} {z-5}", "summon valdoria:lumen_moth {x+1} {y+3} {z-5}", "summon valdoria:lumen_moth {x-1} {y+4} {z-6}",
                 "summon valdoria:lumen_moth {x} {y+2} {z-4}", "summon valdoria:lumen_moth {x+2} {y+4} {z-6}", "summon valdoria:lumen_moth {x-2} {y+3} {z-4}"));
-        SHOTS.add(new Shot("cr_herd_later", 0, 1.5, 4, 180, 10, 6000, 300));
-        SHOTS.add(new Shot("cr_moths", 0, 0, 0, 180, -15, 13500, 60));
-        SHOTS.add(new Shot("cr_lynx_day", 0, 0, 0, 0, 12, 6000, 200,
-                "summon valdoria:gloomlynx {x} {y} {z+6}", "summon valdoria:gloomlynx {x+2} {y} {z+7}", "summon valdoria:gloomlynx {x-2} {y} {z+8}"));
-        SHOTS.add(new Shot("cr_lynx_close", 0, 0.5, 3, 0, 20, 6000, 40));
-        SHOTS.add(new Shot("cr_hunt_night", 0, 0, 0, 180, 5, 18000, 120,
-                "kill @e[type=valdoria:gloomlynx]",
+        SHOTS.add(new Shot("cr_herd_later", 0, 0, 0, 180, 4, 6000, 400));
+        SHOTS.add(new Shot("cr_lynx_day", 0, 0, 0, 180, 10, 6000, 300, "kill @e[type=valdoria:veilstag]",
+                "summon valdoria:gloomlynx {x} {y} {z-5}", "summon valdoria:gloomlynx {x+2} {y} {z-6}", "summon valdoria:gloomlynx {x-2} {y} {z-7}"));
+        SHOTS.add(new Shot("cr_hunt_night", 0, 0, 0, 180, 5, 18000, 60, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:veilstag {x} {y} {z-9}", "summon valdoria:veilstag {x+2} {y} {z-10}", "summon valdoria:veilstag {x-1} {y} {z-8} {Age:-24000}",
                 "summon valdoria:gloomlynx {x+5} {y} {z-4} {Satiety:0}", "summon valdoria:gloomlynx {x+6} {y} {z-6} {Satiety:0}"));
-        SHOTS.add(new Shot("cr_hunt_night2", 0, 0, 0, 180, 5, 18000, 60));
-        SHOTS.add(new Shot("cr_stalker", 3, 0, 0, -90, -45, 6000, 160,
-                "kill @e[type=!player,distance=..64]",
-                "summon valdoria:vinestalker {x} {y} {z}", "summon valdoria:vinestalker {x+1} {y} {z-3}"));
-        SHOTS.add(new Shot("cr_stalker_ground", 0, 0, 5, 180, 0, 6000, 40, "summon valdoria:vinestalker {x} {y} {z+1}"));
+        SHOTS.add(new Shot("cr_hunt_night2", 0, 0, 0, 180, 5, 18000, 100));
+        SHOTS.add(new Shot("cr_hunt_night3", 0, 0, 0, 180, 5, 18000, 400));
+        SHOTS.add(new Shot("cr_stalker", 0, 0, 0, 180, -35, 6000, 200, "kill @e[type=!player,distance=..64]",
+                "summon valdoria:vinestalker {x} {y} {z-4}", "summon valdoria:vinestalker {x+2} {y} {z-6}", "summon valdoria:vinestalker {x-3} {y} {z-5}"));
+        SHOTS.add(new Shot("cr_stalker_ambush", 0, 0, 0, 180, -10, 6000, 200,
+                "summon valdoria:veilstag {x} {y} {z-4}", "summon valdoria:veilstag {x+2} {y} {z-6}", "summon valdoria:veilstag {x-3} {y} {z-5}"));
     }
 
     private static boolean created;
@@ -119,9 +129,10 @@ public final class AutoTest {
             mc.options.hideGui = true;
             mc.options.renderDistance().set(10);
             mc.options.fov().set(85);
-            LevelSettings ls = new LevelSettings("valdoria_test", GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(), WorldDataConfiguration.DEFAULT);
+            String worldName = "valdoria_test_" + System.currentTimeMillis();
+            LevelSettings ls = new LevelSettings(worldName, GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(), WorldDataConfiguration.DEFAULT);
             long seed = Long.getLong("valdoria.seed", 20261115L);
-            mc.createWorldOpenFlows().createFreshLevel("valdoria_test", ls, new WorldOptions(seed, true, false),
+            mc.createWorldOpenFlows().createFreshLevel(worldName, ls, new WorldOptions(seed, true, false),
                     r -> r.registryOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.NORMAL).createWorldDimensions());
             return;
         }

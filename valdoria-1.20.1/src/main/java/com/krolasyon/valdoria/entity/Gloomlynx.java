@@ -119,6 +119,7 @@ public class Gloomlynx extends Animal {
     @Override
     public boolean killedEntity(ServerLevel level, LivingEntity victim) {
         boolean r = super.killedEntity(level, victim);
+        Ecology.log("gloomlynx {} killed {}", getId(), victim.getType().toShortString());
         // the pack shares the kill
         for (Gloomlynx mate : level.getEntitiesOfClass(Gloomlynx.class, getBoundingBox().inflate(16, 6, 16))) {
             mate.satiety = 6000 + mate.random.nextInt(6000);
@@ -172,7 +173,7 @@ public class Gloomlynx extends Animal {
 
         @Override public boolean canUse() { return level().isDay() && !isInWater() && onGround() && calm() && random.nextInt(80) == 0; }
         @Override public boolean canContinueToUse() { return level().isDay() && calm(); }
-        @Override public void start() { getNavigation().stop(); setSleepingFlag(true); }
+        @Override public void start() { getNavigation().stop(); setSleepingFlag(true); Ecology.log("gloomlynx {} fell asleep", getId()); }
         @Override public void stop() { setSleepingFlag(false); }
         @Override public void tick() { getNavigation().stop(); }
     }

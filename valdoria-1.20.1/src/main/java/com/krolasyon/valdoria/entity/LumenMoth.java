@@ -162,6 +162,7 @@ public class LumenMoth extends AmbientCreature {
             BlockState s = ModBlocks.SHIMMERCAP.get().defaultBlockState();
             if (level().isEmptyBlock(q) && s.canSurvive(level(), q)) {
                 level().setBlockAndUpdate(q, s);
+                Ecology.log("lumen moth {} pollinated a shimmercap at {}", getId(), q);
                 return;
             }
         }

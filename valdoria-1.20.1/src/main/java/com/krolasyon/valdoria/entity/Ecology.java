@@ -35,6 +35,11 @@ public final class Ecology {
         return false;
     }
 
+    /** Development only: ecosystem events are logged when the autotest runs. */
+    public static void log(String fmt, Object... args) {
+        if (System.getProperty("valdoria.autotest") != null) com.krolasyon.valdoria.ValdoriaMod.LOG.info("[ECO] " + fmt, args);
+    }
+
     public static boolean isHuntablePlayer(LivingEntity e) {
         return e instanceof Player p && !p.isCreative() && !p.isSpectator();
     }
