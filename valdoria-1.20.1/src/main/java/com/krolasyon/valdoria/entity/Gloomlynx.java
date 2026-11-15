@@ -209,7 +209,7 @@ public class Gloomlynx extends Animal implements GeoEntity {
             return near == null || near.isCrouching() || !Ecology.isHuntablePlayer(near);
         }
 
-        @Override public boolean canUse() { return level().isDay() && !isInWater() && onGround() && calm() && random.nextInt(80) == 0; }
+        @Override public boolean canUse() { return level().isDay() && !isHungry() && !isInWater() && onGround() && calm() && random.nextInt(80) == 0; }
         @Override public boolean canContinueToUse() { return level().isDay() && calm(); }
         @Override public void start() { getNavigation().stop(); setSleepingFlag(true); Ecology.log("gloomlynx {} fell asleep", getId()); }
         @Override public void stop() { setSleepingFlag(false); }

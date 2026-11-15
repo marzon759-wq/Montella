@@ -151,7 +151,7 @@ public class Vinestalker extends Monster implements GeoEntity {
                 setDeltaMovement(dx, 0.22, dz);
                 BlockPos above = BlockPos.containing(getX(), getBoundingBox().maxY + 0.1, getZ());
                 // bumped its back against a branch overhead (verticalCollision), or reached the anchor: cling there
-                if (canHangFrom(level().getBlockState(above)) || (verticalCollision && !onGround()) || getY() > anchor.getY() + 1) {
+                if (canHangFrom(level().getBlockState(above)) || (verticalCollision && !onGround()) || getY() > anchor.getY() + 1 || somethingOverhead()) {
                     setDeltaMovement(Vec3.ZERO);
                     setState(State.HANGING);
                     Ecology.log("vinestalker {} is hanging at {}", getId(), blockPosition());
@@ -161,7 +161,7 @@ public class Vinestalker extends Monster implements GeoEntity {
             }
             case HANGING -> {
                 setDeltaMovement(Vec3.ZERO);
-                if (!canHangFrom(level().getBlockState(BlockPos.containing(getX(), getBoundingBox().maxY + 0.1, getZ())))) {
+                if (!somethingOverhead() && !canHangFrom(level().getBlockState(BlockPos.containing(getX(), getBoundingBox().maxY + 0.1, getZ())))) {
                     setState(State.DROPPING);
                     break;
                 }
@@ -199,6 +199,11 @@ public class Vinestalker extends Monster implements GeoEntity {
                 }
             }
         }
+    }
+
+    /** Is any block touching the top of its body (a branch or leaves it can cling to)? */
+    private boolean somethingOverhead() {
+        return !level().noCollision(this, getBoundingBox().move(0, 0.15, 0));
     }
 
     /** Air, vines, plants: anything it can climb straight through. */

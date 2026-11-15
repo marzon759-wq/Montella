@@ -73,32 +73,32 @@ final class Trailer {
         // 2. look up into the vine curtains and the glow
         SCENES.add(new Scene("vines", 160, 6000)
                 .cam(0, 1.6, 3, 180, -48).cam(0, 1.6, 2.5, 250, -30));
-        // 3. a veilstag herd grazing, moths drifting by
+        // 3. a veilstag herd grazing close by, moths drifting past
         SCENES.add(new Scene("herd", 200, 6000)
                 .at(0, clear,
-                        "summon valdoria:veilstag {x} {y} {z-9}", "summon valdoria:veilstag {x+3} {y} {z-11}", "summon valdoria:veilstag {x-3} {y} {z-10}",
-                        "summon valdoria:veilstag {x+1} {y} {z-13}", "summon valdoria:veilstag {x-1} {y} {z-8} {Age:-24000}",
-                        "summon valdoria:lumen_moth {x} {y+3} {z-4}", "summon valdoria:lumen_moth {x+1} {y+3} {z-5}", "summon valdoria:lumen_moth {x-1} {y+4} {z-5}",
-                        "summon valdoria:lumen_moth {x} {y+2} {z-3}", "summon valdoria:lumen_moth {x+2} {y+4} {z-6}", "summon valdoria:lumen_moth {x-2} {y+3} {z-4}")
-                .cam(0.5, 1.7, 5, 182, 6).cam(0.5, 1.5, 0, 178, 8));
-        // 4. the gloomlynx pack comes in; the herd bolts
-        SCENES.add(new Scene("hunt", 150, 6000)
-                .at(0, "summon valdoria:gloomlynx {x-14} {y} {z-12} {Satiety:0}", "summon valdoria:gloomlynx {x-15} {y} {z-10} {Satiety:0}",
-                        "summon valdoria:gloomlynx {x-13} {y} {z-14} {Satiety:0}")
-                .cam(4, 2.6, 0, 165, 12).cam(3, 2.6, -1, 200, 12));
+                        "summon valdoria:veilstag {x} {y} {z-6}", "summon valdoria:veilstag {x+2} {y} {z-8}", "summon valdoria:veilstag {x-2} {y} {z-7}",
+                        "summon valdoria:veilstag {x+1} {y} {z-9}", "summon valdoria:veilstag {x-1} {y} {z-5} {Age:-24000}",
+                        "summon valdoria:lumen_moth {x} {y+2} {z-3}", "summon valdoria:lumen_moth {x+1} {y+2} {z-4}", "summon valdoria:lumen_moth {x-1} {y+3} {z-4}",
+                        "summon valdoria:lumen_moth {x} {y+1} {z-2}", "summon valdoria:lumen_moth {x+2} {y+3} {z-5}", "summon valdoria:lumen_moth {x-2} {y+2} {z-3}")
+                .cam(0, 0.4, 3, 180, 2).cam(0, 0.3, 1, 180, 4));
+        // 4. a hungry gloomlynx pack slips in from the west; the herd bolts
+        SCENES.add(new Scene("hunt", 160, 6000)
+                .at(0, "summon valdoria:gloomlynx {x-10} {y} {z-6} {Satiety:0}", "summon valdoria:gloomlynx {x-11} {y} {z-8} {Satiety:0}",
+                        "summon valdoria:gloomlynx {x-12} {y} {z-5} {Satiety:0}")
+                .cam(3, 0.8, 2, 160, 6).cam(3, 0.8, 1, 175, 6));
         // 5. night: glowing eyes, glowing moths; meanwhile a vinestalker climbs into the canopy
         SCENES.add(new Scene("night", 180, 18000)
                 .at(0, clear, clearItems,
-                        "summon valdoria:gloomlynx {x+1} {y} {z-6}", "summon valdoria:gloomlynx {x-2} {y} {z-7}",
-                        "summon valdoria:lumen_moth {x} {y+2} {z-3}", "summon valdoria:lumen_moth {x+1} {y+3} {z-4}", "summon valdoria:lumen_moth {x-1} {y+2} {z-4}",
-                        "summon valdoria:lumen_moth {x+2} {y+2} {z-5}", "summon valdoria:lumen_moth {x-2} {y+3} {z-3}", "summon valdoria:lumen_moth {x} {y+4} {z-5}",
+                        "summon valdoria:gloomlynx {x+1} {y} {z-4}", "summon valdoria:gloomlynx {x-2} {y} {z-5}",
+                        "summon valdoria:lumen_moth {x} {y+2} {z-2}", "summon valdoria:lumen_moth {x+1} {y+2} {z-3}", "summon valdoria:lumen_moth {x-1} {y+2} {z-3}",
+                        "summon valdoria:lumen_moth {x+2} {y+2} {z-4}", "summon valdoria:lumen_moth {x-2} {y+3} {z-2}", "summon valdoria:lumen_moth {x} {y+3} {z-4}",
                         "summon valdoria:vinestalker {x-3} {y} {z-5}")
-                .cam(0, 1.5, 1, 160, 4).cam(0, 1.5, 0, 200, 0));
+                .cam(0, 0.4, 1, 165, 4).cam(0, 0.4, 0.5, 195, 2));
         // 6. the vinestalker hangs above; a stag wanders underneath; the drop
         SCENES.add(new Scene("ambush", 220, 6000)
                 .at(0, "kill @e[type=valdoria:gloomlynx]", "kill @e[type=valdoria:lumen_moth]")
-                .at(90, "summon valdoria:veilstag {x-3} {y} {z-5}")
-                .cam(-3, 1.6, 2, 180, -64).cam(-3, 1.6, 2, 180, -64).cam(-3, 1.6, 2.5, 180, -8).cam(-3, 1.8, 3, 180, 6));
+                .at(80, "summon valdoria:veilstag {x-3} {y} {z-5}")
+                .cam(-3, 0.6, 2, 180, -64).cam(-3, 0.6, 2, 180, -64).cam(-3, 0.6, 2.5, 180, -6).cam(-3, 0.6, 3, 180, 4));
         // 7. rise back out through the canopy
         SCENES.add(new Scene("outro", 170, 6000)
                 .at(0, clear, clearItems)
