@@ -1,5 +1,12 @@
 package com.krolasyon.valdoria.entity;
 
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import com.krolasyon.valdoria.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -32,7 +39,20 @@ import java.util.List;
  *   <li>Pollinates: moths hovering around shimmercaps spread new ones onto the forest floor.</li>
  * </ul>
  */
-public class LumenMoth extends AmbientCreature {
+public class LumenMoth extends AmbientCreature implements GeoEntity {
+    private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.lumen_moth.fly");
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
+        reg.add(new AnimationController<>(this, "main", 0, st -> st.setAndContinue(FLY)));
+    }
+
     private Vec3 attractor;
     private int attractorTicks;
     private List<LumenMoth> flock = List.of();

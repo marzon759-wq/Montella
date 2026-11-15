@@ -1,5 +1,12 @@
 package com.krolasyon.valdoria.entity;
 
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import com.krolasyon.valdoria.registry.ModBlocks;
 import com.krolasyon.valdoria.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -46,8 +53,16 @@ import java.util.List;
  *   <li>Calm stags can be led and bred with shimmercaps.</li>
  * </ul>
  */
-public class Veilstag extends Animal {
+public class Veilstag extends Animal implements GeoEntity {
     private static final byte EVENT_GRAZE = 10;
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> ALARMED =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(Veilstag.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.veilstag.idle");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.veilstag.walk");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.veilstag.run");
+    private static final RawAnimation GRAZE = RawAnimation.begin().thenLoop("animation.veilstag.graze");
+    private static final RawAnimation ALERT = RawAnimation.begin().thenLoop("animation.veilstag.alert");
+    private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.veilstag.attack");
 
     private int alarmTicks;
     private Vec3 alarmFrom = Vec3.ZERO;
@@ -96,13 +111,44 @@ public class Veilstag extends Animal {
     }
 
     public boolean isAlarmed() {
-        return alarmTicks > 0;
+        return entityData.get(ALARMED);
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(ALARMED, false);
+    }
+
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
+    }
+
+    @Override
+    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+        boolean hit = super.doHurtTarget(target);
+        if (hit) triggerAnim("action", "attack");
+        return hit;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
+        reg.add(new AnimationController<>(this, "main", 5, st -> {
+            if (grazeAnim > 0) return st.setAndContinue(GRAZE);
+            if (st.isMoving()) return st.setAndContinue(st.getLimbSwingAmount() > 0.55F || isAlarmed() ? RUN : WALK);
+            return st.setAndContinue(isAlarmed() ? ALERT : IDLE);
+        }));
+        reg.add(new AnimationController<>(this, "action", 2, st -> PlayState.STOP).triggerableAnim("attack", ATTACK));
     }
 
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
         if (alarmTicks > 0) alarmTicks--;
+        if (isAlarmed() != alarmTicks > 0) entityData.set(ALARMED, alarmTicks > 0);
         if (tickCount % 10 == 0 && alarmTicks <= 0 && getTarget() == null) {
             // keep watch: predators, and players that come running at the herd
             List<LivingEntity> threats = level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(12, 4, 12),

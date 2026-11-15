@@ -1,5 +1,12 @@
 package com.krolasyon.valdoria.entity;
 
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -46,8 +53,13 @@ import java.util.List;
  *   <li>If the prey gets away it gives up after a short chase and climbs back up to wait again.</li>
  * </ul>
  */
-public class Vinestalker extends Monster {
+public class Vinestalker extends Monster implements GeoEntity {
     private static final EntityDataAccessor<Boolean> HANGING = SynchedEntityData.defineId(Vinestalker.class, EntityDataSerializers.BOOLEAN);
+
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.vinestalker.idle");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.vinestalker.walk");
+    private static final RawAnimation HANG = RawAnimation.begin().thenLoop("animation.vinestalker.hang");
+    private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.vinestalker.attack");
 
     private enum State { GROUND, ASCENDING, HANGING, DROPPING }
 
@@ -75,6 +87,22 @@ public class Vinestalker extends Monster {
     protected void defineSynchedData() {
         super.defineSynchedData();
         entityData.define(HANGING, false);
+    }
+
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
+        reg.add(new AnimationController<>(this, "main", 5, st -> {
+            if (isHanging()) return st.setAndContinue(HANG);
+            return st.setAndContinue(st.isMoving() ? WALK : IDLE);
+        }));
+        reg.add(new AnimationController<>(this, "action", 2, st -> PlayState.STOP).triggerableAnim("attack", ATTACK));
     }
 
     /** True while climbing up its thread or hanging from the canopy (rendered upside-down). */
@@ -203,6 +231,7 @@ public class Vinestalker extends Monster {
         ambushStrike = false;
         if (ambush) getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(10.0);
         boolean hit = super.doHurtTarget(target);
+        if (hit) triggerAnim("action", "attack");
         if (ambush) getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5.0);
         if (hit && target instanceof LivingEntity le) {
             le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ambush ? 80 : 30, ambush ? 2 : 0), this);

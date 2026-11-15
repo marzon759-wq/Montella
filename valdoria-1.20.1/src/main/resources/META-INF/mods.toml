@@ -32,3 +32,10 @@ First realm: the Glimmerveil Forest — giant arching veilwoods, purple canopies
     versionRange="${terrablender_range}"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.valdoria]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="${gecko_range}"
+    ordering="AFTER"
+    side="BOTH"

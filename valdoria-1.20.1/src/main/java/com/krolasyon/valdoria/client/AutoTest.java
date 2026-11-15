@@ -113,7 +113,7 @@ public final class AutoTest {
         if (!filtered) {
             filtered = true;
             String only = System.getProperty("valdoria.autotest", "1");
-            if (!only.equals("1")) SHOTS.removeIf(s -> !s.name().startsWith(only));
+            if (!only.equals("1")) SHOTS.removeIf(s -> java.util.Arrays.stream(only.split(",")).noneMatch(s.name()::startsWith));
         }
         return System.getProperty("valdoria.autotest") != null;
     }

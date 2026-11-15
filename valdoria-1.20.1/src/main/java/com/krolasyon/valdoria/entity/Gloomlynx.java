@@ -1,5 +1,12 @@
 package com.krolasyon.valdoria.entity;
 
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -40,8 +47,15 @@ import java.util.EnumSet;
  *   <li>Afraid of light: it backs off from anyone carrying a torch, lantern or other glowing thing.</li>
  * </ul>
  */
-public class Gloomlynx extends Animal {
+public class Gloomlynx extends Animal implements GeoEntity {
     private static final EntityDataAccessor<Boolean> SLEEPING = SynchedEntityData.defineId(Gloomlynx.class, EntityDataSerializers.BOOLEAN);
+
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.gloomlynx.idle");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.gloomlynx.walk");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.gloomlynx.run");
+    private static final RawAnimation SLEEP = RawAnimation.begin().thenLoop("animation.gloomlynx.sleep");
+    private static final RawAnimation STALK = RawAnimation.begin().thenLoop("animation.gloomlynx.stalk");
+    private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.gloomlynx.attack");
 
     /** Ticks until hungry again. */
     private int satiety;
@@ -71,6 +85,30 @@ public class Gloomlynx extends Animal {
 
     public void setSleepingFlag(boolean sleeping) {
         entityData.set(SLEEPING, sleeping);
+    }
+
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
+    }
+
+    @Override
+    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+        boolean hit = super.doHurtTarget(target);
+        if (hit) triggerAnim("action", "attack");
+        return hit;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
+        reg.add(new AnimationController<>(this, "main", 6, st -> {
+            if (isNapping()) return st.setAndContinue(SLEEP);
+            if (st.isMoving()) return st.setAndContinue(st.getLimbSwingAmount() > 0.6F ? RUN : isAggressive() ? STALK : WALK);
+            return st.setAndContinue(isAggressive() ? STALK : IDLE);
+        }));
+        reg.add(new AnimationController<>(this, "action", 2, st -> PlayState.STOP).triggerableAnim("attack", ATTACK));
     }
 
     public boolean isHungry() {
