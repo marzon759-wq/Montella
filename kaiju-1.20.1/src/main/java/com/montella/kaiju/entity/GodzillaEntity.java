@@ -32,7 +32,7 @@ public class GodzillaEntity extends TitanEntity {
     private float swingTurned;
     private int heldHead = -1;
 
-    public GodzillaEntity(EntityType<? extends GodzillaEntity> type, Level level) { super(type, level); }
+    public GodzillaEntity(EntityType<? extends GodzillaEntity> type, Level level) { super(type, level); buildSkeleton(); }
 
     public static AttributeSupplier.Builder attributes() {
         return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1200).add(Attributes.ARMOR, 20)

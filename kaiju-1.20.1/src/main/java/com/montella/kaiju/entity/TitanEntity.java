@@ -79,7 +79,6 @@ public abstract class TitanEntity extends PathfinderMob {
         this.noCulling = true;
         this.xpReward = 500;
         this.setPersistenceRequired();
-        buildSkeleton();
     }
 
     protected abstract void buildSkeleton();

@@ -42,6 +42,7 @@ public class GhidorahEntity extends TitanEntity {
 
     public GhidorahEntity(EntityType<? extends GhidorahEntity> type, Level level) {
         super(type, level);
+        buildSkeleton();
         setAux(100 | 100 << 8 | 100 << 16);
     }
 
