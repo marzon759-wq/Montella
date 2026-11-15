@@ -122,7 +122,8 @@ public class Vinestalker extends Monster {
                 double dx = (anchor.getX() + 0.5 - getX()) * 0.2, dz = (anchor.getZ() + 0.5 - getZ()) * 0.2;
                 setDeltaMovement(dx, 0.22, dz);
                 BlockPos above = BlockPos.containing(getX(), getBoundingBox().maxY + 0.1, getZ());
-                if (canHangFrom(level().getBlockState(above)) || getY() > anchor.getY() + 1) {
+                // bumped its back against a branch overhead (verticalCollision), or reached the anchor: cling there
+                if (canHangFrom(level().getBlockState(above)) || (verticalCollision && !onGround()) || getY() > anchor.getY() + 1) {
                     setDeltaMovement(Vec3.ZERO);
                     setState(State.HANGING);
                     Ecology.log("vinestalker {} is hanging at {}", getId(), blockPosition());
