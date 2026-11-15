@@ -48,19 +48,19 @@ public final class AutoTest {
         SHOTS.add(new Shot("vd_night_up", 0, 0, 0, 45, -30, 18000));
         SHOTS.add(new Shot("vd_aerial", 0, 70, 0, 30, 35, 6000));
         // --- creatures: portraits (frozen, right in front of the camera) ---
-        SHOTS.add(new Shot("pt_veilstag", 0, 0, 0, 180, 8, 6000, 60, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("pt_veilstag", 0, 0, 0, 180, 8, 6000, 60, "kill @e[type=!player,type=!item]",
                 "summon valdoria:veilstag {x} {y} {z-5} {NoAI:1b,Rotation:[120f,0f]}",
                 "summon valdoria:veilstag {x+2} {y} {z-4} {NoAI:1b,Age:-24000,Rotation:[150f,0f]}"));
-        SHOTS.add(new Shot("pt_gloomlynx", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("pt_gloomlynx", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,type=!item]",
                 "summon valdoria:gloomlynx {x} {y} {z-3} {NoAI:1b,Rotation:[120f,0f]}"));
         SHOTS.add(new Shot("pt_gloomlynx_night", 0, 0, 0, 180, 18, 18000, 40));
-        SHOTS.add(new Shot("pt_vinestalker", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("pt_vinestalker", 0, 0, 0, 180, 18, 6000, 60, "kill @e[type=!player,type=!item]",
                 "summon valdoria:vinestalker {x} {y} {z-4} {NoAI:1b,Rotation:[150f,0f]}"));
-        SHOTS.add(new Shot("pt_lumen_moth", 0, 0, 0, 180, 10, 13000, 60, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("pt_lumen_moth", 0, 0, 0, 180, 10, 13000, 60, "kill @e[type=!player,type=!item]",
                 "summon valdoria:lumen_moth {x} {y+1} {z-2} {NoAI:1b,Rotation:[150f,0f]}",
                 "summon valdoria:lumen_moth {x+1} {y+2} {z-3} {NoAI:1b,Rotation:[60f,0f]}"));
         // --- creatures: live behaviour ---
-        SHOTS.add(new Shot("cr_herd", 0, 0, 0, 180, 4, 6000, 120, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("cr_herd", 0, 0, 0, 180, 4, 6000, 120, "kill @e[type=!player,type=!item]",
                 "summon valdoria:veilstag {x} {y} {z-8}", "summon valdoria:veilstag {x+2} {y} {z-10}", "summon valdoria:veilstag {x-3} {y} {z-9}",
                 "summon valdoria:veilstag {x+4} {y} {z-12}", "summon valdoria:veilstag {x-1} {y} {z-7} {Age:-24000}",
                 "summon valdoria:lumen_moth {x} {y+3} {z-5}", "summon valdoria:lumen_moth {x+1} {y+3} {z-5}", "summon valdoria:lumen_moth {x-1} {y+4} {z-6}",
@@ -68,12 +68,12 @@ public final class AutoTest {
         SHOTS.add(new Shot("cr_herd_later", 0, 0, 0, 180, 4, 6000, 400));
         SHOTS.add(new Shot("cr_lynx_day", 0, 0, 0, 180, 10, 6000, 300, "kill @e[type=valdoria:veilstag]",
                 "summon valdoria:gloomlynx {x} {y} {z-5}", "summon valdoria:gloomlynx {x+2} {y} {z-6}", "summon valdoria:gloomlynx {x-2} {y} {z-7}"));
-        SHOTS.add(new Shot("cr_hunt_night", 0, 0, 0, 180, 5, 18000, 60, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("cr_hunt_night", 0, 0, 0, 180, 5, 18000, 60, "kill @e[type=!player,type=!item]",
                 "summon valdoria:veilstag {x} {y} {z-9}", "summon valdoria:veilstag {x+2} {y} {z-10}", "summon valdoria:veilstag {x-1} {y} {z-8} {Age:-24000}",
                 "summon valdoria:gloomlynx {x+5} {y} {z-4} {Satiety:0}", "summon valdoria:gloomlynx {x+6} {y} {z-6} {Satiety:0}"));
         SHOTS.add(new Shot("cr_hunt_night2", 0, 0, 0, 180, 5, 18000, 100));
         SHOTS.add(new Shot("cr_hunt_night3", 0, 0, 0, 180, 5, 18000, 400));
-        SHOTS.add(new Shot("cr_stalker", 0, 0, 0, 180, -35, 6000, 200, "kill @e[type=!player,distance=..64]",
+        SHOTS.add(new Shot("cr_stalker", 0, 0, 0, 180, -35, 6000, 200, "kill @e[type=!player,type=!item]",
                 "summon valdoria:vinestalker {x} {y} {z-4}", "summon valdoria:vinestalker {x+2} {y} {z-6}", "summon valdoria:vinestalker {x-3} {y} {z-5}"));
         SHOTS.add(new Shot("cr_stalker_ambush", 0, 0, 0, 180, -10, 6000, 200,
                 "summon valdoria:veilstag {x} {y} {z-4}", "summon valdoria:veilstag {x+2} {y} {z-6}", "summon valdoria:veilstag {x-3} {y} {z-5}"));
