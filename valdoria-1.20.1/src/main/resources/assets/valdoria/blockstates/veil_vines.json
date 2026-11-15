@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "end=false,glow=false": {
+      "model": "valdoria:block/veil_vines"
+    },
+    "end=false,glow=true": {
+      "model": "valdoria:block/veil_vines_glow"
+    },
+    "end=true,glow=false": {
+      "model": "valdoria:block/veil_vines_end"
+    },
+    "end=true,glow=true": {
+      "model": "valdoria:block/veil_vines_end_glow"
+    }
+  }
+}

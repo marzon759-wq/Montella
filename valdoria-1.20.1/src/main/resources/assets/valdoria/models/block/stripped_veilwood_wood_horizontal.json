@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "side": "valdoria:block/stripped_veilwood_log",
+    "end": "valdoria:block/stripped_veilwood_log"
+  }
+}

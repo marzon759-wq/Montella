@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "valdoria:veilwood_log"
+    }
+  },
+  "result": {
+    "item": "valdoria:veilwood_wood",
+    "count": 3
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "valdoria:block/duskgrass_block"
+      },
+      {
+        "model": "valdoria:block/duskgrass_block",
+        "y": 90
+      },
+      {
+        "model": "valdoria:block/duskgrass_block",
+        "y": 180
+      },
+      {
+        "model": "valdoria:block/duskgrass_block",
+        "y": 270
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "valdoria:block/veilwood_planks",
+    "top": "valdoria:block/veilwood_planks",
+    "side": "valdoria:block/veilwood_planks"
+  }
+}

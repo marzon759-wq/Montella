@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "valdoria:block/tall_veil_fern_bottom"
+    },
+    "half=upper": {
+      "model": "valdoria:block/tall_veil_fern_top"
+    }
+  }
+}

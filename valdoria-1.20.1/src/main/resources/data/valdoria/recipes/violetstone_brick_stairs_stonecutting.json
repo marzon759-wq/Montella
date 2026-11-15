@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "valdoria:violetstone_bricks"
+  },
+  "result": "valdoria:violetstone_brick_stairs",
+  "count": 1
+}

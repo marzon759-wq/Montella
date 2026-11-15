@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "valdoria:block/duskgrass_block_top",
+    "side": "valdoria:block/duskgrass_block_side",
+    "bottom": "valdoria:block/duskgrass_block_bottom"
+  }
+}

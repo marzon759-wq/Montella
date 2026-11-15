@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "valdoria:veilwood_log",
+    "valdoria:veilwood_wood",
+    "valdoria:stripped_veilwood_log",
+    "valdoria:stripped_veilwood_wood"
+  ]
+}

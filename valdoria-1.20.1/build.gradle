@@ -1,0 +1,43 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+version = "${mc_version}-forge-${mod_version}"
+group = 'com.krolasyon.valdoria'
+base { archivesName = 'valdoria' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods { valdoria { source sourceSets.main } }
+        }
+        client {
+            if (System.getenv('VALDORIA_AUTOTEST') != null) property 'valdoria.autotest', System.getenv('VALDORIA_AUTOTEST')
+            if (System.getenv('VALDORIA_SIZE') != null) args '--width', System.getenv('VALDORIA_SIZE').split('x')[0], '--height', System.getenv('VALDORIA_SIZE').split('x')[1]
+        }
+        server { args '--nogui' }
+    }
+}
+repositories {
+    maven { url = 'https://maven.minecraftforge.net/' }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    implementation fg.deobf("com.github.glitchfiend:TerraBlender-forge:${mc_version}-${terrablender_version}")
+}
+tasks.named('processResources', ProcessResources).configure {
+    def props = [mod_version: mod_version, pack_format: pack_format, loader_range: loader_range, mc_range: mc_range, terrablender_range: terrablender_range]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['Specification-Title': 'valdoria', 'Implementation-Title': 'valdoria', 'Implementation-Version': project.version]) }
+    finalizedBy 'reobfJar'
+}

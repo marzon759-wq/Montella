@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "valdoria:veilwood_log",
+    "valdoria:veilwood_wood",
+    "valdoria:stripped_veilwood_log",
+    "valdoria:stripped_veilwood_wood",
+    "valdoria:veilwood_planks",
+    "valdoria:veilwood_stairs",
+    "valdoria:veilwood_slab"
+  ]
+}

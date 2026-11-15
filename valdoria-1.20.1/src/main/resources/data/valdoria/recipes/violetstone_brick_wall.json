@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "valdoria:violetstone_bricks"
+    }
+  },
+  "result": {
+    "item": "valdoria:violetstone_brick_wall",
+    "count": 6
+  }
+}

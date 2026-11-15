@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "valdoria:block/violetstone_bricks",
+    "top": "valdoria:block/violetstone_bricks",
+    "side": "valdoria:block/violetstone_bricks"
+  }
+}

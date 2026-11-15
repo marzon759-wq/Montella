@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "valdoria:block/veilwood_slab"
+    },
+    "type=top": {
+      "model": "valdoria:block/veilwood_slab_top"
+    },
+    "type=double": {
+      "model": "valdoria:block/veilwood_planks"
+    }
+  }
+}

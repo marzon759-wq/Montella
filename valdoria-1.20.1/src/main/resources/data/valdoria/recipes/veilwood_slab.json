@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "valdoria:veilwood_planks"
+    }
+  },
+  "result": {
+    "item": "valdoria:veilwood_slab",
+    "count": 6
+  },
+  "group": "wooden_slab"
+}

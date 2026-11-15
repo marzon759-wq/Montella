@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "valdoria:violetstone_bricks"
+    }
+  },
+  "result": {
+    "item": "valdoria:violetstone_brick_slab",
+    "count": 6
+  }
+}

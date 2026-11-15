@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "valdoria:block/veilwood_wood"
+    },
+    "axis=z": {
+      "model": "valdoria:block/veilwood_wood_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "valdoria:block/veilwood_wood_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

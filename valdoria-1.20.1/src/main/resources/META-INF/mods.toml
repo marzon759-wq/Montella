@@ -1,0 +1,34 @@
+modLoader="javafml"
+loaderVersion="${loader_range}"
+license="All Rights Reserved"
+
+[[mods]]
+modId="valdoria"
+version="${mod_version}"
+displayName="Valdoria: Seven Realms"
+authors="krolasyon"
+description='''
+A fantasy world of magic, dragons, kingdoms and dark realms.
+First realm: the Glimmerveil Forest — giant arching veilwoods, purple canopies, glowing cyan motes and teal mist.
+'''
+
+[[dependencies.valdoria]]
+    modId="forge"
+    mandatory=true
+    versionRange="${loader_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.valdoria]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${mc_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.valdoria]]
+    modId="terrablender"
+    mandatory=true
+    versionRange="${terrablender_range}"
+    ordering="AFTER"
+    side="BOTH"

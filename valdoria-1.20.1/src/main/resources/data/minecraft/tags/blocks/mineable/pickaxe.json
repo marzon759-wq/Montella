@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "valdoria:violetstone",
+    "valdoria:violetstone_bricks",
+    "valdoria:mossy_violetstone_bricks",
+    "valdoria:violetstone_brick_stairs",
+    "valdoria:violetstone_brick_slab",
+    "valdoria:violetstone_brick_wall"
+  ]
+}

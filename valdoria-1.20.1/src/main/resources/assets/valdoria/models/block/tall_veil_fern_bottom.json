@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "valdoria:block/tall_veil_fern_bottom"
+  },
+  "render_type": "minecraft:cutout"
+}
