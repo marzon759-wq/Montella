@@ -74,7 +74,7 @@ PLANK = [hexrgb(c) for c in ("#3c2550", "#452b5b", "#4e3266", "#573870")]
 LEAF = [hexrgb(c) for c in ("#5a2e86", "#6b379b", "#7c43ae", "#8f52c0", "#a364cf", "#b67ad9")]
 CYAN = [hexrgb(c) for c in ("#5ff3ff", "#8ef8ff", "#c8fdff")]
 DUSK = [hexrgb(c) for c in ("#1f2c30", "#24343a", "#2a3d42", "#2f474b", "#355155")]
-DIRT = [hexrgb(c) for c in ("#3b2a22", "#47332a", "#523b30", "#5d4537")]
+DIRT = [hexrgb(c) for c in ("#21181f", "#281d26", "#30232d", "#382a35")]
 VSTONE = [hexrgb(c) for c in ("#4a3d5c", "#54456a", "#5e4e76", "#685782", "#73628d")]
 MOSS = [hexrgb(c) for c in ("#2b6f69", "#348179", "#3e938a", "#49a89c")]
 FERN = [hexrgb(c) for c in ("#1f6f66", "#278479", "#319a8c", "#3db3a2", "#56c9b6")]
@@ -167,7 +167,7 @@ def vine(seed, end=False, glow=False):
     r = random.Random(seed)
     img = new()
     px = img.load()
-    dark = [hexrgb(c) for c in ("#140e19", "#1d1524", "#271c30", "#33243f")]
+    dark = [hexrgb(c) for c in ("#100b14", "#17101d", "#1e1626", "#271c31")]
     strands = [(5, 0), (8, 1), (10, -1)]
     for sx, wob in strands:
         for y in range(16):
