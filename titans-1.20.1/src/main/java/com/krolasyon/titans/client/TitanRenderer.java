@@ -36,7 +36,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
     private static final float[][] HJ = {{0f, 1.9f, 0.3f, 1.1f}, {2.5f, 1.7f, 0.28f, 0.9f}, {5f, 1.3f, 0.22f, 0.65f}, {6.8f, 0.9f, 0.18f, 0.45f}, {7.4f, 0.45f, 0.12f, 0.25f}};
 
     private final Mesh m = new Mesh();
-    private final Vector3f a = new Vector3f(), b = new Vector3f(), c = new Vector3f(), d = new Vector3f(), e2 = new Vector3f(), rv = new Vector3f(), fj = new Vector3f(), uj = new Vector3f();
+    private final Vector3f a = new Vector3f(), b = new Vector3f(), c = new Vector3f(), d = new Vector3f(), e2 = new Vector3f(), rv = new Vector3f(), fj = new Vector3f(), uj = new Vector3f(), t1 = new Vector3f(), t2 = new Vector3f();
     private final Vector3f[] tmp3 = {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()};
     private final float[] tmpR = new float[4];
     private final Random rnd = new Random();
@@ -218,6 +218,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             if (hy) { if (!halo) spine(i, 2.2f + 1.2f * Mth.sin(PI * f), -0.35f); }
             else crystals(i, (3.4f + 4.8f * Mth.sin(PI * Mth.clamp(f * 0.9f + 0.08f, 0, 1))) * (i % 2 == 0 ? 1 : 0.72f), -0.35f, spineGlow(0.5f + 0.33f * f), true, halo);
         }
+        if (!halo) for (int i = 1; i < m.n - 1; i++) { studs(i, hy ? 1.3f : 1.6f, 72); if (!hy) studs(i, 1.1f, 105); }
         // tail
         m.chain(rig.tail, rig.tailR, Rig.NTL + 1, 2, rig.tailUp, 0.95f);
         if (!halo) m.loft(12, sk, false, true, 4, 0.16f);
@@ -227,6 +228,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
                 if (!halo && i < m.n - 4) spine(i, 2.4f * (1 - f) + 0.7f, 0.4f);
             } else if (i < m.n - 5) crystals(i, (5.0f * (float) Math.pow(1 - f, 1.3) + 0.8f) * (i % 2 == 0 ? 1 : 0.7f), 0.4f, spineGlow(0.5f * (1 - f)), f < 0.5f, halo);
         }
+        if (!halo) for (int i = 2; i < m.n - 6; i += 2) studs(i, (hy ? 1.2f : 1.4f) * (1 - i / (float) m.n), 80);
         if (hy) { if (!halo) tailBlade(); } else tailClub(spineGlow(0), halo);
         // necks and heads
         for (int h = 0; h < rig.heads; h++) {
@@ -234,6 +236,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             flesh = hy ? Mth.clamp(1 - g * 1.15f, 0, 1) * 0.8f : 0;
             m.chain(rig.neck[h], rig.neckR[h], rig.nn + 1, 2, rig.neckUp[h], 1f);
             boolean stump = rig.headScale[h] <= 0;
+            if (!halo && !stump && hy) for (int i = 3; i < m.n - 2; i += 3) studs(i, 1.2f, 85);
             if (!halo) {
                 final boolean st = stump;
                 m.loft(12, st ? (i, f, ca, sa, o) -> { skin(i, ca, sa, o); if (f > 0.75f) { o[0] = 0.5f; o[1] = 0.07f; o[2] = 0.12f; } } : sk, false, stump, 3, 0.16f);
@@ -265,10 +268,21 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             c.set(L[3]).sub(L[2]).normalize();
             a.cross(c, d);
             for (int q = -1; q <= 1; q++) {
-                e2.set(L[3]).fma(q * 1.1f, d).fma(-0.3f, a);
-                rv.set(c).fma(q * 0.3f, d).fma(-0.25f, a);
-                m.cone(e2, rv, 2.3f, 0.6f, 5, 0.2f, 0.18f, 0.16f, 0.85f, 0.8f, 0.7f, 0);
+                rv.set(c).fma(q * 0.32f, d).normalize();
+                e2.set(L[3]).fma(q * 1.5f, d).fma(-0.2f, a).fma(0.6f, rv);
+                a.cross(rv, t1);
+                m.obox(e2, rv, a, t1, 1.7f, hy ? 0.75f : 0.95f, hy ? 0.6f : 0.75f, bkR, bkG, bkB, 0);
+                e2.fma(1.6f, rv);
+                t2.set(rv).fma(-0.3f, a);
+                m.cone(e2, t2, hy ? 2.6f : 2.9f, 0.62f, 4, 0.16f, 0.14f, 0.13f, 0.92f, 0.88f, 0.76f, 0);
             }
+            e2.set(L[2]).fma(-1.2f, c);
+            t2.set(c).negate().fma(-0.3f, a);
+            m.cone(e2, t2, 2.2f, 0.6f, 4, 0.16f, 0.14f, 0.13f, 0.92f, 0.88f, 0.76f, 0);
+            t2.set(L[1]).sub(L[0]).normalize();
+            e2.set(L[1]).fma(hy ? 2.6f : 3.4f, c);
+            t1.set(c).fma(0.4f, a);
+            m.cone(e2, t1, hy ? 2.4f : 2.0f, 0.7f, 4, bkR, bkG, bkB, 0.8f, 0.76f, 0.66f, 0);
         }
         if (!hy) {
             for (int k = 0; k < 2; k++) {
@@ -279,10 +293,21 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
                 c.set(A[3]).sub(A[2]).normalize();
                 d.set(k == 0 ? 1 : -1, 0, 0);
                 rig.root.transformDirection(d);
-                for (int q = -1; q <= 1; q++) {
-                    rv.set(c).fma(q * 0.45f, d).add(0, -0.35f, 0);
-                    m.cone(A[3], rv, 1.9f, 0.4f, 4, 0.2f, 0.18f, 0.16f, 0.9f, 0.85f, 0.75f, 0);
+                for (int q = -1; q <= 2; q++) {
+                    rv.set(c).fma((q - 0.5f) * 0.36f, d).add(0, -0.3f, 0).normalize();
+                    e2.set(A[3]).fma((q - 0.5f) * 0.55f, d).fma(0.5f, rv);
+                    t1.set(0, 1, 0);
+                    rv.cross(t1, t2);
+                    if (t2.lengthSquared() < 1e-4f) t2.set(d);
+                    t2.normalize();
+                    t2.cross(rv, t1);
+                    m.obox(e2, rv, t1, t2, 0.8f, 0.34f, 0.3f, bkR, bkG, bkB, 0);
+                    e2.fma(0.7f, rv);
+                    m.cone(e2, rv, 1.9f, 0.36f, 4, 0.16f, 0.14f, 0.13f, 0.92f, 0.88f, 0.76f, 0);
                 }
+                e2.set(A[1]);
+                t1.set(A[1]).sub(A[2]).normalize().add(0, 0.2f, 0);
+                m.cone(e2, t1, 2.4f, 0.5f, 4, bkR, bkG, bkB, 0.8f, 0.76f, 0.66f, 0);
             }
         } else wings(rig);
     }
@@ -301,6 +326,16 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             c.set(U).mul(cs).fma(sn, R).fma(lean, T).normalize();
             float hh = h * (s == 0 ? 1 : 0.55f) * sc;
             m.shard(a, T, c, R, hh, hh * 0.62f, hh * 0.24f, lean * hh * 0.3f, r0, g0, b0, r1, g1, b1, g);
+        }
+    }
+
+    /** Small bony studs low on both flanks. */
+    private void studs(int i, float h, float ang) {
+        for (int sd = -1; sd <= 1; sd += 2) {
+            float an = sd * ang * DEG;
+            c.set(m.U[i]).mul(Mth.cos(an)).fma(Mth.sin(an), m.R[i]);
+            a.set(m.U[i]).mul(Mth.cos(an) * m.RYT[i] * 0.9f).fma(Mth.sin(an) * m.RX[i] * 0.95f, m.R[i]).add(m.C[i]);
+            m.cone(a, c, h, h * 0.38f, 4, bkR * 0.8f, bkG * 0.8f, bkB * 0.8f, hy ? 0.8f : 0.6f, hy ? 0.82f : 0.52f, hy ? 0.9f : 0.42f, 0);
         }
     }
 
@@ -344,6 +379,8 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
         return t[t.length - 1][col];
     }
 
+    private static float frac(float x) { return x - (float) Math.floor(x); }
+
     private void head(Vector3f P, Vector3f F, Vector3f Uu, float s, float jaw, float mouthGlow) {
         float[][] up = hy ? HH : KH, lo = hy ? HJ : KJ;
         F.cross(Uu, rv);
@@ -359,7 +396,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
         }
         m.loft(12, upper, false, true, 2, 0.16f);
         // lower jaw, hinged
-        float ja = jaw * 40 * DEG;
+        float ja = jaw * 42 * DEG;
         fj.set(F).mul(Mth.cos(ja)).fma(-Mth.sin(ja), Uu);
         uj.set(Uu).mul(Mth.cos(ja)).fma(Mth.sin(ja), F);
         a.set(P).fma(1.3f * s, F).fma(-0.75f * s, Uu);
@@ -370,28 +407,83 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             m.RX[i] = lo[i][1] * s; m.RYT[i] = lo[i][2] * s; m.RYB[i] = lo[i][3] * s; m.VV[i] = lo[i][0] * s;
         }
         m.loft(12, (i, f, ca, sa, o) -> { skin(i, ca, -0.9f, o); if (sa > 0.2f) mouth(o, mouthGlow); }, true, true, 2, 0.16f);
-        // teeth
-        float zmax = up[up.length - 1][0] - 0.5f;
-        for (float z = 2.0f; z < zmax; z += 0.75f) for (int sd = -1; sd <= 1; sd += 2) {
-            b.set(P).fma(z * s, F).fma(sd * st(up, z, 1) * 0.86f * s, rv).fma(-st(up, z, 3) * s, Uu);
-            c.set(Uu).negate();
-            m.cone(b, c, (0.9f - 0.04f * z) * s, 0.2f * s, 3, 0.8f, 0.76f, 0.66f, 0.97f, 0.95f, 0.88f, 0);
+        boolean keep = m.scales3d;
+        m.scales3d = false;
+        float gmR = Mth.lerp(mouthGlow, 0.46f, gR), gmG = Mth.lerp(mouthGlow, 0.1f, gG), gmB = Mth.lerp(mouthGlow, 0.14f, gB);
+        float zmax = up[up.length - 1][0] - 0.4f, jmax = lo[lo.length - 1][0] - 0.3f;
+        // throat and tongue
+        c.set(P).fma(1.2f * s, F).fma(-0.5f * s, Uu);
+        m.obox(c, F, Uu, rv, 0.3f * s, 1.0f * s, st(up, 1.2f, 1) * 0.7f * s, 0.14f, 0.02f, 0.03f, mouthGlow);
+        for (int k = 0; k < 4; k++) {
+            float tz = 0.6f + k * (jmax - 1.4f) / 3f;
+            tmp3[k].set(a).fma(tz * s, fj).fma((st(lo, tz, 2) + 0.28f + (k == 3 ? 0.35f : 0) + 0.12f * Mth.sin(k * 1.7f)) * s, uj);
+            tmpR[k] = st(lo, tz, 1) * (k == 3 ? 0.3f : 0.55f) * s;
         }
-        float jmax = lo[lo.length - 1][0] - 0.3f;
-        for (float z = 1.4f; z < jmax; z += 0.75f) for (int sd = -1; sd <= 1; sd += 2) {
-            b.set(a).fma(z * s, fj).fma(sd * st(lo, z, 1) * 0.84f * s, rv).fma(st(lo, z, 2) * s, uj);
-            m.cone(b, uj, (0.8f - 0.04f * z) * s, 0.19f * s, 3, 0.8f, 0.76f, 0.66f, 0.97f, 0.95f, 0.88f, 0);
-        }
-        // eyes
+        m.chain(tmp3, tmpR, 4, 1, uj, 0.32f);
+        m.loft(8, (i, f, ca, sa, o) -> { o[0] = 0.72f - 0.1f * f; o[1] = 0.26f; o[2] = 0.3f; o[3] = mouthGlow * 0.6f; }, true, true, 1, 0.1f);
+        // gums and teeth: uneven sizes, long fangs at the front
         for (int sd = -1; sd <= 1; sd += 2) {
-            float ez = 2.3f;
-            b.set(P).fma(ez * s, F).fma(sd * st(up, ez, 1) * 0.9f * s, rv).fma(st(up, ez, 2) * 0.5f * s, Uu);
-            float er = hy ? 0.85f : 1f, eg = hy ? 0.7f : 0.62f, eb = hy ? 1f : 0.1f;
-            m.vert(b.x + F.x * 0.8f * s, b.y + F.y * 0.8f * s, b.z + F.z * 0.8f * s, er, eg, eb, 0, 0, rv.x * sd, rv.y * sd, rv.z * sd, 1);
-            m.vert(b.x + Uu.x * 0.42f * s, b.y + Uu.y * 0.42f * s, b.z + Uu.z * 0.42f * s, er, eg, eb, 0, 0, rv.x * sd, rv.y * sd, rv.z * sd, 1);
-            m.vert(b.x - F.x * 0.7f * s, b.y - F.y * 0.7f * s, b.z - F.z * 0.7f * s, 1, 1, 1, 0, 0, rv.x * sd, rv.y * sd, rv.z * sd, 1);
-            m.vert(b.x - Uu.x * 0.3f * s, b.y - Uu.y * 0.3f * s, b.z - Uu.z * 0.3f * s, er, eg, eb, 0, 0, rv.x * sd, rv.y * sd, rv.z * sd, 1);
-            // horns
+            for (float z = 1.8f; z < zmax - 0.2f; z += 1f) {
+                float zc = Math.min(z + 0.5f, zmax);
+                c.set(P).fma(zc * s, F).fma(sd * st(up, zc, 1) * 0.84f * s, rv).fma(-(st(up, zc, 3) + 0.1f) * s, Uu);
+                m.obox(c, F, Uu, rv, 0.55f * s, 0.22f * s, 0.22f * s, gmR, gmG, gmB, mouthGlow * 0.5f);
+            }
+            int k = 0;
+            for (float z = 1.9f; z < zmax; z += 0.52f, k++) {
+                float len = (0.75f + 0.5f * frac(k * 0.618f + 0.3f)) * (z > zmax - 1.6f ? 1.75f : 1) * s;
+                b.set(P).fma(z * s, F).fma(sd * st(up, z, 1) * 0.86f * s, rv).fma(-(st(up, z, 3) + 0.25f) * s, Uu);
+                c.set(Uu).negate().fma(sd * 0.14f, rv).fma(-0.12f, F);
+                m.cone(b, c, len, 0.24f * s, 4, 0.74f, 0.68f, 0.55f, 0.99f, 0.97f, 0.9f, 0);
+            }
+            for (float z = 1.2f; z < jmax - 0.2f; z += 1f) {
+                float zc = Math.min(z + 0.5f, jmax);
+                c.set(a).fma(zc * s, fj).fma(sd * st(lo, zc, 1) * 0.82f * s, rv).fma((st(lo, zc, 2) + 0.08f) * s, uj);
+                m.obox(c, fj, uj, rv, 0.55f * s, 0.2f * s, 0.2f * s, gmR, gmG, gmB, mouthGlow * 0.5f);
+            }
+            k = 0;
+            for (float z = 1.4f; z < jmax; z += 0.52f, k++) {
+                float len = (0.65f + 0.45f * frac(k * 0.618f + 0.7f)) * (z > jmax - 1.3f ? 1.6f : 1) * s;
+                b.set(a).fma(z * s, fj).fma(sd * st(lo, z, 1) * 0.84f * s, rv).fma((st(lo, z, 2) + 0.2f) * s, uj);
+                c.set(uj).fma(sd * 0.12f, rv);
+                m.cone(b, c, len, 0.22f * s, 4, 0.74f, 0.68f, 0.55f, 0.99f, 0.97f, 0.9f, 0);
+            }
+        }
+        for (int x = -1; x <= 1; x++) {
+            b.set(P).fma((zmax + 0.2f) * s, F).fma(x * st(up, zmax, 1) * 0.5f * s, rv).fma(-(st(up, zmax, 3) + 0.2f) * s, Uu);
+            c.set(Uu).negate();
+            m.cone(b, c, 1.0f * s, 0.22f * s, 4, 0.74f, 0.68f, 0.55f, 0.99f, 0.97f, 0.9f, 0);
+            b.set(a).fma((jmax + 0.1f) * s, fj).fma(x * st(lo, jmax, 1) * 0.5f * s, rv).fma((st(lo, jmax, 2) + 0.15f) * s, uj);
+            m.cone(b, uj, 0.85f * s, 0.2f * s, 4, 0.74f, 0.68f, 0.55f, 0.99f, 0.97f, 0.9f, 0);
+        }
+        // eyes: socket, glowing iris, slit pupil, highlight, heavy angled brow, lower lid; nostrils; cheek plates
+        float cb = Mth.cos(14 * DEG), sb = Mth.sin(14 * DEG);
+        t1.set(F).mul(cb).fma(-sb, Uu);
+        t2.set(Uu).mul(cb).fma(sb, F);
+        float er = hy ? 0.85f : 1f, eg = hy ? 0.7f : 0.62f, eb = hy ? 1f : 0.1f;
+        for (int sd = -1; sd <= 1; sd += 2) {
+            float ez = hy ? 2.5f : 2.4f;
+            b.set(P).fma(ez * s, F).fma(sd * st(up, ez, 1) * 0.98f * s, rv).fma(st(up, ez, 2) * 0.42f * s, Uu);
+            m.obox(b, F, Uu, rv, 1.0f * s, 0.62f * s, 0.2f * s, 0.04f, 0.03f, 0.03f, 0);
+            c.set(b).fma(sd * 0.14f * s, rv);
+            m.obox(c, F, Uu, rv, 0.66f * s, 0.4f * s, 0.16f * s, er, eg, eb, 1);
+            c.set(b).fma(sd * 0.24f * s, rv).fma(0.08f * s, F);
+            m.obox(c, F, Uu, rv, 0.13f * s, 0.38f * s, 0.12f * s, 0.02f, 0.02f, 0.02f, 0);
+            c.set(b).fma(sd * 0.27f * s, rv).fma(0.34f * s, F).fma(0.2f * s, Uu);
+            m.obox(c, F, Uu, rv, 0.1f * s, 0.1f * s, 0.1f * s, 1, 1, 1, 1);
+            c.set(b).fma(0.72f * s, Uu).fma(sd * 0.2f * s, rv).fma(0.15f * s, F);
+            m.obox(c, t1, t2, rv, 1.4f * s, 0.3f * s, 0.5f * s, bkR * 0.72f, bkG * 0.72f, bkB * 0.72f, 0);
+            c.set(b).fma(-0.58f * s, Uu).fma(sd * 0.12f * s, rv);
+            m.obox(c, F, Uu, rv, 0.95f * s, 0.15f * s, 0.3f * s, bkR * 0.85f, bkG * 0.85f, bkB * 0.85f, 0);
+            float nz = up[up.length - 1][0] - 0.6f;
+            c.set(P).fma(nz * s, F).fma(sd * st(up, nz, 1) * 0.62f * s, rv).fma(st(up, nz, 2) * 0.8f * s, Uu);
+            m.obox(c, F, Uu, rv, 0.32f * s, 0.2f * s, 0.24f * s, 0.03f, 0.02f, 0.02f, 0);
+            c.set(P).fma(0.9f * s, F).fma(sd * st(up, 0.9f, 1) * 1.0f * s, rv).fma(-0.5f * s, Uu);
+            m.obox(c, F, Uu, rv, 1.1f * s, 0.9f * s, 0.3f * s, bkR * 0.9f, bkG * 0.9f, bkB * 0.9f, 0);
+            for (int k = 0; k < 3; k++) {
+                b.set(P).fma((3.4f + k * 1.1f) * s, F).fma(sd * st(up, 3.4f + k * 1.1f, 1) * 0.6f * s, rv).fma(st(up, 3.4f + k * 1.1f, 2) * 0.95f * s, Uu);
+                c.set(Uu).fma(-0.5f, F).fma(sd * 0.3f, rv);
+                m.cone(b, c, (0.9f - k * 0.2f) * s, 0.26f * s, 4, bkR, bkG, bkB, bkR * 1.6f, bkG * 1.6f, bkB * 1.6f, 0);
+            }
             if (hy) {
                 b.set(P).fma(0.6f * s, F).fma(sd * 1.5f * s, rv).fma(1.6f * s, Uu);
                 c.set(F).mul(-1f).fma(0.55f, Uu).fma(sd * 0.3f, rv);
@@ -420,6 +512,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
             c.set(Uu).fma(0.3f, F);
             m.cone(b, c, 1.5f * s, 0.5f * s, 4, 0.16f, 0.15f, 0.15f, 0.75f, 0.68f, 0.55f, 0);
         }
+        m.scales3d = keep;
     }
 
     private void mouth(float[] o, float mg) {

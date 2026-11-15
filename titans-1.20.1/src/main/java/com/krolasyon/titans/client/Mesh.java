@@ -184,6 +184,28 @@ final class Mesh {
     }
 
     boolean scales3d;
+    private static final float[][] OB = {{-1, 1, -1}, {-1, 1, 1}, {-1, -1, 1}, {-1, -1, -1}, {1, 1, -1}, {1, 1, 1}, {1, -1, 1}, {1, -1, -1}};
+
+    /** Oriented box: half extents hf/hu/hr along the three axes. */
+    void obox(Vector3f ctr, Vector3f F, Vector3f Uu, Vector3f Rr, float hf, float hu, float hr, float r, float g, float bl, float glow) {
+        for (int k = 0; k < 8; k++) {
+            float f = OB[k][0] * hf, u = OB[k][1] * hu, w = OB[k][2] * hr;
+            k8[k][0] = ctr.x + F.x * f + Uu.x * u + Rr.x * w;
+            k8[k][1] = ctr.y + F.y * f + Uu.y * u + Rr.y * w;
+            k8[k][2] = ctr.z + F.z * f + Uu.z * u + Rr.z * w;
+        }
+        for (int q = 0; q < 6; q++) {
+            int[] fc = FACES[q];
+            float sg = (q & 1) == 0 ? 1 : -1;
+            Vector3f nv = q < 2 ? Uu : q < 4 ? Rr : F;
+            if (q >= 4) sg = q == 4 ? -1 : 1;
+            float sh = q == 0 ? 1.1f : q == 1 ? 0.7f : 0.9f;
+            for (int k = 0; k < 4; k++) {
+                float[] pp = k8[fc[k]];
+                vert(pp[0], pp[1], pp[2], r * sh, g * sh, bl * sh, (k == 1 || k == 2) ? 0.125f : 0, k >= 2 ? 0.125f : 0, nv.x * sg, nv.y * sg, nv.z * sg, glow);
+            }
+        }
+    }
     private final float[][] s8 = new float[8][3];
 
     private static void bil(float[] p0, float[] p1, float[] p2, float[] p3, float u, float v, float lift, float nx, float ny, float nz, float[] o) {
