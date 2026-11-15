@@ -262,9 +262,9 @@ public class GhidorahEntity extends TitanEntity {
                 for (int h = 0; h < 3; h++) {
                     float start = h == 0 ? 0 : h == 1 ? 14 : 24;
                     float e = smooth(Mth.clamp((t - start) / 12f, 0, 1)) * (1 - smooth(Mth.clamp((t - 64) / 14f, 0, 1)));
-                    neck[h][0].rx -= 0.25f * e;
-                    for (int i = 5; i <= NECK; i++) neck[h][i].rx -= 0.16f * e;
-                    head[h].rx -= 0.4f * e; jaw[h].rx += 1.0f * e + Mth.sin(t * 2.2f + h) * 0.05f * e;
+                    neck[h][0].rx -= 0.12f * e;
+                    for (int i = 5; i <= NECK; i++) neck[h][i].rx -= 0.07f * e;
+                    head[h].rx -= 0.55f * e; jaw[h].rx += 1.0f * e + Mth.sin(t * 2.2f + h) * 0.05f * e;
                     neck[h][3].ry += (h == 1 ? 0.25f : h == 2 ? -0.25f : 0) * e;
                 }
                 spine.rx -= 0.12f; chest.rx -= 0.08f;
@@ -345,6 +345,10 @@ public class GhidorahEntity extends TitanEntity {
             shinL.rx += 0.6f * fallAmt; shinR.rx += 0.6f * fallAmt;
         }
 
+        float lay = smooth(Mth.clamp(fallAmt * 1.2f, 0, 1));
+        layTail(tails[0][0], lay, 0.25f);
+        layTail(tails[1][0], lay, -0.25f);
+
         // severed heads: the neck ends in a stump; regrowth pushes a new neck and head out of it
         for (int h = 0; h < 3; h++) {
             int g = growth(h);
@@ -379,13 +383,13 @@ public class GhidorahEntity extends TitanEntity {
         for (int w = 0; w < 2; w++) {
             float m = w == 0 ? 1 : -1;
             // spread: arm sweeps up and out. Folded: humerus back and up, forearm forward, fingers along the body
-            wing0[w].rx += -0.35f * sp - flap + fold * -0.5f;
-            wing0[w].ry += m * (0.35f * sp + fold * 1.2f);
-            wing0[w].rz += m * (fold * 0.3f);
-            wing1[w].ry += m * (-0.15f * sp + fold * -2.5f);
-            wing1[w].rx += -flap * 0.3f + fold * 0.25f;
-            wing2[w].ry += m * (0.2f * sp + fold * 2.45f);
-            wing2[w].rx += fold * 0.35f + flap * 0.15f;
+            // folded like a cloak: humerus back and down, forearm up along it, fingers hanging down the back
+            wing0[w].rx += -0.35f * sp - flap + fold * 0.6f;
+            wing0[w].ry += m * (0.35f * sp + fold * 1.25f);
+            wing1[w].ry += m * (-0.15f * sp + fold * -2.6f);
+            wing1[w].rx += -flap * 0.3f + fold * -1.0f;
+            wing2[w].ry += m * (0.2f * sp + fold * 2.2f);
+            wing2[w].rx += fold * 1.1f + flap * 0.15f;
             for (int k = 0; k < 4; k++) {
                 finger[w][k].ry += m * (fold * (0.15f - k * 0.38f) - fingerCurl * 0.1f * k);
                 finger[w][k].rx += fold * (0.25f + k * 0.12f) + fingerCurl * 0.4f;

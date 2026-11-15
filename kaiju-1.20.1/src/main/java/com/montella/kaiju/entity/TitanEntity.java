@@ -57,6 +57,16 @@ public abstract class TitanEntity extends PathfinderMob {
     /** Recoil after a hit, decays. */
     public float recoil, prevRecoil;
     public float bodyTwist, prevBodyTwist;
+    /** Model-space direction the body last fell towards (set by poseRoot). */
+    protected float fallDirX, fallDirZ = 1;
+    private boolean toppled;
+
+    /** Makes a tail lie flat behind a fallen body. */
+    protected void layTail(com.montella.kaiju.rig.Skeleton.Joint j, float amount, float yawOffset) {
+        if (amount <= 0) return;
+        j.blendTarget.identity().rotateY((float) Math.atan2(-fallDirX, -fallDirZ) + yawOffset).rotateX(0.06f);
+        j.blend = amount;
+    }
 
     // ---- server only ----
     protected double moveX, moveZ, moveY;
@@ -185,6 +195,7 @@ public abstract class TitanEntity extends PathfinderMob {
         skel.rootMatrix.identity();
         float ease = f;
         skel.rootMatrix.translate(0, liftWhenLying * Mth.sin(ease * Mth.HALF_PI), 0);
+        fallDirX = dx; fallDirZ = dz;
         float r = Mth.lerp(partial, prevRecoil, recoil);
         float ang = ease * 1.48f + r * 0.32f;
         if (ang != 0) skel.rootMatrix.rotate(ang, dz, 0, -dx);
@@ -233,7 +244,7 @@ public abstract class TitanEntity extends PathfinderMob {
             fall += fallVel;
             if (fall >= fallTarget) {
                 fall = fallTarget;
-                if (fallVel > 0.05f && fallTarget >= 1f) onToppleImpact(fallVel);
+                if (fallVel > 0.05f && fallTarget >= 1f && !toppled) { toppled = true; onToppleImpact(fallVel); }
                 fallVel = -fallVel * 0.22f;
             }
         } else if (fallVel != 0) {
@@ -241,6 +252,7 @@ public abstract class TitanEntity extends PathfinderMob {
             if (fall >= fallTarget) { fall = fallTarget; fallVel = 0; }
         }
         fall = Mth.clamp(fall, 0, 1);
+        if (fall < 0.3f) toppled = false;
         recoil *= 0.86f;
         if (st == S.STAGGER && stateTime < 4) recoil = Math.min(1f, recoil + 0.35f);
 

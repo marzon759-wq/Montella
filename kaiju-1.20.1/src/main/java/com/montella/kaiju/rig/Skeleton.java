@@ -22,6 +22,9 @@ public final class Skeleton {
         public float rx, ry, rz;          // animated rotation (added)
         public float tx, ty, tz;          // animated translation (added)
         public float scale = 1f;
+        /** Optional model-space orientation this joint is pulled towards (0..1), e.g. a tail lying on the ground. */
+        public final org.joml.Quaternionf blendTarget = new org.joml.Quaternionf();
+        public float blend;
         public final Matrix4f world = new Matrix4f();
 
         Joint(String name, int index, Joint parent) { this.name = name; this.index = index; this.parent = parent; }
@@ -56,7 +59,7 @@ public final class Skeleton {
     public boolean has(String name) { return byName.containsKey(name); }
 
     public void resetPose() {
-        for (Joint j : joints) { j.rx = j.ry = j.rz = 0; j.tx = j.ty = j.tz = 0; j.scale = 1f; }
+        for (Joint j : joints) { j.rx = j.ry = j.rz = 0; j.tx = j.ty = j.tz = 0; j.scale = 1f; j.blend = 0; }
         rootMatrix.identity();
     }
 
@@ -70,6 +73,12 @@ public final class Skeleton {
             if (ay != 0) m.rotateY(ay);
             if (ax != 0) m.rotateX(ax);
             if (az != 0) m.rotateZ(az);
+            if (j.blend > 0) {
+                Vector3f pos = m.getTranslation(new Vector3f());
+                org.joml.Quaternionf q = m.getNormalizedRotation(new org.joml.Quaternionf());
+                q.slerp(j.blendTarget, Math.min(1f, j.blend));
+                m.translationRotateScale(pos, q, new Vector3f(1, 1, 1));
+            }
             if (j.scale != 1f) m.scale(j.scale);
         }
     }

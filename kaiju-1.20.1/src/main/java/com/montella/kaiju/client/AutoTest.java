@@ -85,6 +85,7 @@ public final class AutoTest {
             view("model_ghidorah_3q", 28, -44, 32, -135, 2);
             view("model_ghidorah_head", 66, -35, 15, 160, -3);
             view("model_godzilla_head", 6, -38, 14, 160, 0);
+            view("model_ghidorah_back", 90, -44, -36, 40, 6);
             cue(5, () -> forceState(GodzillaEntity.class, com.montella.kaiju.entity.S.ROAR, 30));
             cue(0, () -> forceState(GhidorahEntity.class, com.montella.kaiju.entity.S.ROAR, 40));
             view("pose_roar_g", -32, -46, 32, -135, 2);

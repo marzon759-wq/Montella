@@ -290,6 +290,7 @@ public class GodzillaEntity extends TitanEntity {
             }
         }
         if (st == S.DEATH) { jaw.rx += 0.5f; neck0.ry += 0.3f; }
+        layTail(tail[0], smooth(Mth.clamp(fallAmt * 1.2f, 0, 1)), 0);
         skel.compute();
     }
 
