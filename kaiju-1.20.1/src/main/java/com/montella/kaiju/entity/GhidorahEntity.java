@@ -23,7 +23,7 @@ public class GhidorahEntity extends TitanEntity {
     public static final int NECK = 10, TAIL = 12;
     public static final float[] NECK_R = new float[NECK + 1], TAIL_R = new float[TAIL + 1];
     static {
-        for (int i = 0; i <= NECK; i++) NECK_R[i] = 1.45f - 0.5f * i / NECK;
+        for (int i = 0; i <= NECK; i++) NECK_R[i] = 1.3f - 0.45f * i / NECK;
         for (int i = 0; i <= TAIL; i++) { float f = i / (float) TAIL; TAIL_R[i] = 1.9f * (1 - f) + 0.3f; }
     }
     public static final float[] FINGER_LEN = {10f, 11f, 10f, 8.5f};
@@ -62,12 +62,12 @@ public class GhidorahEntity extends TitanEntity {
         s.add("torsoA", "pelvis", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
         s.add("torsoB", "spine", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
         s.add("torsoC", "chest", 0, 0, 0).rest(-Mth.HALF_PI, 0, 0);
-        float[][] base = {{0, 3.5f, 0.7f}, {2.5f, 2.8f, 0.5f}, {-2.5f, 2.8f, 0.5f}};
-        float[] baseYaw = {0, 0.38f, -0.38f};
+        float[][] base = {{0, 3.9f, 0.6f}, {2.7f, 3.2f, 0.4f}, {-2.7f, 3.2f, 0.4f}};
+        float[] baseYaw = {0, 0.55f, -0.55f};
         for (int h = 0; h < 3; h++) {
-            neck[h][0] = s.add("n" + h + "_0", "chest", base[h][0], base[h][1], base[h][2]).rest(h == 0 ? -1.35f : -1.22f, baseYaw[h], 0);
+            neck[h][0] = s.add("n" + h + "_0", "chest", base[h][0], base[h][1], base[h][2]).rest(h == 0 ? -1.4f : -1.05f, baseYaw[h], h == 0 ? 0 : (h == 1 ? -0.35f : 0.35f));
             for (int i = 1; i <= NECK; i++)
-                neck[h][i] = s.add("n" + h + "_" + i, "n" + h + "_" + (i - 1), 0, 0, 1.02f).rest(i <= 4 ? -0.05f : 0.235f, i == 5 ? -baseYaw[h] * 0.6f : 0, 0);
+                neck[h][i] = s.add("n" + h + "_" + i, "n" + h + "_" + (i - 1), 0, 0, 1.22f).rest(i <= 4 ? -0.06f : 0.22f, i == 5 ? -baseYaw[h] * 0.55f : 0, 0);
             head[h] = s.add("h" + h, "n" + h + "_" + NECK, 0, 0, 0.9f).rest(0.28f, -baseYaw[h] * 0.3f, 0);
             jaw[h] = s.add("j" + h, "h" + h, 0, -0.42f, 0.55f).rest(0.05f, 0, 0);
         }

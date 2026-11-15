@@ -139,6 +139,8 @@ public final class AutoTest {
         }
         if (mc.player == null || mc.level == null) return;
         mc.options.hideGui = true;
+        mc.player.getAbilities().flying = true;
+        mc.player.setDeltaMovement(0, 0, 0);
         mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
         n++;
         for (Object[] c : cues) if ((int) c[0] == n) ((Runnable) c[1]).run();
