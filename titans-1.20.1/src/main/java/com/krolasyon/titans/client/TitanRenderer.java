@@ -108,7 +108,9 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
         ps.pushPose();
         ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
         m.begin(buf.getBuffer(RenderType.entityCutoutNoCull(SCALES)), ps.last(), light, overlay, false);
+        m.scales3d = true;
         body(e, rig, p, time, false);
+        m.scales3d = false;
 
         // additive pass in body space: crystal halos, mouth glow, crawling arcs
         m.begin(buf.getBuffer(RenderType.lightning()), ps.last(), light, overlay, true);
@@ -193,7 +195,7 @@ public class TitanRenderer extends EntityRenderer<TitanEntity> {
     private void skin(int i, float ca, float sa, float[] o) {
         float k = Mth.clamp((sa + 0.6f) / 0.8f, 0, 1);
         k = k * k * (3 - 2 * k);
-        float shade = 0.92f + 0.08f * Mth.sin(i * 1.7f + ca * 3);
+        float shade = 0.9f + 0.1f * Mth.sin(i * 1.7f + ca * 3);
         o[0] = Mth.lerp(k, blR, bkR) * shade; o[1] = Mth.lerp(k, blG, bkG) * shade; o[2] = Mth.lerp(k, blB, bkB) * shade;
         if (flesh > 0) { o[0] = Mth.lerp(flesh, o[0], 0.62f); o[1] = Mth.lerp(flesh, o[1], 0.3f); o[2] = Mth.lerp(flesh, o[2], 0.4f); }
         if (!hy && glow > 0.2f) {

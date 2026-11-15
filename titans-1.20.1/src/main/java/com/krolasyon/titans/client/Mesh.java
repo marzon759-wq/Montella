@@ -172,12 +172,65 @@ final class Mesh {
                 float u0 = (q * 5 + i * 3) % 8 * px, v0 = VV[i] * px;
                 float du = Math.round(us * 4) / 32f, dv = Math.round(vs * 4) / 32f;
                 float[] p0 = k8[fc[0]], p1 = k8[fc[1]], p2 = k8[fc[2]], p3 = k8[fc[3]];
+                boolean pl = scales3d && q < 4 && us > 1.3f;
+                if (pl) { col[0] *= 0.55f; col[1] *= 0.55f; col[2] *= 0.55f; }
                 vert(p0[0], p0[1], p0[2], col[0], col[1], col[2], u0, v0, nx, ny, nz, col[3]);
                 vert(p1[0], p1[1], p1[2], col[0], col[1], col[2], u0 + du, v0, nx, ny, nz, col[3]);
                 vert(p2[0], p2[1], p2[2], col[0], col[1], col[2], u0 + du, v0 + dv, nx, ny, nz, col[3]);
                 vert(p3[0], p3[1], p3[2], col[0], col[1], col[2], u0, v0 + dv, nx, ny, nz, col[3]);
+                if (pl) { col[0] /= 0.55f; col[1] /= 0.55f; col[2] /= 0.55f; plates(p0, p1, p2, p3, us, vs, nx, ny, nz, q == 1, i * 31 + q * 7); }
             }
         }
+    }
+
+    boolean scales3d;
+    private final float[][] s8 = new float[8][3];
+
+    private static void bil(float[] p0, float[] p1, float[] p2, float[] p3, float u, float v, float lift, float nx, float ny, float nz, float[] o) {
+        for (int k = 0; k < 3; k++) {
+            float t = p0[k] + (p1[k] - p0[k]) * u, w = p3[k] + (p2[k] - p3[k]) * u;
+            o[k] = t + (w - t) * v;
+        }
+        o[0] += nx * lift; o[1] += ny * lift; o[2] += nz * lift;
+    }
+
+    /** Real relief: every face is tiled with raised, overlapping scale plates (wide scutes on the belly). */
+    private void plates(float[] p0, float[] p1, float[] p2, float[] p3, float us, float vs, float nx, float ny, float nz, boolean belly, int seed) {
+        int nu = belly ? Math.max(1, Math.round(us / 5f)) : Math.max(1, Math.round(us / 1.7f));
+        int nv = Math.max(1, Math.round(vs / (belly ? 1.5f : 1.7f)));
+        float size = Math.min(us / nu, vs / nv);
+        float h0 = size * 0.08f, h1 = size * (belly ? 0.2f : 0.3f);
+        float cr = col[0], cg = col[1], cb = col[2], gl = col[3];
+        for (int b2 = 0; b2 < nv; b2++) for (int a2 = 0; a2 < nu; a2++) {
+            float off = (!belly && (b2 & 1) == 1) ? 0.5f : 0;
+            float ua = (a2 + off) / nu, ub = (a2 + off + 1) / nu;
+            if (ub > 1.001f) { ub = 1; if (ub - ua < 0.3f / nu) continue; }
+            float va = b2 / (float) nv, vb = (b2 + 1) / (float) nv;
+            float mu = (ub - ua) * 0.1f, mv = (vb - va) * 0.06f;
+            bil(p0, p1, p2, p3, ua, va, 0, nx, ny, nz, s8[0]); bil(p0, p1, p2, p3, ub, va, 0, nx, ny, nz, s8[1]);
+            bil(p0, p1, p2, p3, ub, vb, 0, nx, ny, nz, s8[2]); bil(p0, p1, p2, p3, ua, vb, 0, nx, ny, nz, s8[3]);
+            bil(p0, p1, p2, p3, ua + mu, va + mv, h0, nx, ny, nz, s8[4]); bil(p0, p1, p2, p3, ub - mu, va + mv, h0, nx, ny, nz, s8[5]);
+            bil(p0, p1, p2, p3, ub - mu, vb + mv, h1, nx, ny, nz, s8[6]); bil(p0, p1, p2, p3, ua + mu, vb + mv, h1, nx, ny, nz, s8[7]);
+            int hsh = (seed * 73856093) ^ (a2 * 19349663) ^ (b2 * 83492791);
+            float var = 0.9f + ((hsh >>> 8) & 255) / 255f * 0.22f;
+            float r = cr * var, g = cg * var, bl = cb * var;
+            float tu = (hsh & 7) / 8f, tv = ((hsh >> 3) & 7) / 8f;
+            // top
+            pq(s8[4], s8[5], s8[6], s8[7], r * 1.12f, g * 1.12f, bl * 1.12f, tu, tv, nx, ny, nz, gl);
+            // rim: the raised trailing edge and the two flanks
+            pq(s8[7], s8[6], s8[2], s8[3], r * 0.5f, g * 0.5f, bl * 0.5f, tu, tv, nx, ny, nz, gl);
+            pq(s8[4], s8[7], s8[3], s8[0], r * 0.68f, g * 0.68f, bl * 0.68f, tu, tv, nx, ny, nz, gl);
+            pq(s8[6], s8[5], s8[1], s8[2], r * 0.68f, g * 0.68f, bl * 0.68f, tu, tv, nx, ny, nz, gl);
+            pq(s8[5], s8[4], s8[0], s8[1], r * 0.85f, g * 0.85f, bl * 0.85f, tu, tv, nx, ny, nz, gl);
+        }
+        col[0] = cr; col[1] = cg; col[2] = cb;
+    }
+
+    private void pq(float[] a0, float[] a1, float[] a2, float[] a3, float r, float g, float bl, float u, float v, float nx, float ny, float nz, float glow) {
+        vert(a0[0], a0[1], a0[2], r, g, bl, u, v, nx, ny, nz, glow);
+        vert(a1[0], a1[1], a1[2], r, g, bl, u + 0.125f, v, nx, ny, nz, glow);
+        vert(a2[0], a2[1], a2[2], r, g, bl, u + 0.125f, v + 0.125f, nx, ny, nz, glow);
+        vert(a3[0], a3[1], a3[2], r, g, bl, u, v + 0.125f, nx, ny, nz, glow);
     }
 
     private void set(float[] o, float cx, float cy, float cz, float r, float u) {
