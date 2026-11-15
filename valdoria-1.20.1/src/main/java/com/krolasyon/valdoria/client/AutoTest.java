@@ -63,6 +63,11 @@ public final class AutoTest {
 
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
+        if (!created && mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+            mc.options.onboardAccessibility = false;
+            mc.setScreen(new TitleScreen());
+            return;
+        }
         if (!created && mc.screen instanceof TitleScreen && ++menuTicks > 40) {
             created = true;
             mc.options.hideGui = true;
