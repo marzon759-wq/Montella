@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "valdoria:skyroot_log"
+    }
+  ],
+  "result": {
+    "item": "valdoria:skyroot_planks",
+    "count": 4
+  }
+}

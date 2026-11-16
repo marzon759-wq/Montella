@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "valdoria:skyroot_log"
+    }
+  },
+  "result": {
+    "item": "valdoria:skyroot_wood",
+    "count": 3
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "valdoria:block/sunpalm_log",
+    "end": "valdoria:block/sunpalm_log_top"
+  }
+}

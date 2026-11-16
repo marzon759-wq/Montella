@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "valdoria:block/tall_azure_bloom_top"
+  },
+  "render_type": "minecraft:cutout"
+}

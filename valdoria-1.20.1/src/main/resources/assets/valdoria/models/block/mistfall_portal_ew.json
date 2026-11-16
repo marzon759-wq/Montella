@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/nether_portal_ew",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "valdoria:block/mistfall_portal",
+    "portal": "valdoria:block/mistfall_portal"
+  }
+}

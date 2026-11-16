@@ -27,6 +27,7 @@ public final class ValdoriaClient {
         @SubscribeEvent
         public static void particles(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(ModParticles.GLIMMER.get(), GlimmerParticle.Provider::new);
+            event.registerSpriteSet(ModParticles.MIST.get(), MistParticle.Provider::new);
         }
     }
 
@@ -43,7 +44,37 @@ public final class ValdoriaClient {
                 return;
             }
             boolean inside = mc.level.getBiome(mc.player.blockPosition()).is(ValdoriaBiomes.GLIMMERVEIL_FOREST);
+            if (mc.level.dimension() == com.krolasyon.valdoria.world.mistfall.MistfallPortal.MISTFALL && !mc.isPaused()) waterfallMist(mc);
             mist += ((inside ? 1f : 0f) - mist) * 0.02f;
+        }
+
+        /** Spray and mist where waterfalls hit the water below. */
+        private static void waterfallMist(Minecraft mc) {
+            net.minecraft.util.RandomSource r = mc.level.random;
+            net.minecraft.core.BlockPos c = mc.player.blockPosition();
+            net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos();
+            for (int i = 0; i < 48; i++) {
+                int x = c.getX() + r.nextInt(65) - 32, z = c.getZ() + r.nextInt(65) - 32;
+                boolean prevFalling = false;
+                for (int y = c.getY() + 48; y >= c.getY() - 60; y--) {
+                    p.set(x, y, z);
+                    net.minecraft.world.level.material.FluidState f = mc.level.getFluidState(p);
+                    boolean falling = !f.isEmpty() && !f.isSource() && f.getValue(net.minecraft.world.level.material.FlowingFluid.FALLING);
+                    if (falling && r.nextInt(40) == 0) {
+                        mc.level.addParticle(ModParticles.MIST.get(), x + r.nextDouble(), y + r.nextDouble(), z + r.nextDouble(), 0, -0.01, 0);
+                    }
+                    if (prevFalling && !falling) {
+                        // the foot of a waterfall: spray and billowing mist
+                        for (int k = 0; k < 4; k++) {
+                            mc.level.addParticle(ModParticles.MIST.get(), x + r.nextDouble() * 3 - 1, y + 1 + r.nextDouble(), z + r.nextDouble() * 3 - 1,
+                                    (r.nextDouble() - 0.5) * 0.1, 0.03, (r.nextDouble() - 0.5) * 0.1);
+                        }
+                        mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.SPLASH, x + r.nextDouble(), y + 1.2, z + r.nextDouble(), 0, 0.2, 0);
+                        break;
+                    }
+                    prevFalling = falling;
+                }
+            }
         }
 
         @SubscribeEvent

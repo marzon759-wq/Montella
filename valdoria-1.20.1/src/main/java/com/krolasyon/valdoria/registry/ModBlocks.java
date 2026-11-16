@@ -1,7 +1,9 @@
 package com.krolasyon.valdoria.registry;
 
 import com.krolasyon.valdoria.ValdoriaMod;
+import com.krolasyon.valdoria.block.FeatureSaplingBlock;
 import com.krolasyon.valdoria.block.GlowingPlantBlock;
+import com.krolasyon.valdoria.block.MistfallPortalBlock;
 import com.krolasyon.valdoria.block.VeilLeavesBlock;
 import com.krolasyon.valdoria.block.VeilLogBlock;
 import com.krolasyon.valdoria.block.VeilPlantBlock;
@@ -64,6 +66,35 @@ public final class ModBlocks {
     public static final RegistryObject<Block> VIOLETSTONE_BRICK_STAIRS = reg("violetstone_brick_stairs", () -> new StairBlock(() -> VIOLETSTONE_BRICKS.get().defaultBlockState(), stone()));
     public static final RegistryObject<Block> VIOLETSTONE_BRICK_SLAB = reg("violetstone_brick_slab", () -> new SlabBlock(stone()));
     public static final RegistryObject<Block> VIOLETSTONE_BRICK_WALL = reg("violetstone_brick_wall", () -> new WallBlock(stone().forceSolidOn()));
+
+    // =============================== Mistfall Vale ===============================
+    // --- cliff rock in purple bands ---
+    public static final RegistryObject<Block> MISTROCK = reg("mistrock", () -> new Block(rock(MapColor.COLOR_PURPLE)));
+    public static final RegistryObject<Block> BANDED_MISTROCK = reg("banded_mistrock", () -> new Block(rock(MapColor.COLOR_PURPLE)));
+    public static final RegistryObject<Block> DEEP_MISTROCK = reg("deep_mistrock", () -> new Block(rock(MapColor.COLOR_BLUE)));
+    public static final RegistryObject<Block> MISTROCK_BRICKS = reg("mistrock_bricks", () -> new Block(rock(MapColor.COLOR_PURPLE)));
+    // --- skyroot: the giant flat-crowned trees ---
+    public static final RegistryObject<Block> SKYROOT_LOG = reg("skyroot_log", () -> new VeilLogBlock(wood(MapColor.COLOR_BROWN), null));
+    public static final RegistryObject<Block> SKYROOT_WOOD = reg("skyroot_wood", () -> new VeilLogBlock(wood(MapColor.COLOR_BROWN), null));
+    public static final RegistryObject<Block> SKYROOT_PLANKS = reg("skyroot_planks", () -> new Block(wood(MapColor.COLOR_BROWN)));
+    public static final RegistryObject<Block> SKYROOT_LEAVES = reg("skyroot_leaves", () -> new VeilLeavesBlock(leaves(0).mapColor(MapColor.COLOR_LIGHT_BLUE)));
+    public static final RegistryObject<Block> GOLDEN_SKYROOT_LEAVES = reg("golden_skyroot_leaves", () -> new VeilLeavesBlock(leaves(0).mapColor(MapColor.COLOR_YELLOW)));
+    public static final RegistryObject<Block> SKYROOT_SAPLING = reg("skyroot_sapling", () -> new FeatureSaplingBlock(
+            Properties.copy(Blocks.OAK_SAPLING), FeatureSaplingBlock.key("skyroot_tree")));
+    // --- sun palms ---
+    public static final RegistryObject<Block> SUNPALM_LOG = reg("sunpalm_log", () -> new VeilLogBlock(wood(MapColor.COLOR_ORANGE), null));
+    public static final RegistryObject<Block> SUNPALM_FRONDS = reg("sunpalm_fronds", () -> new VeilLeavesBlock(leaves(0).mapColor(MapColor.COLOR_GREEN)));
+    // --- flowers ---
+    public static final RegistryObject<Block> AZURE_BLOOM = reg("azure_bloom", () -> new VeilPlantBlock(Properties.copy(Blocks.FERN).mapColor(MapColor.COLOR_BLUE)));
+    public static final RegistryObject<Block> TALL_AZURE_BLOOM = reg("tall_azure_bloom", () -> new VeilTallPlantBlock(Properties.copy(Blocks.FERN).mapColor(MapColor.COLOR_BLUE)));
+    // --- the portal ---
+    public static final RegistryObject<Block> CASCADE_STONE = reg("cascade_stone", () -> new Block(rock(MapColor.COLOR_CYAN).strength(5.0F, 1200.0F)));
+    public static final RegistryObject<Block> MISTFALL_PORTAL = reg("mistfall_portal", () -> new MistfallPortalBlock(Properties.copy(Blocks.NETHER_PORTAL)
+            .mapColor(MapColor.COLOR_CYAN).lightLevel(s -> 12)));
+
+    private static Properties rock(MapColor color) {
+        return Properties.copy(Blocks.STONE).mapColor(color).strength(1.6F, 6.0F);
+    }
 
     private static <T extends Block> RegistryObject<T> reg(String name, Supplier<T> sup) {
         return BLOCKS.register(name, sup);

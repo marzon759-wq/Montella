@@ -2,6 +2,9 @@
   "replace": false,
   "values": [
     "valdoria:veilwood_leaves",
-    "valdoria:glimmering_veilwood_leaves"
+    "valdoria:glimmering_veilwood_leaves",
+    "valdoria:skyroot_leaves",
+    "valdoria:golden_skyroot_leaves",
+    "valdoria:sunpalm_fronds"
   ]
 }

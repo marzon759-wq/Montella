@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "valdoria:block/golden_skyroot_leaves"
+  },
+  "render_type": "minecraft:cutout_mipped"
+}

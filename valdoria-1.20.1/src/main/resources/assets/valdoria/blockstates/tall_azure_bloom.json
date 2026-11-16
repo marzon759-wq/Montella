@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "valdoria:block/tall_azure_bloom_bottom"
+    },
+    "half=upper": {
+      "model": "valdoria:block/tall_azure_bloom_top"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "valdoria:block/mistfall_portal_ns"
+    },
+    "axis=z": {
+      "model": "valdoria:block/mistfall_portal_ew"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "valdoria:block/skyroot_log"
+    },
+    "axis=z": {
+      "model": "valdoria:block/skyroot_log_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "valdoria:block/skyroot_log_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

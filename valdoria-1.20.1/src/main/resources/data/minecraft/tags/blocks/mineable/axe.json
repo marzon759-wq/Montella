@@ -7,6 +7,10 @@
     "valdoria:stripped_veilwood_wood",
     "valdoria:veilwood_planks",
     "valdoria:veilwood_stairs",
-    "valdoria:veilwood_slab"
+    "valdoria:veilwood_slab",
+    "valdoria:skyroot_log",
+    "valdoria:skyroot_wood",
+    "valdoria:sunpalm_log",
+    "valdoria:skyroot_planks"
   ]
 }

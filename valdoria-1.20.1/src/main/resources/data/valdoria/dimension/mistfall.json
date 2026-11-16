@@ -1,0 +1,10 @@
+{
+  "type": "valdoria:mistfall",
+  "generator": {
+    "type": "valdoria:mistfall",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "valdoria:mistfall_vale"
+    }
+  }
+}

@@ -6,6 +6,11 @@
     "valdoria:mossy_violetstone_bricks",
     "valdoria:violetstone_brick_stairs",
     "valdoria:violetstone_brick_slab",
-    "valdoria:violetstone_brick_wall"
+    "valdoria:violetstone_brick_wall",
+    "valdoria:mistrock",
+    "valdoria:banded_mistrock",
+    "valdoria:deep_mistrock",
+    "valdoria:mistrock_bricks",
+    "valdoria:cascade_stone"
   ]
 }

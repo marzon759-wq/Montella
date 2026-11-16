@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "valdoria:veilwood_planks"
+    "valdoria:veilwood_planks",
+    "valdoria:skyroot_planks"
   ]
 }

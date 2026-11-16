@@ -145,6 +145,10 @@ public final class AutoTest {
         }
         if (mc.player == null || mc.level == null) return;
         worldTicks++;
+        if ("mistfall".equals(System.getProperty("valdoria.autotest"))) {
+            if (worldTicks > 60) MistfallTest.tick();
+            return;
+        }
         if (wait > 0) {
             wait--;
             return;

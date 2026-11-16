@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GDG",
+    " S ",
+    " S "
+  ],
+  "key": {
+    "G": {
+      "item": "valdoria:shimmercap"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "valdoria:cascade_key"
+  }
+}

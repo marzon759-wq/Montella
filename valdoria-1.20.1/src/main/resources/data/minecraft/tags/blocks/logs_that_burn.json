@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "#valdoria:veilwood_logs"
+    "#valdoria:veilwood_logs",
+    "valdoria:skyroot_log",
+    "valdoria:skyroot_wood",
+    "valdoria:sunpalm_log"
   ]
 }

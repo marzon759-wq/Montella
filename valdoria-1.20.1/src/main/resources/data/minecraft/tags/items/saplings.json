@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "valdoria:veilwood_sapling"
+    "valdoria:veilwood_sapling",
+    "valdoria:skyroot_sapling"
   ]
 }

@@ -28,6 +28,7 @@ public class ValdoriaMod {
         ModBlocks.BLOCKS.register(bus);
         ModItems.ITEMS.register(bus);
         ModFeatures.FEATURES.register(bus);
+        ModFeatures.GENERATORS.register(bus);
         ModEntities.ENTITIES.register(bus);
         ModParticles.PARTICLES.register(bus);
         ModTabs.TABS.register(bus);
