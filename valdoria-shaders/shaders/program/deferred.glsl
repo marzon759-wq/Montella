@@ -33,11 +33,11 @@ vec3 applyFog(vec3 col, vec3 viewPos, vec3 dir) {
     float fogFar = fogEnd > 1.0 ? min(fogEnd, far) : far;
     // atmospheric perspective, stronger in rain and when the game's own fog is pulled in (mist, dust, modded fog)
     float density = (1.4 + rainStrength * 3.0) / max(fogFar, 16.0);
-    float atm = 1.0 - exp(-dist * density * 0.55);
+    float atm = 1.0 - exp(-dist * density * 0.3);
     float border = smoothstep(fogFar * 0.7, fogFar, dist);
     vec3 fogCol = skyGradient(dir);
     if (isEyeInWater == 1) return col;
-    return mix(col, fogCol, saturate(max(atm * 0.85, border)));
+    return mix(col, fogCol, saturate(max(min(atm, 0.7), border)));
 }
 
 void main() {

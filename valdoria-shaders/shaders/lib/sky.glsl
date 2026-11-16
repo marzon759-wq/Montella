@@ -20,7 +20,7 @@ vec3 skyGradient(vec3 dir) {
     float day = dayFactor();
     // base colours from the game (biome sky / fog), lifted into HDR
     vec3 zenith = pow(skyColor, vec3(2.2)) * 1.6;
-    vec3 horizon = pow(mix(fogColor, skyColor, 0.25), vec3(2.2)) * 1.8;
+    vec3 horizon = pow(mix(fogColor, skyColor, 0.35), vec3(2.2)) * 1.25;
     zenith = mix(vec3(0.004, 0.006, 0.014), zenith, day);
     horizon = mix(vec3(0.012, 0.016, 0.03), horizon, day);
     float t = pow(saturate(y), 0.45);

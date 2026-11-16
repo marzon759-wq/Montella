@@ -29,7 +29,7 @@ void main() {
     col += bloom * 0.35;
     // brighter exposure in caves and under cover, a touch darker in open daylight
     float skyLight = float(eyeBrightnessSmooth.y) / 240.0;
-    float exposure = mix(2.4, 1.05, skyLight);
+    float exposure = mix(2.2, 0.95, skyLight);
     col = aces(col * exposure);
     col = pow(col, vec3(1.0 / 2.2));
     float l = dot(col, vec3(0.2126, 0.7152, 0.0722));

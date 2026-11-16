@@ -89,7 +89,7 @@ void main() {
     }
     lit /= float(STEPS);
     float sky = float(eyeBrightnessSmooth.y) / 240.0;
-    vec3 beams = lightColor() * lit * phase * (1.0 - exp(-dist * density)) * 0.55 * (0.25 + 0.75 * sky);
+    vec3 beams = lightColor() * lit * phase * (1.0 - exp(-dist * density)) * 0.14 * (0.25 + 0.75 * sky);
     vec3 tintFog = pow(fogColor, vec3(2.2));
     beams *= mix(vec3(1.0), tintFog * 2.0 + 0.3, 0.35);
     col += beams;

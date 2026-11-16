@@ -41,7 +41,8 @@ vec3 shade(vec3 albedo, vec3 viewPos, vec3 n, vec2 lm, float mat, float dither, 
     vec3 direct = lightColor() * (diffuse + sss) * sh * smoothstep(0.0, 0.25, lm.y + 0.05);
 
     float skyL = lm.y * lm.y;
-    vec3 ambientSky = pow(mix(fogColor, skyColor, 0.6), vec3(2.2)) * mix(0.08, 1.0, dayFactor()) * 0.55;
+    vec3 ambientSky = pow(mix(fogColor, skyColor, 0.6), vec3(2.2));
+    ambientSky = mix(ambientSky, vec3(luma(ambientSky)), 0.45) * mix(0.08, 1.0, dayFactor()) * 0.5;
     ambientSky += vec3(0.02, 0.025, 0.04);
     float up = dot(n, normalize(upPosition)) * 0.3 + 0.7;
     vec3 ambient = ambientSky * skyL * up;
