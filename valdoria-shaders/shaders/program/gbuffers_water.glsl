@@ -52,9 +52,9 @@ float waveHeight(vec2 p) {
     float h = 0.0;
     h += sin(dot(p, vec2(0.8, 0.6)) * 1.1 + t * 1.3) * 0.18;
     h += sin(dot(p, vec2(-0.5, 0.9)) * 1.7 + t * 1.7) * 0.10;
-    h += (noise2(p * 0.9 + vec2(t * 0.35, t * 0.2)) - 0.5) * 0.30;
-    h += (noise2(p * 2.6 - vec2(t * 0.6, -t * 0.4)) - 0.5) * 0.12;
-    h += (noise2(p * 6.0 + vec2(t * 1.1, t * 0.9)) - 0.5) * 0.04;
+    h += (vnoise(p * 0.9 + vec2(t * 0.35, t * 0.2)) - 0.5) * 0.30;
+    h += (vnoise(p * 2.6 - vec2(t * 0.6, -t * 0.4)) - 0.5) * 0.12;
+    h += (vnoise(p * 6.0 + vec2(t * 1.1, t * 0.9)) - 0.5) * 0.04;
     return h;
 }
 
@@ -102,15 +102,15 @@ void main() {
         float opaque = linDepth(texture(depthtex1, screen).r);
         float here = linDepth(gl_FragCoord.z);
         float depthDiff = opaque - here;
-        foam = saturate(1.0 - depthDiff / 0.6) * (0.6 + 0.4 * noise2(worldPos.xz * 3.0 + frameTimeCounter * 0.8));
+        foam = saturate(1.0 - depthDiff / 0.6) * (0.6 + 0.4 * vnoise(worldPos.xz * 3.0 + frameTimeCounter * 0.8));
     } else {
         // waterfall: streaks rushing down, broken up and frothy white
         vec3 side = normalize(vec3(normalW.x, 0.0, normalW.z));
         vec3 tangent = vec3(-side.z, 0.0, side.x);
         float along = dot(worldPos, tangent);
         float flow = worldPos.y + frameTimeCounter * 6.0;
-        float streak = noise2(vec2(along * 3.0, flow * 0.35)) * 0.6 + noise2(vec2(along * 9.0, flow * 1.1)) * 0.4;
-        nW = normalize(side + tangent * (streak - 0.5) * 0.9 + vec3(0.0, (noise2(vec2(along * 5.0, flow)) - 0.5) * 0.4, 0.0));
+        float streak = vnoise(vec2(along * 3.0, flow * 0.35)) * 0.6 + vnoise(vec2(along * 9.0, flow * 1.1)) * 0.4;
+        nW = normalize(side + tangent * (streak - 0.5) * 0.9 + vec3(0.0, (vnoise(vec2(along * 5.0, flow)) - 0.5) * 0.4, 0.0));
         foam = smoothstep(0.35, 0.85, streak) * 0.85 + 0.15;
     }
     vec3 n = normalize(mat3(gbufferModelView) * nW);
