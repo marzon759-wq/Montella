@@ -17,7 +17,7 @@ public final class MistfallTerrain {
     public static final int MIN_Y = 0;
     public static final int HEIGHT = 320;
     /** Water level on the canyon floors. */
-    public static final int FLOOR_WATER = 52;
+    public static final int FLOOR_WATER = 51;
 
     private final ImprovedNoise plateau, detail, canyon, warp, river, strata;
 
@@ -60,24 +60,28 @@ public final class MistfallTerrain {
         double wz = z + fbm(warp, z / 180.0 + 31, x / 180.0, 2) * 60;
         double a = Math.abs(fbm(canyon, wx / 420.0, wz / 420.0, 3));
         a += fbm(detail, x / 9.0, z / 9.0, 1) * 0.006; // ragged rock walls
-        return smooth(0.1, 0.07, a);
+        return smooth(0.074, 0.066, a);
     }
 
-    /** True where a river flows (on plateaus, down cliffs, and through canyons). */
+    /** True where a plateau river flows (rivers only run on the plateaus; canyons have their own floor river). */
     public boolean isRiver(int x, int z) {
+        return riverMask(x, z) && canyonFactor(x, z) < 0.02;
+    }
+
+    private boolean riverMask(int x, int z) {
         double wx = x + fbm(warp, x / 90.0 + 7, z / 90.0, 2) * 25;
         double wz = z + fbm(warp, z / 90.0, x / 90.0 + 7, 2) * 25;
-        return Math.abs(fbm(river, wx / 230.0, wz / 230.0, 3)) < 0.04;
+        return Math.abs(fbm(river, wx / 230.0, wz / 230.0, 3)) < 0.032;
     }
 
     /** Height of the highest solid block of the column (before trees). */
     public int solidTop(int x, int z) {
         double k = canyonFactor(x, z);
         double plat = plateauHeight(x, z);
-        double floor = 47 + fbm(detail, x / 30.0, z / 30.0, 2) * 7;
+        double floor = 51.5 + fbm(detail, x / 30.0, z / 30.0, 2) * 9;
         double h = Mth.lerp(Math.pow(k, 0.55), plat, floor);
         int top = (int) Math.floor(h);
-        if (isRiver(x, z) && k < 0.98) top -= 3; // river channel cut into the rock
+        if (isRiver(x, z)) top -= 3; // river channel cut into the rock
         return top;
     }
 
@@ -85,7 +89,7 @@ public final class MistfallTerrain {
     public int waterTop(int x, int z) {
         int top = solidTop(x, z);
         if (top < FLOOR_WATER) return FLOOR_WATER;
-        if (isRiver(x, z) && canyonFactor(x, z) < 0.98) return top + 2;
+        if (isRiver(x, z)) return top + 2;
         return -1;
     }
 
@@ -96,12 +100,31 @@ public final class MistfallTerrain {
     public int fallTop(int x, int z) {
         int own = Math.max(solidTop(x, z), waterTop(x, z));
         int best = -1;
+        if (isRiver(x, z)) {
+            // a river stepping down a terrace: the lower part of the river gets the spill of the upper part
+            int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            for (int[] d : dirs) {
+                int nx = x + d[0], nz = z + d[1];
+                if (!isRiver(nx, nz)) continue;
+                int w = waterTop(nx, nz);
+                if (w > own + 1 && w > best) best = w;
+            }
+            return best;
+        }
+        if (canyonFactor(x, z) < 0.02) return -1;
+        // the cliff right below a river's end: a curtain of water as wide as the river (at most 2 columns thick)
         int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         for (int[] d : dirs) {
-            int nx = x + d[0], nz = z + d[1];
-            if (!isRiver(nx, nz)) continue;
-            int w = waterTop(nx, nz);
-            if (w > own + 1 && w > best) best = w;
+            for (int dist = 1; dist <= 2; dist++) {
+                int nx = x + d[0] * dist, nz = z + d[1] * dist;
+                if (!isRiver(nx, nz)) continue;
+                int w = waterTop(nx, nz);
+                if (dist == 2) {
+                    int mid = Math.max(solidTop(x + d[0], z + d[1]), waterTop(x + d[0], z + d[1]));
+                    if (mid >= w) continue;
+                }
+                if (w > own + 1 && w > best) best = w;
+            }
         }
         return best;
     }
