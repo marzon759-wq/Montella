@@ -96,19 +96,23 @@ final class MistfallTest {
             }
             MistfallTerrain t = gen.terrain(l.getChunkSource().randomState());
             BlockPos c = p.blockPosition();
+            renderMap(t, c, 1024);
             int best = 0;
-            for (int x = c.getX() - 700; x <= c.getX() + 700; x += 2)
-                for (int z = c.getZ() - 700; z <= c.getZ() + 700; z += 2) {
-                    if (t.canyonFactor(x, z) < 0.6) continue;
-                    int f = t.fallTop(x, z);
-                    if (f < 0) continue;
-                    int bottom = Math.max(t.solidTop(x, z), t.waterTop(x, z));
-                    int h = f - bottom;
-                    if (h > best) {
-                        best = h; fallPos = new BlockPos(x, bottom, z); fallTop = f; fallBottom = bottom;
-                        dirX = 0; dirZ = 0;
-                        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-                        for (int[] d : dirs) if (t.isRiver(x + d[0], z + d[1]) && t.waterTop(x + d[0], z + d[1]) == f) { dirX = d[0]; dirZ = d[1]; }
+            int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            for (int x = c.getX() - 600; x <= c.getX() + 600; x++)
+                for (int z = c.getZ() - 600; z <= c.getZ() + 600; z++) {
+                    if (!t.isRiver(x, z)) continue;
+                    for (int[] d : dirs) {
+                        int cx = x + d[0], cz = z + d[1];
+                        int f = t.fallTop(cx, cz);
+                        if (f < 0) continue;
+                        int bottom = Math.max(t.solidTop(cx, cz), t.waterTop(cx, cz));
+                        // the river must run towards the edge, and the far side must be open canyon
+                        if (!t.isRiver(x - d[0], z - d[1]) || t.canyonFactor(cx + d[0] * 12, cz + d[1] * 12) < 0.9) continue;
+                        int h = f - bottom;
+                        if (h > best && h < 90) {
+                            best = h; fallPos = new BlockPos(cx, bottom, cz); fallTop = f; fallBottom = bottom; dirX = -d[0]; dirZ = -d[1];
+                        }
                     }
                 }
             ValdoriaMod.LOG.info("[AUTOTEST] tallest waterfall: {} from y={} down to y={} (river comes from {},{})", fallPos, fallTop, fallBottom, dirX, dirZ);
@@ -155,6 +159,28 @@ final class MistfallTest {
             MistfallPortal.travel(p);
         }));
         step(120, () -> ValdoriaMod.LOG.info("[AUTOTEST] back in {}", Minecraft.getInstance().level.dimension().location()));
+    }
+
+    /** Top-down colour map of the terrain around the arrival point, for checking the layout. */
+    private static void renderMap(MistfallTerrain t, BlockPos c, int size) {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(size / 2, size / 2, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < size / 2; i++)
+            for (int j = 0; j < size / 2; j++) {
+                int x = c.getX() - size / 2 + i * 2, z = c.getZ() - size / 2 + j * 2;
+                int top = t.solidTop(x, z), w = t.waterTop(x, z), f = t.fallTop(x, z);
+                int rgb;
+                if (f > 0) rgb = 0xFFFFFF;
+                else if (t.isRiver(x, z)) rgb = 0x2F7FE0;
+                else if (w > top) rgb = 0x3FC8C0;
+                else if (t.isSteep(x, z)) { int v = Math.min(255, 60 + top); rgb = (v / 2) << 16 | (v / 3) << 8 | v; }
+                else { int v = Math.min(255, top); rgb = (v / 3) << 16 | v << 8 | (v / 4); }
+                img.setRGB(i, j, rgb);
+            }
+        try {
+            javax.imageio.ImageIO.write(img, "png", new java.io.File(Minecraft.getInstance().gameDirectory, "screenshots/mf_map.png"));
+        } catch (java.io.IOException e) {
+            ValdoriaMod.LOG.error("map", e);
+        }
     }
 
     /** Minecraft yaw that looks along the horizontal vector (vx, vz). */
