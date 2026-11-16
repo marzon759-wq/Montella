@@ -81,7 +81,7 @@ final class MistfallTest {
         step(5, () -> {
             onServer(() -> {
                 ServerPlayer p = sp();
-                p.teleportTo(p.serverLevel(), p.getX(), p.getY(), p.getZ(), 180, 5);
+                p.teleportTo(p.serverLevel(), p.getX(), p.getY() + 0.5, p.getZ() + 4, 180, 10);
             });
         });
         step(40, () -> {});
@@ -118,38 +118,11 @@ final class MistfallTest {
             ValdoriaMod.LOG.info("[AUTOTEST] tallest waterfall: {} from y={} down to y={} (river comes from {},{})", fallPos, fallTop, fallBottom, dirX, dirZ);
             p.setGameMode(GameType.SPECTATOR);
         }));
-        // 4. viewpoints around it: facing the falls from across the canyon, from above, from the pool, from the plateau
-        step(5, () -> {
-            if (fallPos == null) return;
-            double ax = fallPos.getX() + 0.5 - dirX * 34, az = fallPos.getZ() + 0.5 - dirZ * 34;
-            cam(ax, (fallTop + fallBottom) / 2.0 + 6, az, look(dirX, dirZ), 6);
-        });
-        step(260, () -> {});
-        step(5, () -> shot("mf_waterfall"));
-        step(5, () -> {
-            if (fallPos == null) return;
-            cam(fallPos.getX() + 0.5 - dirX * 55 + dirZ * 8, fallTop + 34, fallPos.getZ() + 0.5 - dirZ * 55 + dirX * 8, look(dirX, dirZ) + 6, 24);
-        });
-        step(220, () -> {});
-        step(5, () -> shot("mf_aerial"));
-        step(5, () -> {
-            if (fallPos == null) return;
-            cam(fallPos.getX() + 0.5 - dirX * 14, fallBottom + 2.5, fallPos.getZ() + 0.5 - dirZ * 14, look(dirX, dirZ), -28);
-        });
-        step(160, () -> {});
-        step(5, () -> shot("mf_pool"));
-        step(5, () -> {
-            if (fallPos == null) return;
-            cam(fallPos.getX() + 0.5 + dirX * 30, fallTop + 3, fallPos.getZ() + 0.5 + dirZ * 30, look(-dirX, -dirZ), 6);
-        });
-        step(220, () -> {});
-        step(5, () -> shot("mf_plateau"));
-        step(5, () -> {
-            if (fallPos == null) return;
-            cam(fallPos.getX() + 0.5 + dirZ * 60, fallTop + 70, fallPos.getZ() + 0.5 + dirX * 60, look(-dirZ, -dirX), 30);
-        });
-        step(240, () -> {});
-        step(5, () -> shot("mf_overview"));
+        // 4. viewpoints around it (dir points from the falls back up the river)
+        view("mf_hero", () -> cam(fallPos.getX() + 0.5 - dirX * 22, fallTop + 42, fallPos.getZ() + 0.5 - dirZ * 22, look(dirX, dirZ), 42));
+        view("mf_aerial", () -> cam(fallPos.getX() + 0.5 - dirX * 40 + dirZ * 14, fallTop + 30, fallPos.getZ() + 0.5 - dirZ * 40 + dirX * 14, look(dirX, dirZ) + 14, 26));
+        view("mf_canyon", () -> cam(fallPos.getX() + 0.5 - dirX * 9, fallBottom + 2, fallPos.getZ() + 0.5 - dirZ * 9, look(dirX, dirZ), -38));
+        view("mf_plateau", () -> cam(fallPos.getX() + 0.5 + dirX * 30, fallTop + 3, fallPos.getZ() + 0.5 + dirZ * 30, look(-dirX, -dirZ), 6));
         // 5. back home through the return portal
         step(5, () -> onServer(() -> sp().setGameMode(GameType.CREATIVE)));
         step(5, () -> onServer(() -> {
@@ -181,6 +154,12 @@ final class MistfallTest {
         } catch (java.io.IOException e) {
             ValdoriaMod.LOG.error("map", e);
         }
+    }
+
+    private static void view(String name, Runnable camera) {
+        step(5, () -> { if (fallPos != null) camera.run(); });
+        step(240, () -> {});
+        step(5, () -> shot(name));
     }
 
     /** Minecraft yaw that looks along the horizontal vector (vx, vz). */
