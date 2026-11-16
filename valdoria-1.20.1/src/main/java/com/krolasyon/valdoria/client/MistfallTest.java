@@ -87,7 +87,7 @@ final class MistfallTest {
         step(40, () -> {});
         step(5, () -> shot("mf_arrival"));
         // 3. find a tall waterfall pouring into a canyon near the arrival point
-        step(10, () -> onServer(() -> {
+        step(300, () -> onServer(() -> {
             ServerPlayer p = sp();
             ServerLevel l = p.serverLevel();
             if (!(l.getChunkSource().getGenerator() instanceof MistfallChunkGenerator gen)) {
@@ -121,7 +121,7 @@ final class MistfallTest {
         // 4. viewpoints around it (dir points from the falls back up the river)
         view("mf_hero", () -> cam(fallPos.getX() + 0.5 - dirX * 22, fallTop + 42, fallPos.getZ() + 0.5 - dirZ * 22, look(dirX, dirZ), 42));
         view("mf_aerial", () -> cam(fallPos.getX() + 0.5 - dirX * 40 + dirZ * 14, fallTop + 30, fallPos.getZ() + 0.5 - dirZ * 40 + dirX * 14, look(dirX, dirZ) + 14, 26));
-        view("mf_canyon", () -> cam(fallPos.getX() + 0.5 - dirX * 9, fallBottom + 2, fallPos.getZ() + 0.5 - dirZ * 9, look(dirX, dirZ), -38));
+        view("mf_canyon", () -> cam(fallPos.getX() + 0.5 - dirX * 12, fallBottom + 6, fallPos.getZ() + 0.5 - dirZ * 12, look(dirX, dirZ), -30));
         view("mf_plateau", () -> cam(fallPos.getX() + 0.5 + dirX * 30, fallTop + 3, fallPos.getZ() + 0.5 + dirZ * 30, look(-dirX, -dirZ), 6));
         // 5. back home through the return portal
         step(5, () -> onServer(() -> sp().setGameMode(GameType.CREATIVE)));
