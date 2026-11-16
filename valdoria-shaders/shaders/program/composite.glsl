@@ -72,7 +72,7 @@ void main() {
     vec3 dirW = mat3(gbufferModelViewInverse) * normalize(viewPos);
     vec3 L = normalize(shadowLightPosition);
     float VdotL = dot(normalize(viewPos), L);
-    float phase = 0.25 + 1.6 * pow(saturate(VdotL), 6.0) + 0.3 * pow(saturate(VdotL), 2.0);
+    float phase = 0.25 + 0.6 * pow(saturate(VdotL), 6.0) + 0.25 * pow(saturate(VdotL), 2.0);
     float fogFar = fogEnd > 1.0 ? min(fogEnd, far) : far;
     float density = 0.0045 + rainStrength * 0.006 + 0.6 / max(fogFar, 16.0);
     if (isEyeInWater == 1) density = 0.03;
