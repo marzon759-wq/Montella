@@ -36,7 +36,7 @@ public class SkyrootTreeFeature extends Feature<NoneFeatureConfiguration> {
 
         BlockState log = ModBlocks.SKYROOT_LOG.get().defaultBlockState();
         BlockState wood = ModBlocks.SKYROOT_WOOD.get().defaultBlockState();
-        boolean golden = r.nextInt(5) == 0;
+        boolean golden = r.nextInt(7) == 0;
         BlockState leaf = (golden ? ModBlocks.GOLDEN_SKYROOT_LEAVES : ModBlocks.SKYROOT_LEAVES).get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
         BlockState leafAlt = (golden ? ModBlocks.SKYROOT_LEAVES : ModBlocks.GOLDEN_SKYROOT_LEAVES).get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
 
@@ -71,7 +71,7 @@ public class SkyrootTreeFeature extends Feature<NoneFeatureConfiguration> {
                 if (d < 4) put(level, o, x, y + 1, z, wood, true);
                 if (groundY < y - 3) {
                     // over an edge: hang straight down the rock face
-                    for (int k = 0; k < 18 && y - k > groundY; k++) put(level, o, x, y - k, z, wood, true);
+                    for (int k = 0; k < 7 && y - k > groundY; k++) put(level, o, x, y - k, z, wood, true);
                     break;
                 }
             }
@@ -102,8 +102,9 @@ public class SkyrootTreeFeature extends Feature<NoneFeatureConfiguration> {
 
     /** A broad flat canopy pad: wide bottom layer, narrower ragged top, a few leaves dangling from the rim. */
     private void pad(WorldGenLevel level, BlockPos o, RandomSource r, double cx, double cy, double cz, int radius, BlockState leaf, BlockState alt) {
-        for (int layer = 0; layer < 2; layer++) {
-            double rr = radius - layer * 1.6;
+        for (int layer = 0; layer < 3; layer++) {
+            double rr = radius - layer * (layer == 2 ? 1.6 : 1.2);
+            if (rr < 1.2) break;
             int ir = (int) Math.ceil(rr);
             for (int dx = -ir; dx <= ir; dx++)
                 for (int dz = -ir; dz <= ir; dz++) {

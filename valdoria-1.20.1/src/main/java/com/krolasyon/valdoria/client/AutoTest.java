@@ -134,7 +134,7 @@ public final class AutoTest {
         if (!created && mc.screen instanceof TitleScreen && ++menuTicks > 40) {
             created = true;
             mc.options.hideGui = true;
-            mc.options.renderDistance().set(10);
+            mc.options.renderDistance().set(12);
             mc.options.fov().set(85);
             String worldName = "valdoria_test_" + System.currentTimeMillis();
             LevelSettings ls = new LevelSettings(worldName, GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(), WorldDataConfiguration.DEFAULT);

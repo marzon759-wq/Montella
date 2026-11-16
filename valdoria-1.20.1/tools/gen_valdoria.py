@@ -1185,7 +1185,7 @@ def build_mistfall():
     wg("biome", "mistfall_vale", {
         "has_precipitation": True, "temperature": 0.9, "downfall": 0.9,
         "effects": {
-            "sky_color": 0x8ED6FF, "fog_color": 0xF5D3A0, "water_color": 0x3FD8D0, "water_fog_color": 0x1A6E78,
+            "sky_color": 0x7EC8F5, "fog_color": 0xD8E9EE, "water_color": 0x3FD8D0, "water_fog_color": 0x1A6E78,
             "grass_color": 0x86C25A, "foliage_color": 0x6FC08A,
             "particle": {"options": {"type": f"{NS}:mist"}, "probability": 0.0015},
             "mood_sound": {"sound": "minecraft:ambient.cave", "tick_delay": 6000, "block_search_extent": 8, "offset": 2.0},

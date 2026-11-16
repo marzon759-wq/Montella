@@ -117,14 +117,14 @@ final class MistfallTest {
         // 4. viewpoints around it: facing the falls from across the canyon, from above, from the pool, from the plateau
         step(5, () -> {
             if (fallPos == null) return;
-            double ax = fallPos.getX() + 0.5 - dirX * 26, az = fallPos.getZ() + 0.5 - dirZ * 26;
-            cam(ax, (fallTop + fallBottom) / 2.0 + 4, az, look(dirX, dirZ), 8);
+            double ax = fallPos.getX() + 0.5 - dirX * 34, az = fallPos.getZ() + 0.5 - dirZ * 34;
+            cam(ax, (fallTop + fallBottom) / 2.0 + 6, az, look(dirX, dirZ), 6);
         });
         step(260, () -> {});
         step(5, () -> shot("mf_waterfall"));
         step(5, () -> {
             if (fallPos == null) return;
-            cam(fallPos.getX() + 0.5 - dirX * 34 + dirZ * 10, fallTop + 38, fallPos.getZ() + 0.5 - dirZ * 34 + dirX * 10, look(dirX, dirZ) + 12, 38);
+            cam(fallPos.getX() + 0.5 - dirX * 55 + dirZ * 8, fallTop + 34, fallPos.getZ() + 0.5 - dirZ * 55 + dirX * 8, look(dirX, dirZ) + 6, 24);
         });
         step(220, () -> {});
         step(5, () -> shot("mf_aerial"));

@@ -60,14 +60,14 @@ public final class MistfallTerrain {
         double wz = z + fbm(warp, z / 180.0 + 31, x / 180.0, 2) * 60;
         double a = Math.abs(fbm(canyon, wx / 420.0, wz / 420.0, 3));
         a += fbm(detail, x / 9.0, z / 9.0, 1) * 0.006; // ragged rock walls
-        return smooth(0.064, 0.044, a);
+        return smooth(0.1, 0.07, a);
     }
 
     /** True where a river flows (on plateaus, down cliffs, and through canyons). */
     public boolean isRiver(int x, int z) {
         double wx = x + fbm(warp, x / 90.0 + 7, z / 90.0, 2) * 25;
         double wz = z + fbm(warp, z / 90.0, x / 90.0 + 7, 2) * 25;
-        return Math.abs(fbm(river, wx / 230.0, wz / 230.0, 3)) < 0.026;
+        return Math.abs(fbm(river, wx / 230.0, wz / 230.0, 3)) < 0.04;
     }
 
     /** Height of the highest solid block of the column (before trees). */
