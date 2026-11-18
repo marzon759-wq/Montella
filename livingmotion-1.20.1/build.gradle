@@ -21,7 +21,8 @@ minecraft {
         }
         client {
             if (System.getenv('LM_AUTOTEST') != null) property 'livingmotion.autotest', System.getenv('LM_AUTOTEST')
-            args '--width', '1280', '--height', '720'
+            def sz = (System.getenv('LM_SIZE') ?: '1280x720').split('x')
+            args '--width', sz[0], '--height', sz[1]
         }
     }
 }

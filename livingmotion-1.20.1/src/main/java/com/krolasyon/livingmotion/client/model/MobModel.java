@@ -30,6 +30,8 @@ public class MobModel extends GeoModel<ReplacedMob> {
     private final List<GeoBone> allBones = new ArrayList<>();
     private GeoBone head, skull, lidL, lidR, mouth, fangL, fangR, armR, armL, tail, earL, earR, brow, nose, arms;
 
+    private static final boolean FACE_TEST = System.getProperty("livingmotion.autotest", "").contains("faces");
+
     public MobModel(MobKind kind) {
         this.kind = kind;
     }
@@ -140,6 +142,11 @@ public class MobModel extends GeoModel<ReplacedMob> {
             }
             if (e.hurtTime > 0) lid = Math.max(lid, 0.75f * e.hurtTime / 10f);
             if (!alive || e.isSleeping()) lid = 1f;
+            if (FACE_TEST) {   // dev only: cycle idle / blink / scowl / open mouth every second for screenshots
+                int ph = (e.tickCount / 20) % 4;
+                lid = ph == 1 ? 1f : ph == 2 ? 0.45f : 0f;
+                brow = ph == 2 ? 0.38f : 0f;
+            }
 
             // mouth: snap on attack, gasp when hurt, slack jaw when dead, groans and chewing at idle
             float sinceAttack = age - t.attackFlash;
@@ -165,6 +172,10 @@ public class MobModel extends GeoModel<ReplacedMob> {
             fang = 0.12f + 0.08f * Mth.sin(age * 0.35f + t.seed);
             if (t.attackFlash > 0 && sinceAttack < 12f) fang = Math.max(fang, Mth.sin(sinceAttack / 12f * Mth.PI) * 0.75f);
             if (!alive) fang = 0.6f;
+        }
+        if (FACE_TEST && faces) {
+            int ph = (e.tickCount / 20) % 4;
+            open = ph == 3 ? 2f : ph == 2 ? 0.8f : 0f;
         }
         lid(lidR, lid, brow);
         lid(lidL, lid, -brow);

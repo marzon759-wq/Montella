@@ -103,6 +103,13 @@ public final class AutoTest {
             cmd("gamemode creative"); cmd("effect give @s night_vision 99999 0 true");
         });
         String mode = System.getProperty("livingmotion.autotest");
+        if (mode.contains("promo")) promo();
+        if (mode.contains("faces")) {
+            cue(5, () -> { Minecraft.getInstance().options.fov().set(30); clear(); });
+            cue(20, () -> { put("zombie", 0, 0, 180, ""); put("villager", 2.2, 0, 180, "VillagerData:{profession:\"minecraft:farmer\",level:2,type:\"minecraft:plains\"}");
+                put("creeper", -2.2, 0, 180, ""); cmd("tp @s 0 -59.0 -5.5 0 4"); });
+            burst("f_faces", 8, 30, 10);
+        }
         if (mode.contains("tall")) {
             gallery("enderman", "carriedBlockState:{Name:\"minecraft:grass_block\"}", 2.9);
             gallery("iron_golem", "", 2.7);
@@ -171,6 +178,106 @@ public final class AutoTest {
         }
         cue(40, () -> Minecraft.getInstance().stop());
     }
+
+    private static void line(double z, String... mobs) {
+        double x = (mobs.length - 1) * 1.1;
+        for (String m : mobs) {
+            String[] p = m.split("\\|", 2);
+            cmd(String.format(java.util.Locale.ROOT, "summon %s %.2f -60 %.2f {NoAI:1b,PersistenceRequired:1b,Rotation:[180f,0f]%s}",
+                    p[0], x, z, p.length > 1 ? "," + p[1] : ""));
+            x -= 2.2;
+        }
+    }
+
+    private static void clear() {
+        cmd("tp @e[type=!player] 0 -1000 0");   // drop out of the world far below: no death clutter on screen
+    }
+
+    private static void put(String id, double x, double z, float yaw, String nbt) {
+        cmd(String.format(java.util.Locale.ROOT, "summon %s %.2f -60 %.2f {NoAI:1b,PersistenceRequired:1b,Rotation:[%.1ff,0f]%s}",
+                id, x, z, yaw, nbt.isEmpty() ? "" : "," + nbt));
+    }
+
+    private static void burst(String name, int n, int first, int gap) {
+        for (int i = 0; i < n; i++) { final int k = i; cue(i == 0 ? first : gap, () -> shot(name + "_" + k)); }
+    }
+
+    /** Staged scenes for the CurseForge page. */
+    private static void promo() {
+        String sword = "HandItems:[{id:\"minecraft:iron_sword\",Count:1b},{}]", bow = "HandItems:[{id:\"minecraft:bow\",Count:1b},{}]";
+        // 1. hero group (cover)
+        cue(5, () -> { Minecraft.getInstance().options.fov().set(48); clear(); });
+        cue(20, () -> {
+            put("iron_golem", 0.3, 6.2, 180, "");
+            put("enderman", -2.6, 5.6, 195, "carriedBlockState:{Name:\"minecraft:grass_block\"}");
+            put("villager", 2.9, 4.8, 165, "VillagerData:{profession:\"minecraft:librarian\",level:4,type:\"minecraft:taiga\"}");
+            put("cow", -4.4, 4.0, 210, "");
+            put("creeper", -1.3, 3.2, 185, "");
+            put("skeleton", 1.6, 3.0, 170, bow);
+            put("zombie", 0.1, 1.9, 180, sword);
+            put("sheep", 4.2, 2.6, 150, "Color:2b");
+            put("spider", -3.0, 1.9, 205, "");
+            put("pig", 2.6, 1.0, 160, "");
+            put("chicken", -1.2, 0.6, 195, "");
+            cmd("tp @s 0 -59.0 -5.2 0 9");
+        });
+        burst("p_hero", 5, 40, 9);
+        // 2. hostile row
+        cue(5, this_clear());
+        cue(20, () -> {
+            put("zombie", 3.6, 2.5, 180, sword); put("skeleton", 1.8, 2.5, 180, bow); put("creeper", 0, 2.5, 180, "");
+            put("husk", -1.8, 2.5, 180, ""); put("drowned", -3.6, 2.5, 180, "HandItems:[{id:\"minecraft:trident\",Count:1b},{}]");
+            put("spider", 0.2, 0.2, 180, "");
+            cmd("tp @s 0 -59.2 -5.0 0 7");
+        });
+        burst("p_hostile", 3, 35, 11);
+        // 3. friendly row
+        cue(5, this_clear());
+        cue(20, () -> {
+            put("villager", 3.6, 2.5, 180, "VillagerData:{profession:\"minecraft:farmer\",level:2,type:\"minecraft:plains\"}");
+            put("iron_golem", 1.3, 3.2, 180, ""); put("wandering_trader", -1.2, 2.5, 180, ""); put("enderman", -3.4, 2.8, 180, "");
+            put("sheep", 2.2, 0.4, 200, "Color:0b"); put("pig", 0, 0.2, 180, ""); put("chicken", -1.6, -0.2, 170, ""); put("cow", -3.6, 0.6, 160, "");
+            cmd("tp @s 0 -59.0 -5.6 0 8");
+        });
+        burst("p_friendly", 3, 35, 11);
+        // 4. close-ups
+        cue(5, () -> { clear(); Minecraft.getInstance().options.fov().set(30); });
+        cue(20, () -> { put("chicken", 0, 0, 150, ""); put("chicken", 1.0, 0.6, 205, ""); cmd("tp @s 0.3 -60 -3.2 0 18"); });
+        burst("p_chicken", 3, 30, 11);
+        cue(5, this_clear());
+        cue(20, () -> { put("zombie", 0, 0, 180, ""); cmd("tp @s 0 -59.4 -2.6 0 2"); });
+        burst("p_zombieface", 6, 30, 7);
+        cue(5, this_clear());
+        cue(20, () -> { put("villager", 0, 0, 180, "VillagerData:{profession:\"minecraft:cleric\",level:5,type:\"minecraft:snow\"}");
+            put("sheep", 1.6, 1.2, 210, "Color:6b"); cmd("tp @s 0.6 -59.5 -3.4 0 6"); });
+        burst("p_villager", 3, 30, 9);
+        cue(5, this_clear());
+        cue(20, () -> { put("spider", 0, 0, 160, ""); put("cave_spider", 1.3, 0.4, 210, ""); cmd("tp @s 0.4 -60 -3.0 0 20"); });
+        burst("p_spider", 2, 30, 9);
+        // 5. golem vs zombies (side view)
+        cue(5, () -> { clear(); Minecraft.getInstance().options.fov().set(50); });
+        cue(20, () -> {
+            cmd("summon iron_golem 0 -60 2 {PersistenceRequired:1b}");
+            cmd("summon zombie 0 -60 5 {PersistenceRequired:1b}"); cmd("summon zombie 1 -60 6 {PersistenceRequired:1b}");
+            cmd("tp @s 7 -59.4 4 90 6"); });
+        burst("p_golem", 14, 20, 4);
+        // 6. horde coming at the player
+        cue(5, () -> { clear(); cmd("gamemode survival");
+            cmd("effect give @s resistance 600 255 true"); cmd("effect give @s regeneration 600 255 true"); });
+        cue(20, () -> { cmd("tp @s 0 -60 -4 0 4");
+            cmd("summon zombie -1.5 -60 3 {PersistenceRequired:1b}");
+            cmd("summon husk 1.8 -60 5 {PersistenceRequired:1b}");
+            cmd("summon spider -3.5 -60 6 {PersistenceRequired:1b}"); });
+        burst("p_attack", 10, 14, 5);
+        // 7. death
+        cue(5, () -> { clear(); cmd("gamemode creative"); });
+        cue(20, () -> { cmd("tp @s 0 -59.6 -4.2 0 8");
+            put("cow", -1.5, 0, 150, ""); put("pig", 1.5, 0, 220, ""); });
+        cue(30, () -> { cmd("kill @e[type=cow]"); cmd("damage @e[type=pig,limit=1] 1 minecraft:player_attack"); });
+        burst("p_death", 6, 3, 3);
+    }
+
+    private static Runnable this_clear() { return AutoTest::clear; }
 
     private static void tick(TickEvent.ClientTickEvent ev) {
         if (ev.phase != TickEvent.Phase.END) return;
