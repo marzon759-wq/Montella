@@ -1,0 +1,44 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+version = "${mc_version}-forge-${mod_version}"
+group = 'com.krolasyon.livingmotion'
+base { archivesName = 'living_motion' }
+// Minecraft 1.20.1 targets Java 17.
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods { livingmotion { source sourceSets.main } }
+        }
+        client {
+            if (System.getenv('LM_AUTOTEST') != null) property 'livingmotion.autotest', System.getenv('LM_AUTOTEST')
+            args '--width', '1280', '--height', '720'
+        }
+    }
+}
+repositories {
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${mc_version}:${gecko_version}")
+}
+tasks.named('processResources', ProcessResources).configure {
+    def props = [mod_version: mod_version]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml']) { expand props }
+}
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['Specification-Title': 'livingmotion', 'Implementation-Title': 'livingmotion',
+                           'Implementation-Version': project.version]) }
+    finalizedBy 'reobfJar'
+}

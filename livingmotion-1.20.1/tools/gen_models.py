@@ -1,0 +1,614 @@
+#!/usr/bin/env python3
+"""
+Living Motion - GeckoLib geometry + animation generator.
+
+Every model is rebuilt 1:1 from the vanilla Java model (same cube sizes, same box-UV layout) so the
+*vanilla textures* (and resource packs that keep the vanilla layout) map onto it unchanged. On top of that
+each model gets:
+  * an animation-friendly bone hierarchy (root > core > torso ...),
+  * face bones: eyelids (blink / squint / angry brows), mouth or fangs,
+  * "*_outer" bones for the vanilla overlay layers (stray clothes, drowned outer layer, charged creeper swirl).
+
+Coordinates: Java model parts are given as (pivot, cube offset) like in the vanilla code and converted to Bedrock
+geometry (x same, y = 24 - y, z same). Default part rotations carry over 1:1 (GeckoLib's bake flips them the
+same way the vanilla renderer's scale(-1,-1,1) does).
+
+Run:  python3 tools/gen_models.py
+"""
+import json
+import math
+import os
+
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'main', 'resources', 'assets', 'livingmotion')
+GEO = os.path.join(ROOT, 'geo')
+ANIM = os.path.join(ROOT, 'animations')
+
+
+# ----------------------------------------------------------------------------------------------------------------
+# geometry helpers
+# ----------------------------------------------------------------------------------------------------------------
+def r(v):
+    return round(v, 4)
+
+
+def jp(p):
+    """Java part pivot -> bedrock pivot."""
+    return [r(p[0]), r(24 - p[1]), r(p[2])]
+
+
+def jc(p, off, size, uv, inflate=0.0, mirror=False):
+    """Java cube (relative to part pivot p) -> bedrock cube."""
+    c = {'origin': [r(p[0] + off[0]), r(24 - (p[1] + off[1] + size[1])), r(p[2] + off[2])],
+         'size': [r(s) for s in size], 'uv': list(uv)}
+    if inflate:
+        c['inflate'] = inflate
+    if mirror:
+        c['mirror'] = True
+    return c
+
+
+def solid(origin, size, px):
+    """A cube painted with a single texture pixel on every face (used for eyelids, mouths, fangs)."""
+    face = {'uv': [px[0], px[1]], 'uv_size': [1, 1]}
+    return {'origin': [r(v) for v in origin], 'size': [r(v) for v in size],
+            'uv': {k: dict(face) for k in ('north', 'south', 'east', 'west', 'up', 'down')}}
+
+
+def bone(name, parent, pivot, cubes=None, rotation=None):
+    b = {'name': name, 'pivot': [r(v) for v in pivot]}
+    if parent:
+        b['parent'] = parent
+    if rotation:
+        b['rotation'] = [r(v) for v in rotation]
+    if cubes:
+        b['cubes'] = cubes
+    return b
+
+
+class Face:
+    """Face plane of a head cube: front z, left x (column 0 = the mob's right side), top y."""
+
+    def __init__(self, front_z, left_x, top_y):
+        self.z, self.x, self.y = front_z, left_x, top_y
+
+    def lid(self, name, parent, col, row, w, h, px, depth=0.15):
+        x0 = self.x + col
+        y_top = self.y - row
+        return bone(name, parent, [x0 + w / 2, y_top, self.z],
+                    [solid([x0 - 0.02, y_top - h - 0.02, self.z - depth], [w + 0.04, h + 0.04, depth], px)])
+
+    def mouth(self, name, parent, col, row, w, px, depth=0.15):
+        x0 = self.x + col
+        y_top = self.y - row
+        return bone(name, parent, [x0 + w / 2, y_top, self.z],
+                    [solid([x0, y_top - 1, self.z - depth], [w, 1, depth], px)])
+
+
+def geo(identifier, tw, th, bones):
+    return {'format_version': '1.12.0',
+            'minecraft:geometry': [{'description': {'identifier': 'geometry.livingmotion.' + identifier,
+                                                    'texture_width': tw, 'texture_height': th,
+                                                    'visible_bounds_width': 4, 'visible_bounds_height': 3.5,
+                                                    'visible_bounds_offset': [0, 1.5, 0]},
+                                    'bones': bones}]}
+
+
+# ----------------------------------------------------------------------------------------------------------------
+# models
+# ----------------------------------------------------------------------------------------------------------------
+def humanoid(skeleton):
+    """Zombie family (64x64) or skeleton family (64x32). Same bone names so they share animations."""
+    H = (0, 0, 0)
+    B = []
+    B.append(bone('root', None, [0, 0, 0]))
+    B.append(bone('core', 'root', [0, 0, 0]))
+    B.append(bone('torso', 'core', [0, 12, 0]))
+    B.append(bone('body', 'torso', jp(H), [jc(H, (-4, 0, -2), (8, 12, 4), (16, 16))]))
+    B.append(bone('head', 'torso', jp(H)))
+    B.append(bone('skull', 'head', jp(H), [jc(H, (-4, -8, -4), (8, 8, 8), (0, 0))]))
+    face = Face(-4, -4, 32)
+    if skeleton:
+        # eye sockets have no lids; the jaw drops instead (row 6 is the teeth line)
+        B.append(face.mouth('mouth', 'skull', 1, 6, 6, (9, 12)))           # dark socket pixel
+    else:
+        B.append(face.lid('eyelid_right', 'skull', 1, 4, 2, 1, (11, 11)))   # forehead skin pixel
+        B.append(face.lid('eyelid_left', 'skull', 5, 4, 2, 1, (11, 11)))
+        B.append(face.mouth('mouth', 'skull', 2, 6, 4, (9, 12)))            # eye pixel = darkest
+    RA, LA = (-5, 2, 0), (5, 2, 0)
+    if skeleton:
+        RL, LL = (-2, 12, 0), (2, 12, 0)
+        B.append(bone('right_arm', 'torso', jp(RA), [jc(RA, (-1, -2, -1), (2, 12, 2), (40, 16))]))
+        B.append(bone('left_arm', 'torso', jp(LA), [jc(LA, (-1, -2, -1), (2, 12, 2), (40, 16), mirror=True)]))
+        B.append(bone('right_leg', 'core', jp(RL), [jc(RL, (-1, 0, -1), (2, 12, 2), (0, 16))]))
+        B.append(bone('left_leg', 'core', jp(LL), [jc(LL, (-1, 0, -1), (2, 12, 2), (0, 16), mirror=True)]))
+        luv = {'larm': ((40, 16), True), 'lleg': ((0, 16), True)}
+    else:
+        RL, LL = (-1.9, 12, 0), (1.9, 12, 0)
+        B.append(bone('right_arm', 'torso', jp(RA), [jc(RA, (-3, -2, -2), (4, 12, 4), (40, 16))]))
+        B.append(bone('left_arm', 'torso', jp(LA), [jc(LA, (-1, -2, -2), (4, 12, 4), (32, 48))]))
+        B.append(bone('right_leg', 'core', jp(RL), [jc(RL, (-2, 0, -2), (4, 12, 4), (0, 16))]))
+        B.append(bone('left_leg', 'core', jp(LL), [jc(LL, (-2, 0, -2), (4, 12, 4), (16, 48))]))
+        luv = {'larm': ((32, 48), False), 'lleg': ((16, 48), False)}
+    # overlay layer (stray clothes / drowned outer layer): vanilla uses the plain humanoid mesh inflated by 0.25
+    o = 0.25
+    B.append(bone('skull_outer', 'skull', jp(H), [jc(H, (-4, -8, -4), (8, 8, 8), (0, 0), o),
+                                                   jc(H, (-4, -8, -4), (8, 8, 8), (32, 0), o + 0.5)]))
+    B.append(bone('body_outer', 'body', jp(H), [jc(H, (-4, 0, -2), (8, 12, 4), (16, 16), o)]))
+    B.append(bone('right_arm_outer', 'right_arm', jp(RA), [jc(RA, (-3, -2, -2), (4, 12, 4), (40, 16), o)]))
+    B.append(bone('left_arm_outer', 'left_arm', jp(LA),
+                  [jc(LA, (-1, -2, -2), (4, 12, 4), luv['larm'][0], o, luv['larm'][1])]))
+    B.append(bone('right_leg_outer', 'right_leg', jp(RL), [jc(RL, (-2, 0, -2), (4, 12, 4), (0, 16), o)]))
+    B.append(bone('left_leg_outer', 'left_leg', jp(LL),
+                  [jc(LL, (-2, 0, -2), (4, 12, 4), luv['lleg'][0], o, luv['lleg'][1])]))
+    return geo('skeleton' if skeleton else 'zombie', 64, 32 if skeleton else 64, B)
+
+
+def creeper():
+    B = [bone('root', None, [0, 0, 0]), bone('core', 'root', [0, 0, 0]), bone('torso', 'core', [0, 6, 0])]
+    HP = (0, 6, 0)
+    B.append(bone('body', 'torso', jp(HP), [jc(HP, (-4, 0, -2), (8, 12, 4), (16, 16))]))
+    B.append(bone('head', 'torso', jp(HP)))
+    B.append(bone('skull', 'head', jp(HP), [jc(HP, (-4, -8, -4), (8, 8, 8), (0, 0))]))
+    face = Face(-4, -4, 26)
+    B.append(face.lid('eyelid_right', 'skull', 1, 2, 2, 2, (11, 11)))
+    B.append(face.lid('eyelid_left', 'skull', 5, 2, 2, 2, (11, 11)))
+    B.append(face.mouth('mouth', 'skull', 2, 6, 4, (11, 14)))   # black mouth pixel; grows downward = jaw drop
+    legs = {'right_hind_leg': (-2, 18, 4), 'left_hind_leg': (2, 18, 4),
+            'right_front_leg': (-2, 18, -4), 'left_front_leg': (2, 18, -4)}
+    for n, p in legs.items():
+        B.append(bone(n, 'core', jp(p), [jc(p, (-2, 0, -2), (4, 6, 4), (0, 16))]))
+    # charged creeper swirl (vanilla CreeperPowerLayer: same mesh inflated by 2)
+    B.append(bone('skull_outer', 'skull', jp(HP), [jc(HP, (-4, -8, -4), (8, 8, 8), (0, 0), 2.0)]))
+    B.append(bone('body_outer', 'body', jp(HP), [jc(HP, (-4, 0, -2), (8, 12, 4), (16, 16), 2.0)]))
+    for n, p in legs.items():
+        B.append(bone(n + '_outer', n, jp(p), [jc(p, (-2, 0, -2), (4, 6, 4), (0, 16), 2.0)]))
+    return geo('creeper', 64, 32, B)
+
+
+def spider():
+    B = [bone('root', None, [0, 0, 0]), bone('core', 'root', [0, 0, 0]), bone('torso', 'core', [0, 9, 0])]
+    N = (0, 15, 0)
+    A = (0, 15, 9)
+    HD = (0, 15, -3)
+    B.append(bone('neck', 'torso', jp(N), [jc(N, (-3, -3, -3), (6, 6, 6), (0, 0))]))
+    B.append(bone('abdomen', 'torso', jp(A), [jc(A, (-5, -4, -6), (10, 8, 12), (0, 12))]))
+    B.append(bone('head', 'torso', jp(HD)))
+    B.append(bone('skull', 'head', jp(HD), [jc(HD, (-4, -4, -8), (8, 8, 8), (32, 4))]))
+    # chelicerae / fangs under the face (painted with the pale fang pixel of the texture)
+    for n, x in (('fang_right', -3), ('fang_left', 2)):
+        B.append(bone(n, 'skull', [x + 0.5, 6, -10.5], [solid([x, 3.5, -11.2], [1, 2.5, 1], (41, 18))]))
+    f = 45.0
+    legs = [('right_hind_leg', (-4, 15, 2), 45, -f), ('left_hind_leg', (4, 15, 2), -45, f),
+            ('right_middle_hind_leg', (-4, 15, 1), 22.5, -33.3), ('left_middle_hind_leg', (4, 15, 1), -22.5, 33.3),
+            ('right_middle_front_leg', (-4, 15, 0), -22.5, -33.3), ('left_middle_front_leg', (4, 15, 0), 22.5, 33.3),
+            ('right_front_leg', (-4, 15, -1), -45, -f), ('left_front_leg', (4, 15, -1), 45, f)]
+    for n, p, ry, rz in legs:
+        off = (-15, -1, -1) if n.startswith('right') else (-1, -1, -1)
+        B.append(bone(n, 'core', jp(p), [jc(p, off, (16, 2, 2), (18, 0))], rotation=[0, ry, rz]))
+    return geo('spider', 64, 32, B)
+
+
+def quadruped(kind):
+    B = [bone('root', None, [0, 0, 0]), bone('core', 'root', [0, 0, 0])]
+    if kind == 'cow':
+        HP, BP, legh, legs = (0, 4, -8), (0, 5, 2), 12, {
+            'right_hind_leg': ((-4, 12, 7), False), 'left_hind_leg': ((4, 12, 7), True),
+            'right_front_leg': ((-4, 12, -6), False), 'left_front_leg': ((4, 12, -6), True)}
+        B.append(bone('torso', 'core', [0, 13, 0]))
+        B.append(bone('body', 'torso', jp(BP), [jc(BP, (-6, -10, -7), (12, 18, 10), (18, 4)),
+                                                 jc(BP, (-2, 2, -8), (4, 6, 1), (52, 0))], rotation=[90, 0, 0]))
+        B.append(bone('head', 'torso', jp(HP)))
+        B.append(bone('skull', 'head', jp(HP), [jc(HP, (-4, -4, -6), (8, 8, 6), (0, 0)),
+                                                 jc(HP, (-5, -5, -4), (1, 3, 1), (22, 0)),
+                                                 jc(HP, (4, -5, -4), (1, 3, 1), (22, 0))]))
+        face = Face(-14, -4, 24)
+        B.append(face.lid('eyelid_right', 'skull', 0, 3, 2, 1, (6, 10)))
+        B.append(face.lid('eyelid_left', 'skull', 6, 3, 2, 1, (6, 10)))
+        # jaw: hangs under the muzzle while chewing / mooing
+        B.append(bone('mouth', 'skull', [0, 16, -12.5], [solid([-2, 15, -14], [4, 1, 3], (9, 13))]))
+    else:  # pig
+        HP, BP, legh = (0, 12, -6), (0, 11, 2), 6
+        legs = {'right_hind_leg': ((-3, 18, 7), False), 'left_hind_leg': ((3, 18, 7), False),
+                'right_front_leg': ((-3, 18, -5), False), 'left_front_leg': ((3, 18, -5), False)}
+        B.append(bone('torso', 'core', [0, 10, 0]))
+        B.append(bone('body', 'torso', jp(BP), [jc(BP, (-5, -10, -7), (10, 16, 8), (28, 8))], rotation=[90, 0, 0]))
+        B.append(bone('head', 'torso', jp(HP)))
+        B.append(bone('skull', 'head', jp(HP), [jc(HP, (-4, -4, -8), (8, 8, 8), (0, 0)),
+                                                 jc(HP, (-2, 0, -9), (4, 3, 1), (16, 16))]))
+        face = Face(-14, -4, 16)
+        B.append(face.lid('eyelid_right', 'skull', 0, 3, 2, 1, (8, 12)))
+        B.append(face.lid('eyelid_left', 'skull', 6, 3, 2, 1, (8, 12)))
+        B.append(bone('mouth', 'skull', [0, 8, -12.5], [solid([-2, 7, -14.5], [4, 1, 3], (8, 11))]))
+    for n, (p, m) in legs.items():
+        B.append(bone(n, 'core', jp(p), [jc(p, (-2, 0, -2), (4, legh, 4), (0, 16), mirror=m)]))
+    return geo(kind, 64, 32, B)
+
+
+def chicken():
+    B = [bone('root', None, [0, 0, 0]), bone('core', 'root', [0, 0, 0]), bone('torso', 'core', [0, 5, 0])]
+    HP = (0, 15, -4)
+    BP = (0, 16, 0)
+    B.append(bone('body', 'torso', jp(BP), [jc(BP, (-3, -4, -3), (6, 8, 6), (0, 9))], rotation=[90, 0, 0]))
+    B.append(bone('head', 'torso', jp(HP)))
+    B.append(bone('skull', 'head', jp(HP), [jc(HP, (-2, -6, -2), (4, 6, 3), (0, 0))]))
+    B.append(bone('beak', 'skull', jp(HP), [jc(HP, (-2, -4, -4), (4, 2, 2), (14, 0))]))
+    B.append(bone('wattle', 'skull', [0, 11, -6], [jc(HP, (-1, -2, -3), (2, 2, 2), (14, 4))]))
+    face = Face(-6, -2, 15)
+    B.append(face.lid('eyelid_right', 'skull', 0, 1, 1, 1, (4, 5)))
+    B.append(face.lid('eyelid_left', 'skull', 3, 1, 1, 1, (4, 5)))
+    for n, p in (('right_leg', (-2, 19, 1)), ('left_leg', (1, 19, 1))):
+        B.append(bone(n, 'core', jp(p), [jc(p, (-1, 0, -3), (3, 5, 3), (26, 0))]))
+    for n, p, ox in (('right_wing', (-4, 13, 0), 0), ('left_wing', (4, 13, 0), -1)):
+        B.append(bone(n, 'torso', jp(p), [jc(p, (ox, 0, -3), (1, 4, 6), (24, 13))]))
+    return geo('chicken', 64, 32, B)
+
+
+# ----------------------------------------------------------------------------------------------------------------
+# animation helpers
+# ----------------------------------------------------------------------------------------------------------------
+def ts(t):
+    return ('%.4f' % t).rstrip('0').rstrip('.') if t else '0.0'
+
+
+def wave(length, steps, fn):
+    """Sample fn(phase 0..1) -> [x,y,z] into keyframes covering one loop (first == last)."""
+    out = {}
+    for i in range(steps + 1):
+        p = i / steps
+        out[ts(p * length)] = [r(v) for v in fn(p)]
+    return out
+
+
+def keys(*pairs):
+    """keys((t, [x,y,z]), ...) - plain linear keyframes."""
+    return {ts(t): [r(v) for v in val] for t, val in pairs}
+
+
+def S(p, k=1.0, ph=0.0):
+    return math.sin((p * k + ph) * 2 * math.pi)
+
+
+def C(p, k=1.0, ph=0.0):
+    return math.cos((p * k + ph) * 2 * math.pi)
+
+
+def anim(length, loop, bones):
+    a = {'animation_length': length, 'bones': bones}
+    if loop is True:
+        a['loop'] = True
+    elif loop == 'hold':
+        a['loop'] = 'hold_on_last_frame'
+    return a
+
+
+def faster(a, f):
+    """Time-scale an animation (death poses must land before vanilla removes the body at 20 ticks)."""
+    out = {'animation_length': r(a['animation_length'] * f), 'bones': {}}
+    if 'loop' in a:
+        out['loop'] = a['loop']
+    for b, chans in a['bones'].items():
+        out['bones'][b] = {ch: {ts(float(t) * f): v for t, v in kf.items()} for ch, kf in chans.items()}
+    return out
+
+
+def write_anims(name, anims):
+    if 'death' in anims:
+        anims = dict(anims)
+        anims['death'] = faster(anims['death'], 0.62)
+    data = {'format_version': '1.8.0', 'animations': {'animation.' + name + '.' + k: v for k, v in anims.items()}}
+    with open(os.path.join(ANIM, name + '.animation.json'), 'w') as f:
+        json.dump(data, f, indent=1)
+
+
+# Shared reactions --------------------------------------------------------------------------------------------
+def hurt_humanoid():
+    return anim(0.45, False, {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.07, [-11, 0, 0]), (0.2, [-6, 0, 0]), (0.45, [0, 0, 0])),
+                 'position': keys((0, [0, 0, 0]), (0.07, [0, 0.4, 1.2]), (0.45, [0, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.06, [-18, 6, 9]), (0.22, [-6, -3, -4]), (0.45, [0, 0, 0]))},
+        'right_arm': {'rotation': keys((0, [0, 0, 0]), (0.08, [-25, 0, 22]), (0.45, [0, 0, 0]))},
+        'left_arm': {'rotation': keys((0, [0, 0, 0]), (0.08, [-25, 0, -22]), (0.45, [0, 0, 0]))},
+    })
+
+
+def death_humanoid():
+    return anim(1.0, 'hold', {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.25, [-12, 0, 4]), (0.5, [-8, 0, 3]), (0.95, [-90, 0, 4]),
+                                  (1.0, [-88, 0, 4])),
+                 'position': keys((0, [0, 0, 0]), (0.5, [0, -1.5, 0]), (0.95, [0, 2.2, 0]), (1.0, [0, 2, 0]))},
+        'right_leg': {'rotation': keys((0, [0, 0, 0]), (0.45, [-35, 0, 0]), (0.9, [-5, 0, 6]))},
+        'left_leg': {'rotation': keys((0, [0, 0, 0]), (0.45, [-30, 0, 0]), (0.9, [-10, 0, -6]))},
+        'right_arm': {'rotation': keys((0, [0, 0, 0]), (0.3, [-150, 0, 25]), (0.9, [-170, 0, 40]))},
+        'left_arm': {'rotation': keys((0, [0, 0, 0]), (0.35, [-140, 0, -20]), (0.9, [-165, 0, -35]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.3, [-25, 0, 10]), (0.95, [10, 15, 20]))},
+    })
+
+
+# ----------------------------------------------------------------------------------------------------------------
+# humanoid animations (zombie family + skeleton family)
+# ----------------------------------------------------------------------------------------------------------------
+def humanoid_anims():
+    A = {}
+    # zombie: arms held forward, slouched, swaying
+    A['zombie_idle'] = anim(3.2, True, {
+        'torso': {'rotation': wave(3.2, 16, lambda p: [4 + 1.6 * S(p), 2 * S(p, 1, 0.3), 1.5 * S(p, 1, 0.1)])},
+        'right_arm': {'rotation': wave(3.2, 16, lambda p: [-82 + 3 * S(p, 1, 0.2), 4 * S(p), 4 + 2 * C(p)])},
+        'left_arm': {'rotation': wave(3.2, 16, lambda p: [-80 + 3 * S(p, 1, 0.45), -4 * S(p), -4 - 2 * C(p, 1, .2)])},
+        'skull': {'rotation': wave(3.2, 16, lambda p: [3 * S(p, 1, 0.25), 0, 6 * S(p)])},
+        'core': {'position': wave(3.2, 8, lambda p: [0, 0.15 * S(p, 2), 0])},
+    })
+    A['zombie_walk'] = anim(1.2, True, {
+        'right_leg': {'rotation': wave(1.2, 12, lambda p: [32 * C(p), 0, 0])},
+        'left_leg': {'rotation': wave(1.2, 12, lambda p: [-32 * C(p), 0, 0])},
+        'right_arm': {'rotation': wave(1.2, 12, lambda p: [-84 - 7 * C(p), 3 * S(p), 5])},
+        'left_arm': {'rotation': wave(1.2, 12, lambda p: [-84 + 7 * C(p), -3 * S(p), -5])},
+        'torso': {'rotation': wave(1.2, 12, lambda p: [7, 6 * S(p), 4 * S(p)])},
+        'core': {'position': wave(1.2, 12, lambda p: [0, 0.7 * abs(S(p)), 0])},
+        'skull': {'rotation': wave(1.2, 12, lambda p: [-3, 0, 5 * S(p, 1, 0.15)])},
+    })
+    A['zombie_chase'] = anim(0.8, True, {
+        'right_leg': {'rotation': wave(0.8, 12, lambda p: [42 * C(p), 0, 0])},
+        'left_leg': {'rotation': wave(0.8, 12, lambda p: [-42 * C(p), 0, 0])},
+        'right_arm': {'rotation': wave(0.8, 12, lambda p: [-100 - 14 * C(p), 6 * S(p), 8])},
+        'left_arm': {'rotation': wave(0.8, 12, lambda p: [-100 + 14 * C(p), -6 * S(p), -8])},
+        'torso': {'rotation': wave(0.8, 12, lambda p: [16, 8 * S(p), 3 * S(p)])},
+        'core': {'position': wave(0.8, 12, lambda p: [0, 1.0 * abs(S(p)), 0])},
+        'skull': {'rotation': wave(0.8, 12, lambda p: [-14, 0, 4 * S(p)])},
+    })
+    A['zombie_attack'] = anim(0.5, False, {
+        'right_arm': {'rotation': keys((0, [-90, 0, 5]), (0.14, [-155, 18, 12]), (0.27, [-45, -22, -6]),
+                                       (0.5, [-88, 0, 5]))},
+        'left_arm': {'rotation': keys((0, [-90, 0, -5]), (0.2, [-150, -18, -12]), (0.34, [-50, 22, 6]),
+                                      (0.5, [-88, 0, -5]))},
+        'torso': {'rotation': keys((0, [6, 0, 0]), (0.14, [-6, 12, 0]), (0.3, [20, -12, 0]), (0.5, [6, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.14, [-15, 0, 0]), (0.3, [12, 0, 0]), (0.5, [0, 0, 0]))},
+    })
+    # skeleton: arms down, bony rattle
+    A['skeleton_idle'] = anim(2.6, True, {
+        'torso': {'rotation': wave(2.6, 13, lambda p: [1.5 * S(p), 1.5 * S(p, 1, 0.3), 0])},
+        'right_arm': {'rotation': wave(2.6, 13, lambda p: [3 * S(p), 0, 4 + 2.5 * C(p)])},
+        'left_arm': {'rotation': wave(2.6, 13, lambda p: [-3 * S(p), 0, -4 - 2.5 * C(p)])},
+        'skull': {'rotation': wave(2.6, 13, lambda p: [0, 0, 4 * S(p, 1, 0.1)])},
+    })
+    A['skeleton_walk'] = anim(1.0, True, {
+        'right_leg': {'rotation': wave(1.0, 12, lambda p: [30 * C(p), 0, 0])},
+        'left_leg': {'rotation': wave(1.0, 12, lambda p: [-30 * C(p), 0, 0])},
+        'right_arm': {'rotation': wave(1.0, 12, lambda p: [-28 * C(p), 0, 4])},
+        'left_arm': {'rotation': wave(1.0, 12, lambda p: [28 * C(p), 0, -4])},
+        'torso': {'rotation': wave(1.0, 12, lambda p: [2, 5 * S(p), 2 * S(p)])},
+        'core': {'position': wave(1.0, 12, lambda p: [0, 0.6 * abs(S(p)), 0])},
+        'skull': {'rotation': wave(1.0, 12, lambda p: [0, 0, 3 * S(p, 2)])},
+    })
+    A['skeleton_run'] = anim(0.7, True, {
+        'right_leg': {'rotation': wave(0.7, 12, lambda p: [44 * C(p), 0, 0])},
+        'left_leg': {'rotation': wave(0.7, 12, lambda p: [-44 * C(p), 0, 0])},
+        'right_arm': {'rotation': wave(0.7, 12, lambda p: [-40 * C(p), 0, 6])},
+        'left_arm': {'rotation': wave(0.7, 12, lambda p: [40 * C(p), 0, -6])},
+        'torso': {'rotation': wave(0.7, 12, lambda p: [10, 7 * S(p), 0])},
+        'core': {'position': wave(0.7, 12, lambda p: [0, 0.9 * abs(S(p)), 0])},
+    })
+    A['skeleton_attack'] = anim(0.5, False, {   # melee chop (wither skeletons / skeletons without a bow)
+        'right_arm': {'rotation': keys((0, [-20, 0, 0]), (0.16, [-170, 10, 12]), (0.28, [-30, -15, -4]),
+                                       (0.5, [-10, 0, 0]))},
+        'torso': {'rotation': keys((0, [0, 0, 0]), (0.16, [-8, 18, 0]), (0.3, [16, -16, 0]), (0.5, [0, 0, 0]))},
+        'left_arm': {'rotation': keys((0, [0, 0, 0]), (0.16, [20, 0, -15]), (0.3, [-20, 0, -5]), (0.5, [0, 0, 0]))},
+    })
+    A['skeleton_draw'] = anim(0.6, True, {   # bow aim: tension shake on the torso (arms are aimed in code)
+        'torso': {'rotation': wave(0.6, 12, lambda p: [0, -8 + 0.8 * S(p, 3), 0.6 * S(p, 4)])},
+        'core': {'position': wave(0.6, 6, lambda p: [0, 0, 0.2 * S(p)])},
+        'right_leg': {'rotation': keys((0, [-8, 0, 4]))},
+        'left_leg': {'rotation': keys((0, [10, 0, -4]))},
+    })
+    A['hurt'] = hurt_humanoid()
+    A['death'] = death_humanoid()
+    write_anims('humanoid', A)
+
+
+def creeper_anims():
+    legs4 = lambda amp: {
+        'right_hind_leg': {'rotation': wave(1.0, 12, lambda p: [amp * C(p), 0, 0])},
+        'left_hind_leg': {'rotation': wave(1.0, 12, lambda p: [-amp * C(p), 0, 0])},
+        'right_front_leg': {'rotation': wave(1.0, 12, lambda p: [-amp * C(p), 0, 0])},
+        'left_front_leg': {'rotation': wave(1.0, 12, lambda p: [amp * C(p), 0, 0])},
+    }
+    A = {}
+    A['idle'] = anim(4.0, True, {
+        'torso': {'rotation': wave(4.0, 16, lambda p: [1.2 * S(p), 0, 1.5 * S(p, 1, 0.25)])},
+        'skull': {'rotation': wave(4.0, 16, lambda p: [2 * S(p, 2), 0, 3 * S(p, 1, 0.5)])},
+        'body': {'scale': wave(4.0, 8, lambda p: [1 + 0.012 * S(p, 2), 1, 1 + 0.012 * S(p, 2)])},
+    })
+    w = legs4(26)
+    w['torso'] = {'rotation': wave(1.0, 12, lambda p: [3, 3 * S(p), 3.5 * S(p, 2)])}
+    w['core'] = {'position': wave(1.0, 12, lambda p: [0, 0.4 * abs(S(p, 1)), 0])}
+    w['skull'] = {'rotation': wave(1.0, 12, lambda p: [0, 0, -2.5 * S(p, 2)])}
+    A['walk'] = anim(1.0, True, w)
+    A['fuse'] = anim(0.5, True, {
+        'torso': {'rotation': wave(0.5, 10, lambda p: [8 + 1.5 * S(p, 3), 2.5 * S(p, 5), 3 * S(p, 4)])},
+        'skull': {'rotation': wave(0.5, 10, lambda p: [10 + 2 * S(p, 4), 0, 3 * S(p, 3, .2)])},
+        'right_front_leg': {'rotation': keys((0, [-14, 0, 6]))},
+        'left_front_leg': {'rotation': keys((0, [-14, 0, -6]))},
+        'right_hind_leg': {'rotation': keys((0, [10, 0, 4]))},
+        'left_hind_leg': {'rotation': keys((0, [10, 0, -4]))},
+        'core': {'position': wave(0.5, 10, lambda p: [0.2 * S(p, 5), -0.6, 0.2 * S(p, 4)])},
+    })
+    A['hurt'] = anim(0.4, False, {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.07, [-10, 0, 6]), (0.4, [0, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.07, [-14, 8, -8]), (0.4, [0, 0, 0]))},
+        'body': {'scale': keys((0, [1, 1, 1]), (0.06, [1.06, 0.94, 1.06]), (0.2, [0.98, 1.02, 0.98]), (0.4, [1, 1, 1]))},
+    })
+    A['death'] = anim(0.9, 'hold', {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.3, [0, 0, -14]), (0.85, [0, 0, 88]), (0.9, [0, 0, 86])),
+                 'position': keys((0, [0, 0, 0]), (0.85, [-1.5, 2, 0]))},
+        'right_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.5, [-30, 0, 20]), (0.9, [-45, 0, 30]))},
+        'left_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.5, [-25, 0, -25]), (0.9, [-40, 0, -15]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.85, [20, 0, 15]))},
+    })
+    write_anims('creeper', A)
+
+
+SPIDER_LEGS = ['right_hind_leg', 'left_hind_leg', 'right_middle_hind_leg', 'left_middle_hind_leg',
+               'right_middle_front_leg', 'left_middle_front_leg', 'right_front_leg', 'left_front_leg']
+# vanilla rest pose (deg) - animations are relative to the bone's rest rotation, so only offsets are written
+
+
+def spider_anims():
+    A = {}
+    # alternating tetrapod gait: legs (R1,L2,R3,L4) vs (L1,R2,L3,R4)
+    def gait(L, swing, lift, n=12):
+        bones = {}
+        for i, leg in enumerate(SPIDER_LEGS):
+            pair = i // 2
+            right = leg.startswith('right')
+            group = (pair + (0 if right else 1)) % 2
+            ph = 0.5 * group
+            side = 1 if right else -1
+            bones[leg] = {'rotation': wave(L, n, lambda p, ph=ph, side=side: [
+                0, side * swing * S(p, 1, ph), -side * lift * max(0.0, C(p, 1, ph))])}
+        return bones
+    w = gait(0.6, 20, 16)
+    w['torso'] = {'rotation': wave(0.6, 12, lambda p: [0, 2 * S(p, 2), 1.5 * S(p, 2, 0.25)])}
+    w['core'] = {'position': wave(0.6, 12, lambda p: [0, 0.3 * abs(S(p, 2)), 0])}
+    w['abdomen'] = {'rotation': wave(0.6, 12, lambda p: [2 * S(p, 2), 3 * S(p), 0])}
+    A['walk'] = anim(0.6, True, w)
+    i = {}
+    for k, leg in enumerate(SPIDER_LEGS):
+        side = 1 if leg.startswith('right') else -1
+        i[leg] = {'rotation': wave(3.0, 12, lambda p, k=k, side=side: [0, side * 2 * S(p, 1, k * 0.13),
+                                                                        -side * 2.5 * max(0.0, S(p, 2, k * 0.21))])}
+    i['abdomen'] = {'scale': wave(3.0, 12, lambda p: [1 + 0.03 * S(p, 2), 1 + 0.04 * S(p, 2), 1 + 0.02 * S(p, 2)]),
+                    'rotation': wave(3.0, 12, lambda p: [2 * S(p), 0, 0])}
+    i['skull'] = {'rotation': wave(3.0, 12, lambda p: [0, 4 * S(p, 1, 0.3), 2 * S(p, 2)])}
+    A['idle'] = anim(3.0, True, i)
+    A['attack'] = anim(0.6, False, {
+        'torso': {'rotation': keys((0, [0, 0, 0]), (0.2, [-22, 0, 0]), (0.32, [14, 0, 0]), (0.6, [0, 0, 0]))},
+        'core': {'position': keys((0, [0, 0, 0]), (0.2, [0, 2.5, 1]), (0.32, [0, 0, -3]), (0.6, [0, 0, 0]))},
+        'right_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.2, [0, 20, -40]), (0.32, [0, -10, 10]), (0.6, [0, 0, 0]))},
+        'left_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.2, [0, -20, 40]), (0.32, [0, 10, -10]), (0.6, [0, 0, 0]))},
+        'right_middle_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.2, [0, 10, -22]), (0.6, [0, 0, 0]))},
+        'left_middle_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.2, [0, -10, 22]), (0.6, [0, 0, 0]))},
+    })
+    A['hurt'] = anim(0.4, False, {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.07, [-8, 0, 5]), (0.4, [0, 0, 0]))},
+        'abdomen': {'scale': keys((0, [1, 1, 1]), (0.07, [1.08, 0.9, 1.08]), (0.4, [1, 1, 1]))},
+        **{leg: {'rotation': keys((0, [0, 0, 0]), (0.07, [0, 0, (-15 if leg.startswith('right') else 15)]),
+                                  (0.4, [0, 0, 0]))} for leg in SPIDER_LEGS},
+    })
+    d = {leg: {'rotation': keys((0, [0, 0, 0]), (0.25, [0, 0, (28 if leg.startswith('right') else -28)]),
+                                (0.7, [0, (10 if leg.startswith('right') else -10), (70 if leg.startswith('right') else -70)]))}
+         for leg in SPIDER_LEGS}
+    d['core'] = {'rotation': keys((0, [0, 0, 0]), (0.2, [-10, 0, 0]), (0.75, [0, 0, 180])),
+                 'position': keys((0, [0, 0, 0]), (0.3, [0, 3, 0]), (0.75, [0, 9, 0]))}
+    A['death'] = anim(0.8, 'hold', d)
+    write_anims('spider', A)
+
+
+def quadruped_anims():
+    def legs(L, amp, n=12):
+        return {
+            'right_hind_leg': {'rotation': wave(L, n, lambda p: [amp * C(p), 0, 0])},
+            'left_hind_leg': {'rotation': wave(L, n, lambda p: [-amp * C(p), 0, 0])},
+            'right_front_leg': {'rotation': wave(L, n, lambda p: [-amp * C(p), 0, 0])},
+            'left_front_leg': {'rotation': wave(L, n, lambda p: [amp * C(p), 0, 0])},
+        }
+    A = {}
+    A['idle'] = anim(4.0, True, {
+        'body': {'scale': wave(4.0, 8, lambda p: [1 + 0.02 * S(p, 2), 1, 1 + 0.02 * S(p, 2)])},
+        'skull': {'rotation': wave(4.0, 16, lambda p: [2 * S(p, 1), 0, 2.5 * S(p, 1, 0.3)])},
+        'torso': {'rotation': wave(4.0, 8, lambda p: [0, 0, 0.8 * S(p)])},
+    })
+    w = legs(1.1, 28)
+    w['torso'] = {'rotation': wave(1.1, 12, lambda p: [0, 2 * S(p), 2 * S(p)])}
+    w['core'] = {'position': wave(1.1, 12, lambda p: [0, 0.35 * abs(S(p)), 0])}
+    w['skull'] = {'rotation': wave(1.1, 12, lambda p: [4 * S(p, 2), 0, 0])}
+    A['walk'] = anim(1.1, True, w)
+    r_ = legs(0.6, 45)
+    r_['torso'] = {'rotation': wave(0.6, 12, lambda p: [4 * S(p), 0, 0])}
+    r_['core'] = {'position': wave(0.6, 12, lambda p: [0, 1.2 * abs(S(p)), 0])}
+    r_['skull'] = {'rotation': wave(0.6, 12, lambda p: [-10 + 6 * S(p, 1, 0.25), 0, 0])}
+    A['run'] = anim(0.6, True, r_)
+    A['graze'] = anim(3.0, False, {
+        'head': {'rotation': keys((0, [0, 0, 0]), (0.4, [42, 0, 0]), (2.5, [42, 0, 0]), (3.0, [0, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.6, [6, 0, 0]), (0.9, [10, 4, 0]), (1.2, [6, 0, 0]),
+                                   (1.5, [10, -4, 0]), (1.8, [6, 0, 0]), (2.1, [10, 3, 0]), (2.4, [6, 0, 0]),
+                                   (3.0, [0, 0, 0]))},
+    })
+    A['hurt'] = anim(0.45, False, {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.08, [-6, 0, 5]), (0.25, [2, 0, -2]), (0.45, [0, 0, 0])),
+                 'position': keys((0, [0, 0, 0]), (0.08, [0, 1.2, 0]), (0.45, [0, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.08, [-20, 10, 0]), (0.25, [-5, -8, 0]), (0.45, [0, 0, 0]))},
+    })
+    A['death'] = anim(1.0, 'hold', {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.3, [0, 0, -8]), (0.9, [0, 0, 90]), (1.0, [0, 0, 88])),
+                 'position': keys((0, [0, 0, 0]), (0.9, [-2, 1.5, 0]))},
+        'right_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.6, [-30, 0, 0]), (1.0, [-20, 0, 10]))},
+        'left_front_leg': {'rotation': keys((0, [0, 0, 0]), (0.6, [-20, 0, 0]), (1.0, [-35, 0, -10]))},
+        'right_hind_leg': {'rotation': keys((0, [0, 0, 0]), (0.6, [30, 0, 0]), (1.0, [20, 0, 10]))},
+        'left_hind_leg': {'rotation': keys((0, [0, 0, 0]), (0.6, [20, 0, 0]), (1.0, [35, 0, -10]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.9, [15, 0, 25]))},
+    })
+    write_anims('quadruped', A)
+
+
+def chicken_anims():
+    A = {}
+    A['idle'] = anim(4.0, True, {
+        'skull': {'rotation': keys((0, [0, 0, 0]), (1.0, [0, 18, 0]), (1.3, [0, 18, 0]), (1.4, [0, -12, 0]),
+                                   (2.4, [0, -12, 0]), (2.5, [0, 0, 0]), (2.9, [0, 0, 0]), (3.05, [40, 0, 0]),
+                                   (3.15, [5, 0, 0]), (3.3, [42, 0, 0]), (3.45, [0, 0, 0]), (4.0, [0, 0, 0]))},
+        'torso': {'rotation': wave(4.0, 8, lambda p: [2 * S(p, 2), 0, 0])},
+        'right_wing': {'rotation': wave(4.0, 8, lambda p: [0, 0, 2 * S(p, 2)])},
+        'left_wing': {'rotation': wave(4.0, 8, lambda p: [0, 0, -2 * S(p, 2)])},
+    })
+    A['walk'] = anim(0.6, True, {
+        'right_leg': {'rotation': wave(0.6, 12, lambda p: [40 * C(p), 0, 0])},
+        'left_leg': {'rotation': wave(0.6, 12, lambda p: [-40 * C(p), 0, 0])},
+        'torso': {'rotation': wave(0.6, 12, lambda p: [0, 0, 6 * S(p)])},
+        'head': {'position': wave(0.6, 12, lambda p: [0, 0, -0.8 * S(p, 2)])},
+        'core': {'position': wave(0.6, 12, lambda p: [0, 0.4 * abs(S(p)), 0])},
+    })
+    A['flap'] = anim(0.25, True, {
+        'right_wing': {'rotation': wave(0.25, 8, lambda p: [0, 0, 40 + 35 * S(p)])},
+        'left_wing': {'rotation': wave(0.25, 8, lambda p: [0, 0, -40 - 35 * S(p)])},
+        'right_leg': {'rotation': keys((0, [20, 0, 0]))},
+        'left_leg': {'rotation': keys((0, [20, 0, 0]))},
+        'torso': {'rotation': keys((0, [-10, 0, 0]))},
+    })
+    A['hurt'] = anim(0.5, False, {
+        'core': {'position': keys((0, [0, 0, 0]), (0.1, [0, 3, 0]), (0.3, [0, 1, 0]), (0.5, [0, 0, 0]))},
+        'right_wing': {'rotation': keys((0, [0, 0, 0]), (0.08, [0, 0, 80]), (0.16, [0, 0, 20]), (0.24, [0, 0, 80]),
+                                        (0.5, [0, 0, 0]))},
+        'left_wing': {'rotation': keys((0, [0, 0, 0]), (0.08, [0, 0, -80]), (0.16, [0, 0, -20]), (0.24, [0, 0, -80]),
+                                       (0.5, [0, 0, 0]))},
+        'skull': {'rotation': keys((0, [0, 0, 0]), (0.1, [-30, 0, 15]), (0.5, [0, 0, 0]))},
+    })
+    A['death'] = anim(0.8, 'hold', {
+        'core': {'rotation': keys((0, [0, 0, 0]), (0.75, [0, 0, 90])),
+                 'position': keys((0, [0, 0, 0]), (0.2, [0, 2, 0]), (0.75, [-1, 1, 0]))},
+        'right_wing': {'rotation': keys((0, [0, 0, 0]), (0.15, [0, 0, 70]), (0.3, [0, 0, 10]), (0.45, [0, 0, 60]),
+                                        (0.8, [0, 0, 30]))},
+        'left_wing': {'rotation': keys((0, [0, 0, 0]), (0.15, [0, 0, -70]), (0.3, [0, 0, -10]), (0.45, [0, 0, -60]),
+                                       (0.8, [0, 0, -30]))},
+        'right_leg': {'rotation': keys((0, [0, 0, 0]), (0.8, [-60, 0, 0]))},
+        'left_leg': {'rotation': keys((0, [0, 0, 0]), (0.8, [-50, 0, 0]))},
+    })
+    write_anims('chicken', A)
+
+
+def main():
+    os.makedirs(GEO, exist_ok=True)
+    os.makedirs(ANIM, exist_ok=True)
+    models = {'zombie': humanoid(False), 'skeleton': humanoid(True), 'creeper': creeper(), 'spider': spider(),
+              'cow': quadruped('cow'), 'pig': quadruped('pig'), 'chicken': chicken()}
+    for n, g in models.items():
+        with open(os.path.join(GEO, n + '.geo.json'), 'w') as f:
+            json.dump(g, f, indent=1)
+    humanoid_anims()
+    creeper_anims()
+    spider_anims()
+    quadruped_anims()
+    chicken_anims()
+    print('wrote', len(models), 'models')
+
+
+if __name__ == '__main__':
+    main()

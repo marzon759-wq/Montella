@@ -1,0 +1,40 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="livingmotion"
+version="${mod_version}"
+displayName="Living Motion"
+authors="krolasyon"
+description='''
+GeckoLib remodels of vanilla mobs with new animations (idle, walk, chase, attack, hurt, death), facial
+expressions (blinking, squinting, angry brows, moving mouths and jaws) and combat effects; plus procedural
+motion and particles for every other living entity. Client-side only.
+
+Vanilla canlılar için GeckoLib ile yeni modeller ve animasyonlar (bekleme, yürüme, kovalama, saldırı, hasar, ölüm),
+yüz mimikleri (göz kırpma, kısma, kızgın kaşlar, hareketli ağız/çene) ve savaş efektleri; diğer tüm canlılar için
+prosedürel hareket ve parçacıklar. Sadece istemci tarafı.
+'''
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.livingmotion]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.livingmotion]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.livingmotion]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="CLIENT"
