@@ -6,6 +6,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -25,7 +28,7 @@ public class MobModel extends GeoModel<ReplacedMob> {
     private final MobKind kind;
     private BakedGeoModel bakedFor;
     private final List<GeoBone> allBones = new ArrayList<>();
-    private GeoBone head, skull, lidL, lidR, mouth, fangL, fangR, armR, armL;
+    private GeoBone head, skull, lidL, lidR, mouth, fangL, fangR, armR, armL, tail, earL, earR, brow, nose, arms;
 
     public MobModel(MobKind kind) {
         this.kind = kind;
@@ -50,6 +53,8 @@ public class MobModel extends GeoModel<ReplacedMob> {
         lidL = bone("eyelid_left"); lidR = bone("eyelid_right"); mouth = bone("mouth");
         fangL = bone("fang_left"); fangR = bone("fang_right");
         armR = bone("right_arm"); armL = bone("left_arm");
+        tail = bone("tail"); earL = bone("ear_left"); earR = bone("ear_right");
+        brow = bone("brow"); nose = bone("nose"); arms = bone("arms");
     }
 
     private void collect(GeoBone b) {
@@ -163,6 +168,7 @@ public class MobModel extends GeoModel<ReplacedMob> {
         }
         lid(lidR, lid, brow);
         lid(lidL, lid, -brow);
+        details(e, t, st, age, alive, faces);
         if (mouth != null) {
             boolean show = open > 0.04f;
             mouth.setHidden(!show);
@@ -170,6 +176,53 @@ public class MobModel extends GeoModel<ReplacedMob> {
         }
         if (fangR != null) fangR.setRotZ(fang);
         if (fangL != null) fangL.setRotZ(-fang);
+    }
+
+    /** Secondary motion: tails, ears, brows, noses and species quirks. */
+    private void details(LivingEntity e, Track t, AnimationState<ReplacedMob> st, float age, boolean alive, boolean faces) {
+        float walk = Math.min(1f, st.getLimbSwingAmount());
+        float swing = st.getLimbSwing();
+        float seed = t.seed % 1000;
+        if (tail != null && alive && kind.family != MobKind.Family.CHICKEN) {
+            // lazy sway, a fly-swatting flick every few seconds, bounce while walking
+            float flick = ((age + seed) % 140f) < 18f ? Mth.sin(((age + seed) % 140f) / 18f * Mth.TWO_PI) * 0.6f : 0f;
+            tail.setRotZ(Mth.sin(age * 0.12f + seed) * 0.12f + flick + Mth.sin(swing * 0.6662f) * 0.25f * walk);
+            tail.setRotX(-0.1f * walk - (e.hurtTime > 0 ? 0.5f : 0f));
+        }
+        for (GeoBone ear : new GeoBone[]{earL, earR}) {
+            if (ear == null) continue;
+            float phase = (age + seed + (ear == earL ? 37 : 0)) % 110f;
+            float twitch = phase < 6f ? Mth.sin(phase / 6f * Mth.PI) * 0.45f : 0f;
+            ear.setRotX(twitch + Mth.sin(swing * 0.6662f * 2) * 0.12f * walk);
+            ear.setRotZ(e.hurtTime > 0 ? (ear == earL ? 0.5f : -0.5f) : 0f);
+        }
+        if (brow != null) {
+            float y = 0f;
+            if (e instanceof net.minecraft.world.entity.Mob m && m.isAggressive()) y = -0.8f;           // scowl
+            if (e instanceof AbstractVillager v) {
+                if (v.isTrading()) y = 0.6f;                                                           // interested
+                if (v instanceof Villager vv && vv.getUnhappyCounter() > 0) y = -0.7f;
+                if (e.hurtTime > 0) y = 0.9f;                                                         // shocked
+            }
+            brow.setPosY(faces ? y : 0f);
+        }
+        if (nose != null && alive) {
+            float phase = (age + seed) % 90f;
+            nose.setRotX(phase < 14f ? Mth.sin(phase * 1.6f) * 0.12f : 0f);
+            nose.setRotZ(0f);
+        }
+        // villager: vanilla "no" head shake when it refuses to trade
+        if (e instanceof Villager v && v.getUnhappyCounter() > 0 && skull != null) skull.setRotZ(0.3f * Mth.sin(0.45f * age));
+        // enderman: head splits open when it is provoked, jitters, arms cradle the carried block
+        if (e instanceof EnderMan en && skull != null) {
+            boolean creepy = en.isCreepy();
+            skull.setPosY(creepy && alive ? 5f : 0f);
+            if (head != null) head.setRotZ(creepy && alive ? Mth.sin(age * 2.3f) * 0.04f + Mth.sin(age * 5.1f) * 0.02f : 0f);
+            if (en.getCarriedBlock() != null && armR != null && armL != null && alive) {
+                armR.setRotX(0.5f); armL.setRotX(0.5f);
+                armR.setRotZ(-0.05f); armL.setRotZ(0.05f);
+            }
+        }
     }
 
     private static void lid(GeoBone b, float amount, float brow) {

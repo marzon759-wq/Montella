@@ -50,10 +50,18 @@ public final class MotionFX {
         // breathing
         float breath = e.isAlive() ? Mth.sin(age * 0.09f + e.getId()) * 0.012f : 0f;
 
+        // gait: side-to-side roll and bob from the vanilla walk cycle, forward lean when running
+        float ws = Math.min(1f, e.walkAnimation.speed(pt)), wp = e.walkAnimation.position(pt);
+        float roll = e.isAlive() ? Mth.sin(wp * 0.6662f) * ws * 3.5f : 0f;
+        float bob = e.isAlive() ? Math.abs(Mth.cos(wp * 0.6662f)) * ws * 0.035f * e.getBbHeight() : 0f;
+        float lean = e.isAlive() && e.onGround() ? Math.max(0f, ws - 0.45f) * 9f : 0f;
+
         float yaw = Mth.rotLerp(pt, e.yBodyRotO, e.yBodyRot);
         ps.mulPose(Axis.YP.rotationDegrees(-yaw));          // local +z = facing direction
         ps.translate(0, 0, (lunge * 0.14f - recoil * 0.1f) * k);
-        ps.mulPose(Axis.XP.rotationDegrees((lunge * 7f - recoil * 11f) * k));
+        ps.translate(0, bob * k, 0);
+        ps.mulPose(Axis.XP.rotationDegrees((lunge * 7f - recoil * 11f + lean) * k));
+        ps.mulPose(Axis.ZP.rotationDegrees(roll * k));
         float sy = 1f + breath - (land * 0.22f + squashHit * 0.06f) * k;
         float sxz = 1f - breath * 0.5f + (land * 0.14f + squashHit * 0.04f) * k;
         ps.scale(sxz, sy, sxz);

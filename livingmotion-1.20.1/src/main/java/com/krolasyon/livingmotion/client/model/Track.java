@@ -8,6 +8,7 @@ public final class Track {
     public int lastHurt;
     public boolean wasSwinging;
     public int lastSwingTime;
+    public int lastAttackTick;
     public RawAnimation action;
     public float actionStart, actionLen;
     // timed idle variants (grazing ...)

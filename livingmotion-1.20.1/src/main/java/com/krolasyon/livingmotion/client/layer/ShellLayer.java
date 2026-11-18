@@ -23,13 +23,20 @@ public class ShellLayer extends GeoRenderLayer<ReplacedMob> {
     private final Predicate<LivingEntity> when;
     private final BiFunction<LivingEntity, Float, RenderType> type;
     private final boolean swirl;
+    private final BiFunction<LivingEntity, Float, float[]> tint;
 
     public ShellLayer(MobRenderer<?> renderer, Predicate<LivingEntity> when, BiFunction<LivingEntity, Float, RenderType> type, boolean swirl) {
+        this(renderer, when, type, swirl, null);
+    }
+
+    public ShellLayer(MobRenderer<?> renderer, Predicate<LivingEntity> when, BiFunction<LivingEntity, Float, RenderType> type,
+                      boolean swirl, BiFunction<LivingEntity, Float, float[]> tint) {
         super(renderer);
         this.mob = renderer;
         this.when = when;
         this.type = type;
         this.swirl = swirl;
+        this.tint = tint;
     }
 
     @Override
@@ -40,8 +47,9 @@ public class ShellLayer extends GeoRenderLayer<ReplacedMob> {
         RenderType rt = type.apply(e, partialTick);
         mob.mobModel().showOverlay();
         float c = swirl ? 0.5f : 1f;
+        float[] col = tint != null ? tint.apply(e, partialTick) : new float[]{c, c, c};
         mob.reRender(model, poseStack, buffers, animatable, rt, buffers.getBuffer(rt), partialTick, light,
-                swirl ? OverlayTexture.NO_OVERLAY : overlay, c, c, c, 1f);
+                swirl ? OverlayTexture.NO_OVERLAY : overlay, col[0], col[1], col[2], 1f);
         mob.mobModel().showMain();
         buffers.getBuffer(renderType);
     }

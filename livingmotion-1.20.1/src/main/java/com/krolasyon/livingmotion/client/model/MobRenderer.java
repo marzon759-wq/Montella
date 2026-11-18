@@ -2,7 +2,8 @@ package com.krolasyon.livingmotion.client.model;
 
 import com.krolasyon.livingmotion.LMConfig;
 import com.krolasyon.livingmotion.client.layer.EquipmentLayer;
-import com.krolasyon.livingmotion.client.layer.GlowLayer;
+import com.krolasyon.livingmotion.client.layer.CarriedBlockLayer;
+import com.krolasyon.livingmotion.client.layer.OverlayLayer;
 import com.krolasyon.livingmotion.client.layer.ShellLayer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,6 +23,18 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.item.DyeColor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
@@ -46,7 +59,7 @@ public class MobRenderer<E extends LivingEntity> extends GeoReplacedEntityRender
         this.shadowRadius = kind.shadow;
         if (kind.scale != 1f) withScale(kind.scale);
         if (kind.humanoid()) addRenderLayer(new EquipmentLayer(this, ctx, kind));
-        if (kind.overlay != null) {
+        if (kind.overlay != null && kind != MobKind.SHEEP) {
             addRenderLayer(new ShellLayer(this, e -> true, (e, pt) -> RenderType.entityCutoutNoCull(kind.overlay), false));
         }
         if (kind.family == MobKind.Family.CREEPER) {
@@ -55,7 +68,66 @@ public class MobRenderer<E extends LivingEntity> extends GeoReplacedEntityRender
                 return RenderType.energySwirl(CREEPER_ARMOR, (f * 0.01f) % 1f, (f * 0.01f) % 1f);
             }, true));
         }
-        if (kind.family == MobKind.Family.SPIDER) addRenderLayer(new GlowLayer(this, SPIDER_EYES));
+        if (kind.family == MobKind.Family.SPIDER) addRenderLayer(new OverlayLayer(this, e -> List.of(SPIDER_EYES), true));
+        if (kind == MobKind.SHEEP) {
+            addRenderLayer(new ShellLayer(this, e -> e instanceof Sheep s && !s.isSheared(),
+                    (e, pt) -> RenderType.entityCutoutNoCull(kind.overlay), false, MobRenderer::woolColor));
+        }
+        if (kind == MobKind.IRON_GOLEM) addRenderLayer(new OverlayLayer(this, MobRenderer::cracks, false));
+        if (kind == MobKind.ENDERMAN) {
+            addRenderLayer(new OverlayLayer(this, e -> List.of(ENDERMAN_EYES), true));
+            addRenderLayer(new CarriedBlockLayer(this, ctx));
+        }
+        if (kind == MobKind.VILLAGER) addRenderLayer(new OverlayLayer(this, MobRenderer::villagerOutfit, false));
+    }
+
+    private static final ResourceLocation ENDERMAN_EYES = new ResourceLocation("textures/entity/enderman/enderman_eyes.png");
+    private static final Map<String, ResourceLocation> TEX = new HashMap<>();
+    private static final String[] LEVELS = {"stone", "iron", "gold", "emerald", "diamond"};
+
+    private static ResourceLocation tex(String ns, String path) {
+        return TEX.computeIfAbsent(ns + ":" + path, k -> new ResourceLocation(ns, path));
+    }
+
+    /** Vanilla SheepFurLayer colours, including the jeb_ rainbow. */
+    private static float[] woolColor(LivingEntity e, float pt) {
+        Sheep s = (Sheep) e;
+        if (s.hasCustomName() && "jeb_".equals(s.getName().getString())) {
+            int n = s.tickCount / 25 + s.getId();
+            int k = DyeColor.values().length;
+            float f = ((s.tickCount % 25) + pt) / 25f;
+            float[] a = Sheep.getColorArray(DyeColor.byId(n % k)), b = Sheep.getColorArray(DyeColor.byId((n + 1) % k));
+            return new float[]{a[0] * (1 - f) + b[0] * f, a[1] * (1 - f) + b[1] * f, a[2] * (1 - f) + b[2] * f};
+        }
+        return Sheep.getColorArray(s.getColor());
+    }
+
+    private static List<ResourceLocation> cracks(LivingEntity e) {
+        if (!(e instanceof IronGolem g)) return List.of();
+        String c = switch (g.getCrackiness()) {
+            case LOW -> "low";
+            case MEDIUM -> "medium";
+            case HIGH -> "high";
+            default -> null;
+        };
+        return c == null ? List.of() : List.of(tex("minecraft", "textures/entity/iron_golem/iron_golem_crackiness_" + c + ".png"));
+    }
+
+    /** Vanilla VillagerProfessionLayer: biome outfit, then profession, then the badge for the trade level. */
+    private static List<ResourceLocation> villagerOutfit(LivingEntity e) {
+        if (!(e instanceof Villager v) || v.isInvisible()) return List.of();
+        VillagerData d = v.getVillagerData();
+        List<ResourceLocation> out = new ArrayList<>(3);
+        ResourceLocation type = BuiltInRegistries.VILLAGER_TYPE.getKey(d.getType());
+        out.add(tex(type.getNamespace(), "textures/entity/villager/type/" + type.getPath() + ".png"));
+        if (!v.isBaby() && d.getProfession() != VillagerProfession.NONE) {
+            ResourceLocation prof = BuiltInRegistries.VILLAGER_PROFESSION.getKey(d.getProfession());
+            out.add(tex(prof.getNamespace(), "textures/entity/villager/profession/" + prof.getPath() + ".png"));
+            if (d.getProfession() != VillagerProfession.NITWIT) {
+                out.add(tex("minecraft", "textures/entity/villager/profession_level/" + LEVELS[Mth.clamp(d.getLevel(), 1, 5) - 1] + ".png"));
+            }
+        }
+        return out;
     }
 
     public MobModel mobModel() { return (MobModel) getGeoModel(); }

@@ -77,7 +77,7 @@ public final class AutoTest {
     private static void gallery(String id, String nbt, double size) {
         cue(4, () -> cmd("kill @e[type=!player]"));
         cue(4, () -> cmd("summon " + id + " 0 -60 0 {NoAI:1b,PersistenceRequired:1b,Rotation:[180f,0f]" + (nbt.isEmpty() ? "" : "," + nbt) + "}"));
-        double d = 1.6 + size * 1.25, eye = size * 0.85, look = size * 0.6;
+        double d = 1.6 + size * (size > 2.2 ? 1.75 : 1.25), eye = size * 0.85, look = size * 0.55;
         cue(2, () -> view(d, eye, look, 0));
         cue(28, () -> shot(id + "_1front"));
         cue(1, () -> view(d * 1.05, eye, look, 55));
@@ -103,6 +103,24 @@ public final class AutoTest {
             cmd("gamemode creative"); cmd("effect give @s night_vision 99999 0 true");
         });
         String mode = System.getProperty("livingmotion.autotest");
+        if (mode.contains("tall")) {
+            gallery("enderman", "carriedBlockState:{Name:\"minecraft:grass_block\"}", 2.9);
+            gallery("iron_golem", "", 2.7);
+            gallery("spider", "", 1.0);
+        }
+        if (mode.contains("new")) {
+            gallery("zombie", "", 2);
+            gallery("husk", "", 2.1);
+            gallery("chicken", "", 0.7);
+            gallery("cow", "", 1.4);
+            gallery("pig", "", 0.9);
+            gallery("spider", "", 1.0);
+            gallery("sheep", "Color:14b", 1.3);
+            gallery("iron_golem", "", 2.7);
+            gallery("enderman", "carriedBlockState:{Name:\"minecraft:grass_block\"}", 2.9);
+            gallery("villager", "VillagerData:{profession:\"minecraft:farmer\",level:3,type:\"minecraft:plains\"}", 2.0);
+            gallery("wandering_trader", "", 2.0);
+        }
         if (mode.contains("gallery") || mode.equals("1")) {
             gallery("zombie", "HandItems:[{id:\"minecraft:iron_sword\",Count:1b},{}],ArmorItems:[{},{},{id:\"minecraft:iron_chestplate\",Count:1b},{}]", 2);
             gallery("husk", "", 2.1);
@@ -116,6 +134,11 @@ public final class AutoTest {
             gallery("cow", "", 1.4);
             gallery("pig", "", 0.9);
             gallery("chicken", "", 0.7);
+            gallery("sheep", "Color:14b", 1.3);
+            gallery("iron_golem", "", 2.7);
+            gallery("enderman", "carriedBlockState:{Name:\"minecraft:grass_block\"}", 2.9);
+            gallery("villager", "VillagerData:{profession:\"minecraft:farmer\",level:3,type:\"minecraft:plains\"}", 2.0);
+            gallery("wandering_trader", "", 2.0);
         }
         if (mode.contains("combat") || mode.equals("1")) {
             cue(10, () -> {

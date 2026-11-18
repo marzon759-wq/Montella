@@ -5,7 +5,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.phys.Vec3;
@@ -60,6 +64,18 @@ public class ReplacedMob implements GeoReplacedEntity {
             case QUADRUPED -> {
                 idle = loop(p + "idle"); walk = loop(p + "walk"); run = loop(p + "run"); attack = null;
                 special = null; graze = once(p + "graze");
+            }
+            case GOLEM -> {
+                idle = loop(p + "idle"); walk = loop(p + "walk"); run = loop(p + "run"); attack = once(p + "attack");
+                special = loop(p + "offer"); graze = null;
+            }
+            case ENDERMAN -> {
+                idle = loop(p + "idle"); walk = loop(p + "walk"); run = loop(p + "run"); attack = once(p + "attack");
+                special = null; graze = null;
+            }
+            case VILLAGER -> {
+                idle = loop(p + "idle"); walk = loop(p + "walk"); run = loop(p + "run"); attack = null;
+                special = loop(p + "nod"); graze = null;
             }
             default -> { // chicken
                 idle = loop(p + "idle"); walk = loop(p + "walk"); run = walk; attack = null;
@@ -125,6 +141,10 @@ public class ReplacedMob implements GeoReplacedEntity {
         Vec3 v = e.getDeltaMovement();
         double speed = Math.sqrt(v.x * v.x + v.z * v.z);
 
+        // sheep eat grass for real (vanilla eat event) -> graze animation
+        if (e instanceof Sheep sh && sh.getHeadEatPositionScale(st.getPartialTick()) > 0f && graze != null) {
+            if (t.variant == null) { t.variant = graze; t.variantUntil = e.tickCount + 40; c.forceAnimationReset(); }
+        }
         // timed idle variants (cows/pigs lower their head and graze now and then)
         if (graze != null && e.tickCount != t.lastTick) {
             t.lastTick = e.tickCount;
@@ -177,6 +197,32 @@ public class ReplacedMob implements GeoReplacedEntity {
                 }
                 return st.setAndContinue(idle);
             }
+            case GOLEM -> {
+                if (e instanceof IronGolem g && g.getOfferFlowerTick() > 0 && !moving) return st.setAndContinue(special);
+                if (moving) {
+                    boolean chase = e instanceof Mob m && m.isAggressive();
+                    c.setAnimationSpeed(chase ? 0.8 + amount * 0.6 : 0.5 + amount * 1.2);
+                    return st.setAndContinue(chase ? run : walk);
+                }
+                return st.setAndContinue(idle);
+            }
+            case ENDERMAN -> {
+                if (moving) {
+                    boolean chase = e instanceof EnderMan en && (en.isCreepy() || en.isAggressive());
+                    c.setAnimationSpeed(chase ? 0.7 + amount * 0.6 : 0.5 + amount * 1.2);
+                    return st.setAndContinue(chase ? run : walk);
+                }
+                return st.setAndContinue(idle);
+            }
+            case VILLAGER -> {
+                if (moving) {
+                    boolean panic = speed > 0.1 || amount > 0.8f;
+                    c.setAnimationSpeed(panic ? 0.8 + amount * 0.5 : 0.5 + amount * 1.3);
+                    return st.setAndContinue(panic ? run : walk);
+                }
+                if (e instanceof AbstractVillager av && av.isTrading()) return st.setAndContinue(special);
+                return st.setAndContinue(idle);
+            }
             default -> {
                 if (!e.onGround() && v.y < -0.02 && !e.isInWater()) return st.setAndContinue(special);
                 if (moving) { c.setAnimationSpeed(0.6 + amount * 1.4); return st.setAndContinue(walk); }
@@ -195,13 +241,19 @@ public class ReplacedMob implements GeoReplacedEntity {
         boolean newHurt = e.hurtTime > t.lastHurt;
         t.lastHurt = e.hurtTime;
         boolean newSwing = e.swinging && (!t.wasSwinging || e.swingTime < t.lastSwingTime);
+        if (e instanceof IronGolem g) {   // golems use their own attack timer (entity event 4), not arm swings
+            int at = g.getAttackAnimationTick();
+            newSwing = at > t.lastAttackTick;
+            t.lastAttackTick = at;
+        }
         t.wasSwinging = e.swinging;
         t.lastSwingTime = e.swingTime;
 
         if (newSwing) {
             t.attackFlash = age;
             RawAnimation a = (kind.family == MobKind.Family.SKELETON && aimingBow(e)) ? null : attack;
-            if (a != null) start(st, t, a, kind.family == MobKind.Family.SPIDER ? 12 : 10, age);
+            float len = switch (kind.family) { case SPIDER, GOLEM -> 12; default -> 10; };
+            if (a != null) start(st, t, a, len, age);
         } else if (newHurt) {
             t.hurtFlash = age;
             start(st, t, hurt, 9, age);

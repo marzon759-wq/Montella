@@ -31,7 +31,8 @@ public final class LMConfig {
     public static final ForgeConfigSpec.IntValue FX_RANGE;
 
     public static final List<String> MOB_IDS = List.of("zombie", "husk", "drowned", "skeleton", "stray",
-            "wither_skeleton", "creeper", "spider", "cave_spider", "cow", "pig", "chicken");
+            "wither_skeleton", "creeper", "spider", "cave_spider", "cow", "pig", "chicken", "sheep", "iron_golem",
+            "enderman", "villager", "wandering_trader");
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();

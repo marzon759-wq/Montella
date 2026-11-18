@@ -34,6 +34,11 @@ public final class ClientInit {
         reg(e, EntityType.COW, "cow", MobKind.COW, CowRenderer::new);
         reg(e, EntityType.PIG, "pig", MobKind.PIG, PigRenderer::new);
         reg(e, EntityType.CHICKEN, "chicken", MobKind.CHICKEN, ChickenRenderer::new);
+        reg(e, EntityType.SHEEP, "sheep", MobKind.SHEEP, SheepRenderer::new);
+        reg(e, EntityType.IRON_GOLEM, "iron_golem", MobKind.IRON_GOLEM, IronGolemRenderer::new);
+        reg(e, EntityType.ENDERMAN, "enderman", MobKind.ENDERMAN, EndermanRenderer::new);
+        reg(e, EntityType.VILLAGER, "villager", MobKind.VILLAGER, VillagerRenderer::new);
+        reg(e, EntityType.WANDERING_TRADER, "wandering_trader", MobKind.WANDERING_TRADER, WanderingTraderRenderer::new);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

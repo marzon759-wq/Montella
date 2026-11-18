@@ -45,5 +45,5 @@ See [CREDITS.md](CREDITS.md) for sound sources (all CC0).
 ## Living Motion (separate mod)
 
 `livingmotion-1.20.1/` holds a second, independent client-side mod for Forge 1.20.1 + GeckoLib: animated GeckoLib
-remodels with facial expressions for 12 vanilla mobs, plus procedural motion and combat effects for all other
-mobs. Jar: `dist/living_motion-1.20.1-forge-1.0.0.jar`. See [livingmotion-1.20.1/README.md](livingmotion-1.20.1/README.md).
+remodels with facial expressions for 17 vanilla mobs, plus procedural motion and combat effects for all other
+mobs. Jar: `dist/living_motion-1.20.1-forge-1.1.0.jar`. See [livingmotion-1.20.1/README.md](livingmotion-1.20.1/README.md).

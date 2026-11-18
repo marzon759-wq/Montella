@@ -1,13 +1,21 @@
 # Living Motion / Canlı Hareket — Forge 1.20.1 + GeckoLib 4
 
 Client-side mod that remodels and reanimates vanilla mobs with **GeckoLib**, and adds procedural motion and combat
-effects for every other living entity. Built jar: `../dist/living_motion-1.20.1-forge-1.0.0.jar`.
+effects for every other living entity. Built jar: `../dist/living_motion-1.20.1-forge-1.1.0.jar`.
 
 **Kurulum:** Forge 1.20.1 (47+) + GeckoLib 4.4+ (Forge, 1.20.1) + bu jar → `mods/`. Sadece istemcide gerekir;
 sunucuya kurmak gerekmez.
 
-## GeckoLib remodels (12 mobs)
-zombie, husk, drowned, skeleton, stray, wither skeleton, creeper, spider, cave spider, cow, pig, chicken
+## GeckoLib remodels (17 mobs)
+zombie, husk, drowned, skeleton, stray, wither skeleton, creeper, spider, cave spider, cow, pig, chicken,
+sheep, iron golem, enderman, villager, wandering trader
+
+- Extra detail: feathery chicken (comb, neck ruff, puffed chest, tail fan, wing primaries, toes), cow tail with tuft
+  and ears, curly pig tail and floppy ears, bristly spider abdomen, extra-thick curly sheep fleece (dyed colours,
+  jeb_ rainbow, hidden when sheared), vines on iron golems.
+- Species behaviour: golem fist slam, cracks and flower offering; enderman split-open jaw and jitter when provoked,
+  carried block; villager unibrow, wiggling nose, "no" head shake, nodding while trading, panicked running,
+  biome/profession/level outfits; sheep graze when they really eat grass.
 
 - Models rebuilt 1:1 from the vanilla geometry, so vanilla textures and resource packs still fit.
 - Animations: idle, walk, run/chase, attack (claw swipe, sword chop, spider pounce), hurt, death
@@ -19,7 +27,8 @@ zombie, husk, drowned, skeleton, stray, wither skeleton, creeper, spider, cave s
   outer layer, charged-creeper swirl, glowing spider eyes, baby proportions, creeper swelling & white flash.
 
 ## Every other living entity (incl. modded)
-Hit recoil, attack lunge, breathing and landing squash, plus particles: hit sparks and material bits
+Gait roll and bob from the walk cycle, forward lean when running, hit recoil, attack lunge, breathing and landing
+squash, plus particles: hit sparks and material bits
 (blood / bone / slime / iron / portal …), hostile attack swipes, running dust, landing dust rings, death
 soul/poof bursts, creeper fuse sparks, breath clouds in cold biomes.
 
