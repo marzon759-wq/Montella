@@ -10,3 +10,12 @@ sapkali_adam_oynanis.mp4
 curseforge_paketi.zip
 sapkali_adam_mod.zip
 the_hatman_gameplay_en.mp4
+
+# new mod: build output, previews and videos
+mimic/forge-*/build/
+mimic/forge-*/run/
+mimic/forge-*/.gradle/
+mimic/tools/out/
+mimic/tools/prev/
+mimic/tools/__pycache__/
+mimic/*.mp4

@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="${loader_range}"
+license="All Rights Reserved"
+
+[[mods]]
+modId="mimicry"
+version="${mod_version}"
+displayName="MIMIC"
+authors="krolasyon"
+description='''
+Something lives in the slaughterhouse. It has learned your voice.
+'''
+
+[[dependencies.mimicry]]
+    modId="forge"
+    mandatory=true
+    versionRange="${loader_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.mimicry]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${mc_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.mimicry]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="${gecko_range}"
+    ordering="AFTER"
+    side="BOTH"
