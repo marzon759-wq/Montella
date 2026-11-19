@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/corpse_head"},"facing=east":{"model":"mimicry:block/corpse_head","y":90},"facing=south":{"model":"mimicry:block/corpse_head","y":180},"facing=west":{"model":"mimicry:block/corpse_head","y":270}}}

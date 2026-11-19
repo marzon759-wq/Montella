@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/shovel_prop"},"facing=east":{"model":"mimicry:block/shovel_prop","y":90},"facing=south":{"model":"mimicry:block/shovel_prop","y":180},"facing=west":{"model":"mimicry:block/shovel_prop","y":270}}}

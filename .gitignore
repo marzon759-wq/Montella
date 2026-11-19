@@ -19,3 +19,4 @@ mimic/tools/out/
 mimic/tools/prev/
 mimic/tools/__pycache__/
 mimic/*.mp4
+mimic/tools/vanilla/

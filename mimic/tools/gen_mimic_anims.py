@@ -280,7 +280,7 @@ def mimic_talk(t):
     return P
 
 
-@anim("listen", 3.0)
+@anim("listen", 1.8)
 def listen(t):
     """freezes, head jerks toward a sound in little steps, very still between"""
     P = Pose()
@@ -488,7 +488,7 @@ def bang(t):
     return P
 
 
-@anim("twitch", 2.5)
+@anim("twitch", 0.8)
 def twitch_anim(t):
     """standing still, but wrong: violent jerks of the head and limbs"""
     P = idle(t)
@@ -532,9 +532,183 @@ def spread(t):
     return P
 
 
+@anim("freeze", 2.0)
+def freeze(t):
+    """caught in the beam: perfectly still but for the head, which cocks slowly sideways"""
+    P = idle(0.5)
+    P.r("head", 0, 0, 22 * ramp(t, 0, 1.6) + twitch(t, 3, 0.7, 30) * 6)
+    return P
+
+
+@anim("duck_idle", 3.0)
+def duck_idle(t):
+    P = Pose()
+    legs_stand(P, 1.9)
+    P.p("all", 0, -7, 0)
+    breathe(P, t, 1 / 3)
+    P.r("hips", 40).r("spine", 18).r("chest", 16).r("neck", -18).r("head", -30 + noise(t, 1, 0.5) * 6, noise(t, 2, 0.4) * 16)
+    mouth(P, 0.15 + 0.1 * math.sin(t * 2))
+    for side, sg in SIDES:
+        P.r(f"arm1_{side}", -60, 0, sg * 16).r(f"fore1_{side}", -10).r(f"hand1_{side}", 40)
+        fingers(P, "1", side, 14, 6, 0, t, 4)
+        arm_hang(P, "2", side, sg, t, out=24, bend=40)
+        arm_hang(P, "3", side, sg, t, out=30, bend=70)
+    return P
+
+
+@anim("duck_walk", 1.4)
+def duck_walk(t):
+    P = stalk(t * 2.4 / 1.4)
+    P.p("all", 0, -3, 0)
+    P.r("hips", 12).r("neck", -8)
+    return P
+
+
+@anim("ceiling_hang", 6.0)
+def ceiling_hang(t):
+    """asleep upside down under a rafter: feet gripping the beam, six arms hanging, the skull slowly turning"""
+    P = Pose()
+    b = math.sin(t / 6.0 * math.tau)
+    P.p("all", 0, 61, 0).r("all", 180 + b * 2, 0, b * 3)
+    for side, sg in SIDES:
+        P.r(f"thigh_{side}", 8, 0, sg * 10).r(f"shin_{side}", -20).r(f"foot_{side}", 60)
+        for k in range(3):
+            P.r(f"toe{k}_{side}", -70)
+    P.r("spine", 4 * b).r("chest", -4 * b)
+    P.r("neck", -30).r("head", -40 + 4 * b, 20 * math.sin(t / 6.0 * math.tau * 0.5), 0)
+    mouth(P, 0.25 + 0.15 * b)
+    for side, sg in SIDES:
+        for tag, sp in (("1", 0), ("2", 1.3), ("3", 2.6)):
+            sway = math.sin(t / 6.0 * math.tau + sp + (0 if side == "l" else 1)) * 4
+            P.r(f"arm{tag}_{side}", 175 + sway, 0, sg * (6 + 4 * int(tag))).r(f"fore{tag}_{side}", -6)
+            fingers(P, tag, side, 30 + sway * 2, 2)
+    return P
+
+
+@anim("sit", 4.0)
+def sit(t):
+    """in the passenger seat, very still, hands on its knees"""
+    P = Pose()
+    for side, sg in SIDES:
+        P.r(f"thigh_{side}", -88, 0, sg * 8).r(f"shin_{side}", 92).r(f"foot_{side}", 0)
+    P.p("all", 0, -8, 0)
+    P.r("hips", -4).r("spine", 4).r("chest", 6).r("neck", 10).r("head", -10, 0, 8 * math.sin(t * 0.8))
+    mouth(P, 0.1)
+    for side, sg in SIDES:
+        P.r(f"arm1_{side}", -40, 0, sg * 10).r(f"fore1_{side}", -50).r(f"hand1_{side}", 20)
+        fingers(P, "1", side, 50, 4)
+        P.r(f"arm2_{side}", -30, 0, sg * 20).r(f"fore2_{side}", -70)
+        fingers(P, "2", side, 60, 4)
+        arm_hang(P, "3", side, sg, t, out=20, bend=80, sway=0.2)
+    return P
+
+
+@anim("drag", 3.0)
+def drag(t):
+    """crouched over its prey, both big hands clamped on it near the ground"""
+    P = Pose()
+    legs_stand(P, 1.6)
+    P.p("all", 0, -4, 0)
+    P.r("hips", 30).r("spine", 16).r("chest", 14).r("neck", 0).r("head", -20, noise(t, 1, 0.6) * 20, noise(t, 2, 0.5) * 12)
+    mouth(P, 0.4 + 0.3 * abs(math.sin(t * 2)))
+    for side, sg in SIDES:
+        P.r(f"arm1_{side}", -70, 0, sg * 8).r(f"fore1_{side}", -30).r(f"hand1_{side}", 40)
+        fingers(P, "1", side, 75, 2)
+        P.r(f"arm2_{side}", -50, 0, sg * 24).r(f"fore2_{side}", -40)
+        fingers(P, "2", side, 60 + 10 * math.sin(t * 5 + sg), 4)
+        arm_hang(P, "3", side, sg, t, out=30, bend=70)
+    return P
+
+
+@anim("drag_walk", 1.6)
+def drag_walk(t):
+    P = drag(t)
+    ph = t / 1.6
+    for side, sg in SIDES:
+        leg(P, side, sg, ph + (0 if side == "l" else 0.5), 0.5, 0.5, 1.6)
+    P.p("all", 0, -0.8 * math.cos(ph * math.tau * 2), 0)
+    return P
+
+
+@anim("vanish", 1.2, loop=False)
+def vanish(t):
+    """it folds itself up and slips away into the dark (or up a wall)"""
+    P = Pose()
+    k = ramp(t, 0, 1.0)
+    legs_stand(P, lerp(1.0, 2.4, k))
+    P.p("all", 0, lerp(0, -30, ramp(t, 0.4, 1.2)), 0)
+    P.r("hips", 40 * k).r("spine", 20 * k).r("chest", 20 * k).r("neck", -20 * k).r("head", -30 * k, 0, twitch(t, 1, 3, 20) * 30)
+    for side, sg in SIDES:
+        for tag in TAGS:
+            P.r(f"arm{tag}_{side}", -140 * k, 0, sg * 20 * k).r(f"fore{tag}_{side}", -30 * k)
+            fingers(P, tag, side, 40 * k)
+    return P
+
+
+@anim("lean_in", 4.0, loop=False)
+def lean_in(t):
+    """face pressed to the slats of your hiding place, breathing"""
+    P = Pose()
+    k = ramp(t, 0, 0.8) * (1 - ramp(t, 3.4, 4.0))
+    legs_stand(P, lerp(1, 1.5, k))
+    P.p("all", 0, -2 * k, -2 * k)
+    P.r("hips", 20 * k).r("spine", 14 * k).r("chest", 16 * k).r("neck", 14 * k).r("head", -8 * k, 0, 30 * k + math.sin(t * 2) * 4)
+    mouth(P, (0.2 + 0.15 * math.sin(t * 3)) * k)
+    for side, sg in SIDES:
+        P.r(f"arm1_{side}", -110 * k, 0, sg * (10 + 14 * k)).r(f"fore1_{side}", -20 * k)
+        P.r(f"hand1_{side}", 10 * k)
+        fingers(P, "1", side, 20 + 30 * k * (0.5 + 0.5 * math.sin(t * 4 + sg)), 6)
+        arm_hang(P, "2", side, sg, t, out=20, bend=40)
+        arm_hang(P, "3", side, sg, t, out=26, bend=60)
+    return P
+
+
+@anim("stand_up", 0.8, loop=False)
+def stand_up(t):
+    P = idle(t)
+    k = 1 - ramp(t, 0, 0.8)
+    P.r("chest", 14 * k).r("neck", 10 * k)
+    return P
+
+
+@anim("drop", 1.4, loop=False)
+def drop(t):
+    """it lets go of the rafter and lands on all six hands"""
+    P = Pose()
+    fall = ramp(t, 0, 0.35)
+    land = ramp(t, 0.35, 0.5)
+    rise = ramp(t, 0.6, 1.4)
+    P.p("all", 0, lerp(30, 0, fall), 0).r("all", lerp(180, 0, ramp(t, 0, 0.4)), 0, 0)
+    legs_stand(P, lerp(2.4, 1.0, rise))
+    P.r("hips", lerp(50, 4, rise)).r("spine", lerp(20, 8, rise)).r("chest", lerp(20, 10, rise))
+    P.r("neck", lerp(-30, 14, rise)).r("head", lerp(-30, -22, rise))
+    mouth(P, 0.8 * land * (1 - rise) + 0.2)
+    for side, sg in SIDES:
+        for tag in TAGS:
+            P.r(f"arm{tag}_{side}", lerp(-80, -6, rise), 0, sg * lerp(30, 12, rise)).r(f"fore{tag}_{side}", -10)
+            P.r(f"hand{tag}_{side}", lerp(50, -8, rise))
+            fingers(P, tag, side, lerp(10, 22, rise), 8)
+    return P
+
+
+@anim("burst", 0.6, loop=False)
+def burst(t):
+    """through a door at speed"""
+    P = run(t * 0.8 / 0.6)
+    P.r("chest", 10 * math.sin(t * 10))
+    return P
+
+
+# animations triggered once by the action controller: never looping, whatever their source says
+ACTION_ONLY = {"twitch", "listen", "sniff", "search", "bang", "mimic_talk", "roar", "scream", "grab", "kill", "emerge", "death",
+               "vanish", "lean_in", "stand_up", "drop", "burst"}
+
+
 def build_json():
     out = {"format_version": "1.8.0", "animations": {}}
     for name, (fn, length, loop) in ANIMS.items():
+        if name in ACTION_ONLY:
+            loop = False
         frames = int(round(length / DT))
         bones = {}
         for i in range(frames + 1):

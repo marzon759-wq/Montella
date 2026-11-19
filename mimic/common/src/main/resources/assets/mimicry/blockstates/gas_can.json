@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/gas_can"},"facing=east":{"model":"mimicry:block/gas_can","y":90},"facing=south":{"model":"mimicry:block/gas_can","y":180},"facing=west":{"model":"mimicry:block/gas_can","y":270}}}

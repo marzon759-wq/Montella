@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/meat_chunk"},"facing=east":{"model":"mimicry:block/meat_chunk","y":90},"facing=south":{"model":"mimicry:block/meat_chunk","y":180},"facing=west":{"model":"mimicry:block/meat_chunk","y":270}}}

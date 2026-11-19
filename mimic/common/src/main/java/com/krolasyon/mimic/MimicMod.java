@@ -1,18 +1,22 @@
 package com.krolasyon.mimic;
 
+import com.krolasyon.mimic.compat.Compat;
+import com.krolasyon.mimic.compat.GuestBase;
 import com.krolasyon.mimic.compat.MimicBase;
-import com.krolasyon.mimic.entity.MimicEntity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
+import com.krolasyon.mimic.compat.ServerCompat;
+import com.krolasyon.mimic.registry.ModBlocks;
+import com.krolasyon.mimic.registry.ModEntities;
+import com.krolasyon.mimic.registry.ModItems;
+import com.krolasyon.mimic.registry.ModSounds;
+import com.krolasyon.mimic.story.ServerEvents;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,14 +25,22 @@ public class MimicMod {
     public static final String MODID = "mimicry";
     public static final Logger LOG = LogManager.getLogger("Mimic");
 
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
-    public static final RegistryObject<EntityType<MimicEntity>> MIMIC = ENTITIES.register("mimic",
-            () -> EntityType.Builder.<MimicEntity>of(MimicEntity::new, MobCategory.MONSTER).sized(0.9f, 3.2f).clientTrackingRange(16).build("mimic"));
-
     public MimicMod() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        ENTITIES.register(bus);
-        bus.addListener((EntityAttributeCreationEvent e) -> e.put(MIMIC.get(), MimicBase.baseAttributes().build()));
-        if (FMLEnvironment.dist == Dist.CLIENT) com.krolasyon.mimic.compat.ClientCompat.init(bus);
+        ModBlocks.BLOCKS.register(bus);
+        ModItems.ITEMS.register(bus);
+        ModItems.TABS.register(bus);
+        ModEntities.ENTITIES.register(bus);
+        ModSounds.SOUNDS.register(bus);
+        bus.addListener((EntityAttributeCreationEvent e) -> {
+            e.put(ModEntities.MIMIC.get(), MimicBase.baseAttributes().build());
+            e.put(ModEntities.LILY.get(), GuestBase.baseAttributes().build());
+        });
+        bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(Compat::initNetwork));
+        ServerCompat.init();
+        MinecraftForge.EVENT_BUS.register(ServerEvents.class);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            com.krolasyon.mimic.client.ClientEvents.init(bus);
+        }
     }
 }

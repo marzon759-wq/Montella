@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/blood_pool"},"facing=east":{"model":"mimicry:block/blood_pool","y":90},"facing=south":{"model":"mimicry:block/blood_pool","y":180},"facing=west":{"model":"mimicry:block/blood_pool","y":270}}}

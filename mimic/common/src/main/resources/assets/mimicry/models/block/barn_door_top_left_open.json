@@ -1,0 +1,1 @@
+{"parent":"minecraft:block/door_top_left_open","textures":{"bottom":"mimicry:block/m_barn_door","top":"mimicry:block/m_barn_door"},"render_type":"minecraft:cutout"}

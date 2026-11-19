@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/cook_stove"},"facing=east":{"model":"mimicry:block/cook_stove","y":90},"facing=south":{"model":"mimicry:block/cook_stove","y":180},"facing=west":{"model":"mimicry:block/cook_stove","y":270}}}

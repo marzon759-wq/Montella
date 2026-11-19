@@ -97,12 +97,12 @@ def make_atlas():
     # --- fur: almost black, brown-grey highlights, vertical strands
     w = h = 256
     f = streaks(w, h, 1, 0.9) * 0.8 + noise(w, h, 18, 2) * 0.35
-    fur = Image.fromarray(to_rgb(f, (6, 5, 6), (70, 62, 58))).convert("RGBA")
+    fur = Image.fromarray(to_rgb(f, (3, 3, 4), (46, 45, 50))).convert("RGBA")
     splatter(fur, 10, (60, 6, 6), 11, 2, 9, 150)
     put("fur", fur, 0, 0)
     # --- hide: the stretched skin under the fur, grey-black and wet
     h2 = noise(w, h, 10, 3) * 0.7 + streaks(w, h, 4, 0.3) * 0.4
-    hide = Image.fromarray(to_rgb(h2, (14, 12, 13), (78, 70, 70))).convert("RGBA")
+    hide = Image.fromarray(to_rgb(h2, (6, 6, 7), (40, 38, 42))).convert("RGBA")
     splatter(hide, 14, (70, 8, 8), 12, 2, 10, 170)
     put("hide", hide, 256, 0)
     # --- bone: off-white, cracked, stained
@@ -278,6 +278,20 @@ class Rig:
             self.cube(bone, (px - t / 2, py - ln, pz - t / 2), (t, ln, t), mat,
                       rot=(rx_deg, rr.uniform(-40, 40), rz_deg), pivot=(px, py, pz))
 
+    def scale_bones(self, names, centre, k):
+        """grow a group of bones (and their cubes) about a point"""
+        c = centre
+        sc = lambda v: [c[i] + (v[i] - c[i]) * k for i in range(3)]
+        for b in self.bones:
+            if b["name"] not in names:
+                continue
+            b["pivot"] = [round(v, 3) for v in sc(b["pivot"])]
+            for cu in b["cubes"]:
+                cu["origin"] = [round(v, 3) for v in sc(cu["origin"])]
+                cu["size"] = [round(v * k, 3) for v in cu["size"]]
+                if "pivot" in cu:
+                    cu["pivot"] = [round(v, 3) for v in sc(cu["pivot"])]
+
     def json(self):
         bones = []
         for b in self.bones:
@@ -337,7 +351,7 @@ def arm(rig, side, sg, tag, parent, shoulder, upper, fore, thick, hand_kw, fur=T
     # bony elbow spur
     rig.cube(a, (sx - 0.4, sy - upper - 0.8, sz + thick * 0.3), (0.8, 1.6, 1.4), "bone", rot=(25, 0, 0))
     if fur:
-        rig.strands(a, (sx, sy - upper * 0.35, sz), (thick * 0.7, upper * 0.4, thick * 0.7), 28, (2.5, 6.5), shash(a) % 999, droop=70)
+        rig.strands(a, (sx, sy - upper * 0.35, sz), (thick * 0.7, upper * 0.4, thick * 0.7), 40, (3.0, 8.0), shash(a) % 999, droop=70)
     elbow = (sx, sy - upper, sz)
     rig.bone(f, a, elbow)
     rig.limb(f, elbow, fore, thick * 0.75, "hide", taper=0.75, seed=shash(f) % 1000)
@@ -354,30 +368,30 @@ def build(P):
     rig.bone("all", "root", (0, 0, 0))
     rig.bone("hips", "all", (0, 25, 0.5))
     # ---------------------------------------------------------------- pelvis and spine
-    rig.cube("hips", (-3.5, 23.5, -1.8), (7, 4, 4.6), "hide")
-    rig.cube("hips", (-2.6, 22.6, -1.2), (5.2, 1.6, 3.4), "hide")
-    rig.strands("hips", (0, 25.5, 0.5), (4.2, 2.4, 3.0), 110, (3.5, 10.0), 101, droop=35)
+    rig.cube("hips", (-4.6, 23.0, -2.4), (9.2, 5, 6.0), "hide")
+    rig.cube("hips", (-3.6, 22.0, -1.8), (7.2, 1.8, 4.6), "hide")
+    rig.strands("hips", (0, 25.5, 0.5), (5.2, 2.8, 3.8), 160, (4.0, 12.0), 101, droop=35, thick=(0.5, 1.1))
     rig.bone("spine", "hips", (0, 27, 0.6))
-    rig.cube("spine", (-2.4, 27, -1.2), (4.8, 6, 3.4), "hide")
-    rig.cube("spine", (-1.9, 28, 1.6), (3.8, 4, 1.2), "hide")
+    rig.cube("spine", (-3.6, 27, -2.0), (7.2, 6, 5.0), "hide")
+    rig.cube("spine", (-2.8, 28, 2.6), (5.6, 4, 1.2), "hide")
     for i in range(5):  # vertebrae pushing through the fur
-        rig.cube("spine", (-0.6, 27.5 + i * 1.3, 2.0), (1.2, 0.8, 1.2), "bone", rot=(20, 0, 0))
-    rig.strands("spine", (0, 30, 0.6), (3.2, 3.2, 2.6), 120, (3.0, 8.0), 102, droop=40)
+        rig.cube("spine", (-0.6, 27.5 + i * 1.3, 3.2), (1.2, 0.8, 1.2), "bone", rot=(20, 0, 0))
+    rig.strands("spine", (0, 30, 0.6), (4.4, 3.4, 3.4), 170, (4.0, 10.0), 102, droop=40, thick=(0.5, 1.1))
     rig.bone("chest", "spine", (0, 33, 0.8))
-    rig.cube("chest", (-4.0, 33, -1.8), (8, 6.5, 5.0), "hide")
-    rig.cube("chest", (-3.2, 39.4, -1.2), (6.4, 1.6, 4.0), "hide")
-    rig.cube("chest", (-5.6, 37.6, -0.6), (11.2, 2.2, 3.2), "hide")  # shoulder yoke
+    rig.cube("chest", (-5.6, 33, -2.6), (11.2, 6.8, 6.8), "hide")
+    rig.cube("chest", (-4.6, 39.6, -1.8), (9.2, 1.8, 5.4), "hide")
+    rig.cube("chest", (-8.0, 37.4, -1.4), (16.0, 2.8, 4.6), "hide")  # shoulder yoke
     # ribs: pale arcs showing through the matted front
     for i in range(5):
         y = 34 + i * 1.15
         for sg in (1, -1):
-            rig.cube("chest", (sg * 1.1 - (2.6 if sg < 0 else 0), y, -2.0), (2.6, 0.45, 0.5), "bone", rot=(0, sg * 18, sg * -14))
+            rig.cube("chest", (sg * 1.2 - (3.6 if sg < 0 else 0), y, -2.85), (3.6, 0.5, 0.5), "bone", rot=(0, sg * 18, sg * -14))
     for i in range(6):
-        rig.cube("chest", (-0.55, 34 + i * 1.2, 3.0), (1.1, 0.8, 1.2), "bone", rot=(15, 0, 0))
-    rig.strands("chest", (0, 36.5, 0.8), (4.8, 3.8, 3.3), 230, (3.0, 10.0), 103, droop=40, back_bias=0.35)
+        rig.cube("chest", (-0.55, 34 + i * 1.2, 4.0), (1.1, 0.8, 1.2), "bone", rot=(15, 0, 0))
+    rig.strands("chest", (0, 36.5, 0.8), (6.4, 4.0, 4.2), 320, (4.0, 13.0), 103, droop=40, back_bias=0.35, thick=(0.5, 1.2))
     # ---------------------------------------------------------------- neck and head
     rig.bone("neck", "chest", (0, 40.5, -0.2))
-    rig.cube("neck", (-1.1, 40.2, -1.3), (2.2, 4.3, 2.2), "hide", rot=(-14, 0, 0))
+    rig.cube("neck", (-1.8, 40.2, -1.8), (3.6, 4.3, 3.4), "hide", rot=(-14, 0, 0))
     for i in range(3):
         rig.cube("neck", (-0.45, 40.8 + i * 1.3, 0.7), (0.9, 0.7, 0.9), "bone", rot=(-14, 0, 0), pivot=(0, 40.5, -0.2))
     rig.strands("neck", (0, 42, -0.2), (1.8, 2.0, 1.8), 40, (3.0, 7.0), 104, droop=30)
@@ -432,21 +446,21 @@ def build(P):
     rig.cube("tongue2", (-0.5, floor + 0.4, -5.0), (1.0, 0.4, 0.4), "gum")
 
     # ---------------------------------------------------------------- three pairs of arms
-    big = dict(palm=(3.2, 3.6, 1.3), fingers=(4.6, 3.8, 3.2), fthick=0.8, claw=2.4)
-    mid = dict(palm=(2.8, 3.0, 1.1), fingers=(4.0, 3.4, 2.8), fthick=0.7, claw=2.1)
-    small = dict(palm=(2.0, 2.2, 0.9), fingers=(2.6, 2.2, 1.8), fthick=0.55, claw=1.5, nfing=3)
+    big = dict(palm=(4.2, 4.4, 1.6), fingers=(5.6, 4.6, 3.8), fthick=1.05, claw=3.0)
+    mid = dict(palm=(3.4, 3.6, 1.3), fingers=(4.6, 3.8, 3.2), fthick=0.85, claw=2.5)
+    small = dict(palm=(2.4, 2.6, 1.0), fingers=(3.0, 2.6, 2.2), fthick=0.65, claw=1.8, nfing=3)
     for side, sg in SIDES:
-        arm(rig, side, sg, "1", "chest", (sg * 5.6, 38.6, 0.2), 13.0, 14.0, 1.7, big)
-        arm(rig, side, sg, "2", "chest", (sg * 4.6, 34.2, 0.6), 11.0, 12.0, 1.45, mid)
-        arm(rig, side, sg, "3", "spine", (sg * 3.2, 29.2, 0.0), 6.0, 6.0, 1.0, small, fur=False)
+        arm(rig, side, sg, "1", "chest", (sg * 7.4, 38.6, 0.2), 13.5, 14.5, 2.4, big)
+        arm(rig, side, sg, "2", "chest", (sg * 6.0, 34.2, 0.6), 11.5, 12.5, 2.0, mid)
+        arm(rig, side, sg, "3", "spine", (sg * 4.2, 29.2, 0.0), 6.5, 6.5, 1.4, small, fur=False)
     # ---------------------------------------------------------------- digitigrade legs
     for side, sg in SIDES:
-        hipx = sg * 2.4
+        hipx = sg * 3.0
         rig.bone(f"thigh_{side}", "hips", (hipx, 24.0, 0.5))
-        rig.limb(f"thigh_{side}", (hipx, 24.0, 0.5), 11.5, 2.0, "hide", taper=0.75, seed=7 + sg)
-        rig.strands(f"thigh_{side}", (hipx, 20.0, 0.5), (1.6, 4.0, 1.6), 30, (3.0, 7.0), 110 + sg, droop=40)
+        rig.limb(f"thigh_{side}", (hipx, 24.0, 0.5), 11.5, 2.9, "hide", taper=0.7, seed=7 + sg)
+        rig.strands(f"thigh_{side}", (hipx, 20.0, 0.5), (2.2, 4.0, 2.2), 45, (3.5, 8.0), 110 + sg, droop=40, thick=(0.45, 0.9))
         rig.bone(f"shin_{side}", f"thigh_{side}", (hipx, 12.5, 0.5))
-        rig.limb(f"shin_{side}", (hipx, 12.5, 0.5), 10.0, 1.4, "hide", taper=0.7, seed=9 + sg)
+        rig.limb(f"shin_{side}", (hipx, 12.5, 0.5), 10.0, 2.0, "hide", taper=0.7, seed=9 + sg)
         rig.cube(f"shin_{side}", (hipx - 0.5, 11.0, 1.3), (1.0, 2.0, 1.0), "bone", rot=(-25, 0, 0))  # heel spur
         rig.bone(f"foot_{side}", f"shin_{side}", (hipx, 2.5, 0.5))
         rig.cube(f"foot_{side}", (hipx - 0.8, 0.0, -0.6), (1.6, 2.6, 1.8), "hide")
@@ -457,6 +471,8 @@ def build(P):
             rig.cube(tb, (hipx + dx - 0.3, 0.0, -0.4 - ln), (0.6, 0.6, ln), "hide", rot=(0, dx * 14 * sg, 0), pivot=(hipx + dx, 0.3, -0.4))
             rig.cube(tb, (hipx + dx - 0.22, -0.1, -0.4 - ln - 1.6), (0.44, 0.5, 1.8), "claw", rot=(14, dx * 14 * sg, 0), pivot=(hipx + dx, 0.3, -0.4))
         rig.cube(f"foot_{side}", (hipx - 0.25, 0.2, 1.0), (0.5, 0.5, 1.6), "claw")  # dew claw
+    # a bigger skull, like the photograph: everything above the neck grows about the head pivot
+    rig.scale_bones({"head_look", "head", "jaw", "tongue", "tongue2"}, (0, 45.6, -1.2), 1.28)
     return rig
 
 

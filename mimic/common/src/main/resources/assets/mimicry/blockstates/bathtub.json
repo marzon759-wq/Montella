@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/bathtub"},"facing=east":{"model":"mimicry:block/bathtub","y":90},"facing=south":{"model":"mimicry:block/bathtub","y":180},"facing=west":{"model":"mimicry:block/bathtub","y":270}}}

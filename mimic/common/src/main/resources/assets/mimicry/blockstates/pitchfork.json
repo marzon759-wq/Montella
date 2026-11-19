@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/pitchfork"},"facing=east":{"model":"mimicry:block/pitchfork","y":90},"facing=south":{"model":"mimicry:block/pitchfork","y":180},"facing=west":{"model":"mimicry:block/pitchfork","y":270}}}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/sink"},"facing=east":{"model":"mimicry:block/sink","y":90},"facing=south":{"model":"mimicry:block/sink","y":180},"facing=west":{"model":"mimicry:block/sink","y":270}}}

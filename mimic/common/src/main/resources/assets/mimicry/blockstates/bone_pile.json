@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/bone_pile"},"facing=east":{"model":"mimicry:block/bone_pile","y":90},"facing=south":{"model":"mimicry:block/bone_pile","y":180},"facing=west":{"model":"mimicry:block/bone_pile","y":270}}}

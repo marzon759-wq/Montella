@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/rafter"},"facing=east":{"model":"mimicry:block/rafter","y":90},"facing=south":{"model":"mimicry:block/rafter","y":180},"facing=west":{"model":"mimicry:block/rafter","y":270}}}

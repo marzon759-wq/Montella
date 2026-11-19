@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/shelf_jars"},"facing=east":{"model":"mimicry:block/shelf_jars","y":90},"facing=south":{"model":"mimicry:block/shelf_jars","y":180},"facing=west":{"model":"mimicry:block/shelf_jars","y":270}}}

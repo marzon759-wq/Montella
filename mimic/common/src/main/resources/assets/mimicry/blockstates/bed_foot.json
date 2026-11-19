@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/bed_foot"},"facing=east":{"model":"mimicry:block/bed_foot","y":90},"facing=south":{"model":"mimicry:block/bed_foot","y":180},"facing=west":{"model":"mimicry:block/bed_foot","y":270}}}

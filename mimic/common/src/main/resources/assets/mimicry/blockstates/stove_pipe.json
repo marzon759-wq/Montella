@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/stove_pipe"},"facing=east":{"model":"mimicry:block/stove_pipe","y":90},"facing=south":{"model":"mimicry:block/stove_pipe","y":180},"facing=west":{"model":"mimicry:block/stove_pipe","y":270}}}

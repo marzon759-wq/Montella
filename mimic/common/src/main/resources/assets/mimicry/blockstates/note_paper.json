@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"mimicry:block/note_paper"},"facing=east":{"model":"mimicry:block/note_paper","y":90},"facing=south":{"model":"mimicry:block/note_paper","y":180},"facing=west":{"model":"mimicry:block/note_paper","y":270}}}

@@ -1,0 +1,1063 @@
+{
+ "v.lily.vm1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_vm1"
+   }
+  ],
+  "subtitle": "sub.v.lily.vm1"
+ },
+ "v.lily.vm2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_vm2"
+   }
+  ],
+  "subtitle": "sub.v.lily.vm2"
+ },
+ "v.lily.vm3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_vm3"
+   }
+  ],
+  "subtitle": "sub.v.lily.vm3"
+ },
+ "v.lily.vm4": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_vm4"
+   }
+  ],
+  "subtitle": "sub.v.lily.vm4"
+ },
+ "v.lily.r1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r1"
+   }
+  ],
+  "subtitle": "sub.v.lily.r1"
+ },
+ "v.lily.r2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r2"
+   }
+  ],
+  "subtitle": "sub.v.lily.r2"
+ },
+ "v.lily.r3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r3"
+   }
+  ],
+  "subtitle": "sub.v.lily.r3"
+ },
+ "v.lily.r4": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r4"
+   }
+  ],
+  "subtitle": "sub.v.lily.r4"
+ },
+ "v.lily.r5": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r5"
+   }
+  ],
+  "subtitle": "sub.v.lily.r5"
+ },
+ "v.lily.r6": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r6"
+   }
+  ],
+  "subtitle": "sub.v.lily.r6"
+ },
+ "v.lily.r7": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r7"
+   }
+  ],
+  "subtitle": "sub.v.lily.r7"
+ },
+ "v.lily.r8": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r8"
+   }
+  ],
+  "subtitle": "sub.v.lily.r8"
+ },
+ "v.lily.r9": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_r9"
+   }
+  ],
+  "subtitle": "sub.v.lily.r9"
+ },
+ "v.lily.silo1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_silo1"
+   }
+  ],
+  "subtitle": "sub.v.lily.silo1"
+ },
+ "v.lily.ask": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_ask"
+   }
+  ],
+  "subtitle": "sub.v.lily.ask"
+ },
+ "v.lily.word": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_word"
+   }
+  ],
+  "subtitle": "sub.v.lily.word"
+ },
+ "v.lily.hurry": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_hurry"
+   }
+  ],
+  "subtitle": "sub.v.lily.hurry"
+ },
+ "v.lily.silo2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_silo2"
+   }
+  ],
+  "subtitle": "sub.v.lily.silo2"
+ },
+ "v.lily.silo3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_silo3"
+   }
+  ],
+  "subtitle": "sub.v.lily.silo3"
+ },
+ "v.lily.end2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_end2"
+   }
+  ],
+  "subtitle": "sub.v.lily.end2"
+ },
+ "v.lily.field1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_field1"
+   }
+  ],
+  "subtitle": "sub.v.lily.field1"
+ },
+ "v.lily.field2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_field2"
+   }
+  ],
+  "subtitle": "sub.v.lily.field2"
+ },
+ "v.lily.end1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_end1"
+   }
+  ],
+  "subtitle": "sub.v.lily.end1"
+ },
+ "v.mlily.up1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_up1"
+   }
+  ],
+  "subtitle": "sub.v.mlily.up1"
+ },
+ "v.mlily.up2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_up2"
+   }
+  ],
+  "subtitle": "sub.v.mlily.up2"
+ },
+ "v.mlily.word_ok": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_word_ok"
+   }
+  ],
+  "subtitle": "sub.v.mlily.word_ok"
+ },
+ "v.mlily.word_bad": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_word_bad"
+   }
+  ],
+  "subtitle": "sub.v.mlily.word_bad"
+ },
+ "v.mlily.truck1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_truck1"
+   }
+  ],
+  "subtitle": "sub.v.mlily.truck1"
+ },
+ "v.mlily.truck_ok": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_truck_ok"
+   }
+  ],
+  "subtitle": "sub.v.mlily.truck_ok"
+ },
+ "v.mlily.truck_bad": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_truck_bad"
+   }
+  ],
+  "subtitle": "sub.v.mlily.truck_bad"
+ },
+ "v.mlily.radio_end": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_radio_end"
+   }
+  ],
+  "subtitle": "sub.v.mlily.radio_end"
+ },
+ "v.mlily.help": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mlily_help"
+   }
+  ],
+  "subtitle": "sub.v.mlily.help"
+ },
+ "v.dad.machine": {
+  "sounds": [
+   {
+    "name": "mimicry:v_dad_machine"
+   }
+  ],
+  "subtitle": "sub.v.dad.machine"
+ },
+ "v.dad.tape1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_dad_tape1"
+   }
+  ],
+  "subtitle": "sub.v.dad.tape1"
+ },
+ "v.dad.tape2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_dad_tape2"
+   }
+  ],
+  "subtitle": "sub.v.dad.tape2"
+ },
+ "v.dad.tape3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_dad_tape3"
+   }
+  ],
+  "subtitle": "sub.v.dad.tape3"
+ },
+ "v.dad.tape4": {
+  "sounds": [
+   {
+    "name": "mimicry:v_dad_tape4"
+   }
+  ],
+  "subtitle": "sub.v.dad.tape4"
+ },
+ "v.mdad.phone1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_phone1"
+   }
+  ],
+  "subtitle": "sub.v.mdad.phone1"
+ },
+ "v.mdad.phone2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_phone2"
+   }
+  ],
+  "subtitle": "sub.v.mdad.phone2"
+ },
+ "v.mdad.machine2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_machine2"
+   }
+  ],
+  "subtitle": "sub.v.mdad.machine2"
+ },
+ "v.mdad.call1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_call1"
+   }
+  ],
+  "subtitle": "sub.v.mdad.call1"
+ },
+ "v.mdad.call2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_call2"
+   }
+  ],
+  "subtitle": "sub.v.mdad.call2"
+ },
+ "v.mdad.call3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_mdad_call3"
+   }
+  ],
+  "subtitle": "sub.v.mdad.call3"
+ },
+ "v.sam.loud": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_loud"
+   }
+  ],
+  "subtitle": "sub.v.sam.loud"
+ },
+ "v.sam.whisper": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_whisper"
+   }
+  ],
+  "subtitle": "sub.v.sam.whisper"
+ },
+ "v.sam.whisper2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_whisper2"
+   }
+  ],
+  "subtitle": "sub.v.sam.whisper2"
+ },
+ "v.sam.word": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_word"
+   }
+  ],
+  "subtitle": "sub.v.sam.word"
+ },
+ "v.sam.ask": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_ask"
+   }
+  ],
+  "subtitle": "sub.v.sam.ask"
+ },
+ "v.sam.its_me": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_its_me"
+   }
+  ],
+  "subtitle": "sub.v.sam.its_me"
+ },
+ "v.sam.lily": {
+  "sounds": [
+   {
+    "name": "mimicry:v_sam_lily"
+   }
+  ],
+  "subtitle": "sub.v.sam.lily"
+ },
+ "v.msam.loud": {
+  "sounds": [
+   {
+    "name": "mimicry:v_msam_loud"
+   }
+  ],
+  "subtitle": "sub.v.msam.loud"
+ },
+ "v.msam.word": {
+  "sounds": [
+   {
+    "name": "mimicry:v_msam_word"
+   }
+  ],
+  "subtitle": "sub.v.msam.word"
+ },
+ "v.msam.ask": {
+  "sounds": [
+   {
+    "name": "mimicry:v_msam_ask"
+   }
+  ],
+  "subtitle": "sub.v.msam.ask"
+ },
+ "v.msam.its_me": {
+  "sounds": [
+   {
+    "name": "mimicry:v_msam_its_me"
+   }
+  ],
+  "subtitle": "sub.v.msam.its_me"
+ },
+ "mm.step": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_step0"
+   },
+   {
+    "name": "mimicry:mm_step1"
+   },
+   {
+    "name": "mimicry:mm_step2"
+   }
+  ]
+ },
+ "mm.breath": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_breath0"
+   },
+   {
+    "name": "mimicry:mm_breath1"
+   }
+  ]
+ },
+ "mm.growl": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_growl0"
+   },
+   {
+    "name": "mimicry:mm_growl1"
+   },
+   {
+    "name": "mimicry:mm_growl2"
+   },
+   {
+    "name": "mimicry:mm_growl3"
+   }
+  ]
+ },
+ "mm.roar": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_roar0"
+   },
+   {
+    "name": "mimicry:mm_roar1"
+   }
+  ]
+ },
+ "mm.scream": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_scream0"
+   },
+   {
+    "name": "mimicry:mm_scream1"
+   }
+  ]
+ },
+ "mm.click": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_click0"
+   },
+   {
+    "name": "mimicry:mm_click1"
+   },
+   {
+    "name": "mimicry:mm_click2"
+   }
+  ]
+ },
+ "mm.sniff": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_sniff0"
+   },
+   {
+    "name": "mimicry:mm_sniff1"
+   }
+  ]
+ },
+ "mm.eat": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_eat0"
+   },
+   {
+    "name": "mimicry:mm_eat1"
+   },
+   {
+    "name": "mimicry:mm_eat2"
+   }
+  ]
+ },
+ "mm.kill": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_kill"
+   }
+  ]
+ },
+ "mm.climb": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_climb0"
+   },
+   {
+    "name": "mimicry:mm_climb1"
+   }
+  ]
+ },
+ "mm.drop": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_drop"
+   }
+  ]
+ },
+ "mm.emerge": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_emerge"
+   }
+  ]
+ },
+ "mm.whisper": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_whisper0"
+   },
+   {
+    "name": "mimicry:mm_whisper1"
+   },
+   {
+    "name": "mimicry:mm_whisper2"
+   }
+  ]
+ },
+ "mm.howl": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_howl0"
+   },
+   {
+    "name": "mimicry:mm_howl1"
+   }
+  ]
+ },
+ "mm.bang": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_bang0"
+   },
+   {
+    "name": "mimicry:mm_bang1"
+   }
+  ]
+ },
+ "mm.twitch": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_twitch0"
+   },
+   {
+    "name": "mimicry:mm_twitch1"
+   }
+  ]
+ },
+ "mm.grab": {
+  "sounds": [
+   {
+    "name": "mimicry:mm_grab"
+   }
+  ]
+ },
+ "fx.door_creak": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_door_creak0"
+   },
+   {
+    "name": "mimicry:x_fx_door_creak1"
+   }
+  ]
+ },
+ "fx.door_slam": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_door_slam0"
+   },
+   {
+    "name": "mimicry:x_fx_door_slam1"
+   }
+  ]
+ },
+ "fx.lock": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_lock"
+   }
+  ]
+ },
+ "fx.unlock": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_unlock"
+   }
+  ]
+ },
+ "fx.drawer": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_drawer0"
+   },
+   {
+    "name": "mimicry:x_fx_drawer1"
+   }
+  ]
+ },
+ "fx.phone_pick": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_phone_pick"
+   }
+  ]
+ },
+ "fx.phone_ring": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_phone_ring"
+   }
+  ]
+ },
+ "fx.tape": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_tape"
+   }
+  ]
+ },
+ "fx.thunder": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_thunder0"
+   },
+   {
+    "name": "mimicry:x_fx_thunder1"
+   }
+  ]
+ },
+ "fx.creak": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_creak0"
+   },
+   {
+    "name": "mimicry:x_fx_creak1"
+   }
+  ]
+ },
+ "fx.thump": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_thump"
+   }
+  ]
+ },
+ "fx.jumpscare": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_jumpscare"
+   }
+  ]
+ },
+ "fx.sting": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_sting0"
+   },
+   {
+    "name": "mimicry:x_fx_sting1"
+   }
+  ]
+ },
+ "fx.chapter": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_chapter"
+   }
+  ]
+ },
+ "fx.glass": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_glass"
+   }
+  ]
+ },
+ "fx.wood_break": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_wood_break0"
+   },
+   {
+    "name": "mimicry:x_fx_wood_break1"
+   }
+  ]
+ },
+ "fx.crow": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_crow"
+   }
+  ]
+ },
+ "fx.clock_tick": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_clock_tick"
+   }
+  ]
+ },
+ "fx.static": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_static0"
+   },
+   {
+    "name": "mimicry:x_fx_static1"
+   }
+  ]
+ },
+ "fx.light_flicker": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_bulb_pop"
+   }
+  ]
+ },
+ "fx.radio_static": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_radio_static"
+   }
+  ]
+ },
+ "fx.radio_click": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_radio_click"
+   }
+  ]
+ },
+ "fx.light_on": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_light_on"
+   }
+  ]
+ },
+ "fx.light_off": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_light_off"
+   }
+  ]
+ },
+ "fx.pickup": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_pickup"
+   }
+  ]
+ },
+ "fx.paper": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_paper"
+   }
+  ]
+ },
+ "fx.bolt_cut": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_bolt_cut"
+   }
+  ]
+ },
+ "fx.crowbar": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_crowbar"
+   }
+  ]
+ },
+ "fx.bell": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_bell"
+   }
+  ]
+ },
+ "fx.well": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_well"
+   }
+  ]
+ },
+ "fx.bucket": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_bucket"
+   }
+  ]
+ },
+ "fx.gas_pour": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_gas_pour"
+   }
+  ]
+ },
+ "fx.engine_fail": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_engine_fail"
+   }
+  ]
+ },
+ "fx.engine_start": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_engine_start"
+   }
+  ]
+ },
+ "fx.fire": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_fire"
+   }
+  ]
+ },
+ "fx.clock_chime": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_clock_chime"
+   }
+  ]
+ },
+ "fx.breath_hold": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_breath_hold"
+   }
+  ]
+ },
+ "fx.gasp": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_gasp"
+   }
+  ]
+ },
+ "fx.qte": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_qte"
+   }
+  ]
+ },
+ "fx.choice": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_choice"
+   }
+  ]
+ },
+ "fx.hay": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_hay"
+   }
+  ]
+ },
+ "fx.corn": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_corn"
+   }
+  ]
+ },
+ "fx.stove": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_stove"
+   }
+  ]
+ },
+ "fx.water": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_water"
+   }
+  ]
+ },
+ "fx.cow": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_cow"
+   }
+  ]
+ },
+ "fx.chain": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_chain"
+   }
+  ]
+ },
+ "fx.truck_door": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_truck_door"
+   }
+  ]
+ },
+ "fx.gore": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_gore"
+   }
+  ]
+ },
+ "fx.stab": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_stab"
+   }
+  ]
+ },
+ "fx.lighter": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_lighter"
+   }
+  ]
+ },
+ "fx.throw": {
+  "sounds": [
+   {
+    "name": "mimicry:fx_throw"
+   }
+  ]
+ },
+ "amb.wind": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_wind",
+    "stream": true
+   }
+  ]
+ },
+ "amb.field": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_field",
+    "stream": true
+   }
+  ]
+ },
+ "amb.house": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_house",
+    "stream": true
+   }
+  ]
+ },
+ "amb.barn": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_barn",
+    "stream": true
+   }
+  ]
+ },
+ "amb.cellar": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_cellar",
+    "stream": true
+   }
+  ]
+ },
+ "amb.silo": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_silo",
+    "stream": true
+   }
+  ]
+ },
+ "amb.chase": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_chase",
+    "stream": true
+   }
+  ]
+ },
+ "amb.heartbeat": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_heartbeat",
+    "stream": true
+   }
+  ]
+ },
+ "amb.flies": {
+  "sounds": [
+   {
+    "name": "mimicry:amb_flies",
+    "stream": true
+   }
+  ]
+ }
+}
