@@ -144,6 +144,53 @@ public final class AutoTest {
             cue(40, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("promo")) {
+            cue(10, () -> srv("step:c4_silo"));
+            cue(60, () -> { if (ClientState.cutId != null) com.krolasyon.mimic.net.Net.toServer(com.krolasyon.mimic.net.Msg.of("cut_done").s("id", ClientState.cutId)); });
+            cue(200, () -> { srv("kill"); Minecraft.getInstance().options.hideGui = true; });
+            // 1. the barn: it rears up under the lantern
+            cue(5, () -> { srv("mm:70.5,1,36.0,0"); srv("lamp:70,4,38,13"); srv("lamp:72,2,37,10"); srv("lamp:69,2,36,9"); });
+            cue(10, () -> srv("act:roar"));
+            view("pr_barn_roar", 70.5, 1, 40.2, 180, -24);
+            // 2. the corn, flashlight on it
+            cue(5, () -> { srv("kill"); srv("mm:76.5,1,63.5,0"); srv("flag:4096:1"); srv("lamp:76,3,61,10"); });
+            view("pr_corn", 76.5, 1, 57.5, 0, -10);
+            // 3. down the hall: something at the far end
+            cue(5, () -> { srv("kill"); srv("mm:25.5,1,55.5,0"); srv("lamp:25,2,56,12"); srv("lamp:25,3,60,8"); });
+            view("pr_hall", 25.5, 1, 68.8, 180, 2);
+            // 4. on the stairs
+            cue(5, () -> { srv("kill"); srv("mm:25.5,5,63.5,0"); srv("lamp:26,6,64,9"); });
+            cue(10, () -> srv("act:scream"));
+            view("pr_stairs", 25.5, 1, 68.2, 180, -26);
+            // 5. the scarecrows and the lit window
+            cue(5, () -> srv("kill"));
+            view("pr_scarecrows", 40, 2, 86, -60, 4);
+            // 6. it sleeps in the rafters
+            cue(5, () -> { srv("mm:70.5,6.2,30.5,180"); srv("sleep"); srv("lamp:70,4,32,9"); });
+            view("pr_sleeping", 70.5, 1, 35.5, 180, -45);
+            // 7. Lily in the silo
+            cue(5, () -> { srv("kill"); srv("lily:88.5,1,32.5"); srv("lamp:88,2,31,10"); });
+            view("pr_silo", 85.6, 1, 31.5, -90, 6);
+            // gameplay with the HUD: the choice, hiding, the fight
+            cue(5, () -> { srv("mm:70.5,6.2,30.5,180"); srv("sleep"); Minecraft.getInstance().options.hideGui = false; });
+            cue(5, () -> srv("tp:70.5,1,38.5,180,-35"));
+            cue(30, () -> srv("dlg:wake:wake"));
+            cue(25, () -> shot("pr_choice"));
+            cue(5, () -> srv("advance:2"));
+            cue(30, () -> srv("kill"));
+            cue(40, () -> { srv("tp:33.5,1,57.5,90,0"); srv("hide:pantry"); });
+            cue(20, () -> { srv("mm:32.2,1,57.5,-90"); srv("act:sniff"); srv("lamp:32,3,57,13"); srv("lamp:31,2,58,10"); });
+            cue(30, () -> shot("pr_hiding"));
+            cue(5, () -> { srv("unhide"); srv("kill"); });
+            cue(10, () -> { srv("hold:pitchfork"); srv("mm:76.5,1,82.5,0"); srv("lamp:76,3,80,11"); srv("tp:76.5,1,78.0,0,-8"); });
+            cue(10, () -> srv("act:grab"));
+            cue(12, () -> shot("pr_fight"));
+            cue(5, () -> { srv("kill"); srv("hold:flashlight"); srv("light:on"); });
+            cue(5, () -> srv("tp:28.5,1,55.5,90,15"));
+            cue(30, () -> shot("pr_kitchen"));
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("endings")) {
             Qte.auto = true;
             cue(10, () -> srv("step:c5_corn"));

@@ -1611,6 +1611,11 @@ public final class Story {
             case "hide" -> { for (House.Hide h : House.HIDES) if (h.id.equals(a[1])) hide(p, h); }
             case "fx" -> fx(p, a[1], Integer.parseInt(a[2]));
             case "kill" -> removeMimic();
+            case "lamp" -> {
+                String[] c = a[1].split(",");
+                p.serverLevel().setBlock(wp(new BlockPos(Integer.parseInt(c[0]), Integer.parseInt(c[1]), Integer.parseInt(c[2]))),
+                        Integer.parseInt(c[3]) == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, Integer.parseInt(c[3])), 3);
+            }
             case "give" -> debugGiveAll(p);
             case "item" -> give(a[1]);
             case "nv" -> p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 20000, 0, false, false));
