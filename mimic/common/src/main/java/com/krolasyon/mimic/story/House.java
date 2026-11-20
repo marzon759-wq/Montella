@@ -457,7 +457,7 @@ public final class House {
         prop(22, G + 1, 68, "bookcase", Direction.NORTH, "look:books");
         prop(21, G + 1, 68, "bookcase", Direction.NORTH);
         drawer(18, G + 1, 68, "cabinet", Direction.NORTH, "note:clipping");
-        variant(16, G + 3, 64, "painting", Direction.EAST, 0);
+        variant(16, G + 3, 62, "painting", Direction.EAST, 0);
         window(14, G + 2, 64, Direction.EAST, false);
         window(14, G + 2, 66, Direction.EAST, false);
         window(19, G + 2, 70, Direction.NORTH, false);
@@ -497,7 +497,7 @@ public final class House {
         prop(32, G + 1, 57, "chair", Direction.NORTH);
         prop(30, G + 2, 56, "walkie", Direction.SOUTH, "pickup:walkie");
         prop(31, G + 2, 56, "note_paper", Direction.SOUTH, "note:kitchen");
-        lamp(31, G + 2, 55, "oil_lamp", Direction.NORTH, "H_KITCHEN", 0);
+        lamp(34, G + 2, 54, "oil_lamp", Direction.NORTH, "H_KITCHEN", 0);
         drawer(32, G + 1, 52, "counter", Direction.SOUTH, "battery");
         if (lvl != null) {
             set(33, G, 59, blk("hatch").defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.NORTH).setValue(TrapDoorBlock.HALF, Half.TOP).setValue(TrapDoorBlock.OPEN, false));
@@ -510,7 +510,7 @@ public final class House {
         // STUDY x28..34 z61..68
         drawer(31, G + 1, 66, "desk", Direction.NORTH, "note:journal1");
         prop(31, G + 1, 65, "chair", Direction.SOUTH);
-        lamp(30, G + 2, 66, "oil_lamp", Direction.NORTH, "H_STUDY", 2);
+        lamp(31, G + 2, 66, "oil_lamp", Direction.NORTH, "H_STUDY", 2);
         prop(34, G + 1, 62, "bookcase", Direction.WEST);
         prop(34, G + 1, 63, "bookcase", Direction.WEST);
         mode(28, G + 1, 61, "radio_set", Direction.SOUTH, 0);
@@ -568,7 +568,7 @@ public final class House {
         drawer(34, F + 1, 68, "nightstand", Direction.NORTH, "battery");
         hide("master_wd", 28, F + 1, 62, "wardrobe", Direction.EAST);
         drawer(34, F + 1, 62, "dresser", Direction.WEST, "note:funeral");
-        prop(34, F + 3, 64, "mirror", Direction.WEST);
+        prop(34, F + 3, 62, "mirror", Direction.WEST);
         prop(30, F + 1, 65, "chair_fallen", Direction.EAST);
         variant(28, F + 3, 66, "painting", Direction.EAST, 2);
         window(36, F + 2, 64, Direction.WEST, false);
