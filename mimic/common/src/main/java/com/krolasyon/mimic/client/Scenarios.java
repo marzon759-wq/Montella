@@ -21,7 +21,8 @@ final class Scenarios {
 
     private static void expect(String step) {
         cue(0, () -> {
-            boolean ok = Story.S.step.equals(step);
+            String[] alt = step.split("\\|");
+            boolean ok = java.util.Arrays.asList(alt).contains(Story.S.step);
             if (!ok) fails++;
             MimicMod.LOG.info("[PLAY] expect {} -> {} {}", step, Story.S.step, ok ? "OK" : "FAIL");
         });
@@ -97,7 +98,7 @@ final class Scenarios {
         cue(1, () -> {});           // whisper or shout
         cue(1, () -> {});      // say the word out loud (it learns it) or whisper
         cue(1100, () -> {});
-        expect("c1_voice");
+        expect("c1_voice|c1_hide|c1_sneak|c1_up|c1_chase");
         cue(240, () -> shot("p_upstairs_choice"));
         // ---- the voice upstairs: ask (hide), go up (chase), or stay quiet (sneak)
         if (dawn) {

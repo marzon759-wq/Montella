@@ -196,7 +196,7 @@ final class Steps {
                 removeMimic();
                 later(20, () -> chapter(3));
                 obj("shed");
-                S.haunt = 2;
+                S.haunt = 1;
                 checkpoint("", 56.5, G1, 14.5, 90);
                 laterIn("c3_shed", 100, () -> radio("v.lily.r9", 160));
             }
