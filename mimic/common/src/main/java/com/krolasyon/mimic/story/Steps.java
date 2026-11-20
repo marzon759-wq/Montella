@@ -271,11 +271,14 @@ final class Steps {
             case "c4_corn" -> {
                 obj("truck_alone");
                 S.haunt = 0;
-                checkpoint("c4_corn", 60.5, G1, 54.5, 90);
+                checkpoint("c4_corn", 63.5, G1, 49.5, 90);
                 if (lily != null) lily.discard();
                 lily = null;
-                MimicEntity e = hunter(70.5, G1, 49.5, 4.0, false);
-                if (e != null) e.huntPatience = 120;
+                // a head start: it comes up out of the corn behind you a few seconds later
+                laterIn("c4_corn", 70, () -> {
+                    MimicEntity e = hunter(80.5, G1, 56.5, 3.9, true);
+                    if (e != null) e.huntPatience = 120;
+                });
                 later(80, () -> radio("v.lily.corn2", 100));
             }
             // ---------------------------------------------------------------- chapter 5: dawn
@@ -492,7 +495,7 @@ final class Steps {
                 }
             }
             case "c5_corn" -> {
-                if (lily != null && hm != null && p.distanceTo(lily) < 9 && S.v("sub") == 0) {
+                if (lily != null && hm != null && p.distanceTo(lily) < 12 && S.v("sub") == 0) {
                     S.v("sub", 1);
                     startDialogue("face", "face");
                 }

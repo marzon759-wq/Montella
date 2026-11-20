@@ -296,7 +296,7 @@ final class Scenarios {
                 .walk(true, PlayDriver.P(60, 1, 50.5), PlayDriver.P(48.5, 1, 49.5)).step("c5_truck").srv("speedcap:0");
         // chapter 5: the truck - and two voices
         d.mark("truck").look(46.5, 1.5, 46.5, 15).srv("truck_use").wait(30).srv("truck_use").cutStart().cutEnd().talk(1).step("c5_corn")
-                .walk(true, PlayDriver.P(60, 1, 53), PlayDriver.P(74.5, 1, 53), PlayDriver.P(76.5, 1, 60), PlayDriver.P(76.5, 1, 74.5))
+                .walk(true, PlayDriver.P(60, 1, 53), PlayDriver.P(76.5, 1, 51), PlayDriver.P(76.5, 1, 60), PlayDriver.P(76.5, 1, 78))
                 .look(76.5, 1, 85.5, 10).talk(0)
                 .until(() -> Story.S.step.equals("credits"), 3000, "ending").wait(200).mark("end")
                 .run(() -> Minecraft.getInstance().stop());
