@@ -183,6 +183,22 @@
   ],
   "subtitle": "sub.v.lily.end1"
  },
+ "v.lily.corn": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_corn"
+   }
+  ],
+  "subtitle": "sub.v.lily.corn"
+ },
+ "v.lily.corn2": {
+  "sounds": [
+   {
+    "name": "mimicry:v_lily_corn2"
+   }
+  ],
+  "subtitle": "sub.v.lily.corn2"
+ },
  "v.mlily.up1": {
   "sounds": [
    {

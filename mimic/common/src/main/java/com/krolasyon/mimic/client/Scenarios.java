@@ -39,6 +39,9 @@ final class Scenarios {
 
     private static void answer(int wait, int idx) { cue(wait, () -> srv("advance:" + idx)); }
 
+    /** answer a decision only once its screen is actually up (the server can lag behind the client) */
+    private static void decide(int wait, String node, int idx) { cue(wait, () -> AutoTest.pendingAnswer(node, idx)); }
+
     static void play(String mode) {
         boolean dawn = mode.contains("dawn"), passenger = mode.contains("passenger"), harvest = mode.contains("harvest"), learned = mode.contains("learned");
         // ---- prologue
@@ -64,7 +67,7 @@ final class Scenarios {
         cue(60, () -> {});
         expect("c1_phone");
         cue(60, () -> shot("p_phone_choice"));
-        answer(10, passenger || learned ? 1 : 0);
+        decide(10, "phone", passenger || learned ? 1 : 0);
         cue(90, () -> srv("advance:0"));
         cue(90, () -> srv("advance:0"));
         cue(40, () -> {});
@@ -85,18 +88,19 @@ final class Scenarios {
         answer(40, 0);
         cue(140, () -> {});
         expect("c1_voice");
-        cue(110, () -> shot("p_upstairs_choice"));
+        cue(240, () -> shot("p_upstairs_choice"));
         // ---- the voice upstairs: ask (hide), go up (chase), or stay quiet (sneak)
         if (dawn) {
-            answer(10, 1);
-            cue(10, () -> {});
+            decide(10, "upstairs", 1);
+            cue(200, () -> {});
             expect("c1_hide");
             cue(4, () -> srv("hide:pantry"));
             cue(300, () -> shot("p_search"));
             cue(200, () -> srv("qte:breath:1"));
             cue(400, () -> {});
         } else if (passenger) {
-            answer(10, 0);
+            decide(10, "upstairs", 0);
+            cue(200, () -> {});
             tp(25.5, 6, 61.5, 180);
             cue(30, () -> shot("p_landing"));
             skipCut(30);
@@ -105,7 +109,8 @@ final class Scenarios {
             tp(31.5, 1, 45.5, 180);
             cue(120, () -> {});
         } else {
-            answer(10, 2);
+            decide(10, "upstairs", 2);
+            cue(200, () -> {});
             expect("c1_sneak");
             tp(31.5, 1, 45.5, 180);
             cue(100, () -> {});
@@ -128,23 +133,26 @@ final class Scenarios {
         use("pickup:gas_can");
         cue(60, () -> {});
         expect("c2_wake");
-        cue(40, () -> shot("p_wake_choice"));
+        cue(70, () -> shot("p_wake_choice"));
         if (dawn) {
-            answer(4, 1);
+            decide(4, "wake", 1);
+            cue(120, () -> {});
             cue(10, () -> {});
             expect("c2_hay");
             cue(300, () -> shot("p_hay"));
             cue(200, () -> srv("qte:breath:1"));
             cue(600, () -> {});
         } else if (passenger) {
-            answer(4, 0);
+            decide(4, "wake", 0);
+            cue(120, () -> {});
             expect("c2_ladder");
             tp(62.5, 7, 44.5, 180);
             cue(10, () -> {});
             skipCut(30);
             cue(30, () -> {});
         } else {
-            answer(4, 2);
+            decide(4, "wake", 2);
+            cue(120, () -> {});
             expect("c2_still");
             cue(150, () -> shot("p_still"));
             cue(200, () -> {});
@@ -163,7 +171,8 @@ final class Scenarios {
         cue(100, () -> {});
         expect("c3_trap");
         cue(160, () -> shot("p_trap_choice"));
-        answer(10, dawn ? 0 : passenger ? 1 : 2);
+        decide(10, "trap", dawn ? 0 : passenger ? 1 : 2);
+        cue(120, () -> {});
         cue(30, () -> {});
         tp(82.5, 1, 31.5, 90);
         cue(20, () -> {});
@@ -193,18 +202,18 @@ final class Scenarios {
         skipCut(30);
         cue(20, () -> shot("p_two_choice"));
         if (passenger) {
-            answer(10, 2);
-            cue(120, () -> shot("p_two_ask"));
-            answer(10, 0);
-        } else answer(10, 1);
+            decide(10, "two", 2);
+            cue(200, () -> shot("p_two_ask"));
+            decide(10, "two_ask", 0);
+            cue(150, () -> {});
+        } else { decide(10, "two", 1); cue(150, () -> {}); }
         cue(20, () -> {});
         if (!passenger) {
             expect("c5_corn");
             tp(76.5, 1, 78.5, 0);
             cue(40, () -> shot("p_face_choice"));
-            if (dawn) answer(10, 0);
-            else if (harvest) answer(10, 1);
-            else answer(10, 0);
+            decide(10, "face", harvest ? 1 : 0);
+            cue(150, () -> {});
             cue(60, () -> shot("p_ending"));
         } else cue(60, () -> shot("p_ending"));
         skipCut(100);

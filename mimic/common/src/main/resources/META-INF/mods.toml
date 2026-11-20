@@ -5,10 +5,12 @@ license="All Rights Reserved"
 [[mods]]
 modId="mimicry"
 version="${mod_version}"
-displayName="MIMIC"
+displayName="MIMIC: Harrow Farm"
 authors="krolasyon"
 description='''
-Something lives in the slaughterhouse. It has learned your voice.
+A story-driven horror. Your sister called from the family farm: something there is wearing your father's voice.
+It hunts by sound. It learns every word you say. Five chapters, timed choices, four endings.
+Start with /mimic start in a new world.
 '''
 
 [[dependencies.mimicry]]

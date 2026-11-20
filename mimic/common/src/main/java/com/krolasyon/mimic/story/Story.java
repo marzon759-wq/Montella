@@ -1327,7 +1327,6 @@ public final class Story {
         }
         // dialogue lines that move on by themselves
         if (dlgId != null && dlgAuto > 0 && --dlgAuto == 0 && dlgNode != null) onChoice(p, dlgNode, -2);
-        S.t++;
         if (dlgId == null) {
             Steps.tick(p);
             if (S.active) haunt(p);

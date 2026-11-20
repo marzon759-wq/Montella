@@ -22,6 +22,13 @@ public final class AutoTest {
     private static final List<Object[]> cues = new ArrayList<>();
     private static int at = 0;
     static PlayDriver drive = null;
+    private static String ansNode = null;
+    private static int ansIdx = 0;
+
+    static void pendingAnswer(String node, int idx) {
+        ansNode = node;
+        ansIdx = idx;
+    }
 
     private AutoTest() {}
 
@@ -143,6 +150,11 @@ public final class AutoTest {
             return;
         }
         n++;
+        if (ansNode != null && DialogueScreen.pending != null && ansNode.equals(DialogueScreen.pending.s("node"))) {
+            MimicMod.LOG.info("[PLAY] decide {} -> {}", ansNode, ansIdx);
+            srv("advance:" + ansIdx);
+            ansNode = null;
+        }
         // test runs read every note for a second and put it down again
         if (Qte.auto && mc.screen instanceof NoteScreen) {
             if (++noteT > 30) {
