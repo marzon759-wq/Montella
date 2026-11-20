@@ -298,6 +298,43 @@ final class Scenarios {
                 .run(() -> Minecraft.getInstance().stop());
     }
 
+    // ================================================================================== the fight in the corn, fought for real
+    static void fight() {
+        PlayDriver d = new PlayDriver(AutoTest::srv);
+        AutoTest.drive = d;
+        AutoTest.pendingAnswer("face", 0);
+        d.wait(20).until(() -> ClientState.cutId == null && Story.S.step.equals("c1_gate"), 1800, "intro").wait(10)
+                .srv("give").srv("step:c5_corn").wait(60)
+                .go(true, 76.5, 1, 78.5).step("c5_fight").run(() -> shot("f_start"))
+                .add(a -> {
+                    var mc = Minecraft.getInstance();
+                    var p = mc.player;
+                    net.minecraft.world.entity.Entity m = null;
+                    for (var e : mc.level.entitiesForRendering()) if (e instanceof com.krolasyon.mimic.entity.MimicEntity) m = e;
+                    if (!Story.S.step.equals("c5_fight")) return true;
+                    if (m == null) return a > 1600;
+                    // face it
+                    double dx = m.getX() - p.getX(), dz = m.getZ() - p.getZ();
+                    p.setYRot((float) (Math.atan2(dz, dx) * 180 / Math.PI) - 90f);
+                    p.setXRot(10);
+                    boolean winding = Story.S.v("ph") == 1;
+                    mc.options.keyLeft.setDown(winding && (a / 30) % 2 == 0);
+                    mc.options.keyRight.setDown(winding && (a / 30) % 2 == 1);
+                    double dist = Math.sqrt(dx * dx + dz * dz);
+                    mc.options.keyUp.setDown(!winding && dist > 2.6);
+                    if (!winding && dist < 3.3 && a % 12 == 0) {
+                        mc.gameMode.attack(p, m);
+                        p.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                    }
+                    if (a % 100 == 50) shot("f_" + a);
+                    return a > 2400;
+                })
+                .run(() -> { var mc = Minecraft.getInstance(); mc.options.keyLeft.setDown(false); mc.options.keyRight.setDown(false); mc.options.keyUp.setDown(false); })
+                .until(() -> Story.S.step.equals("credits"), 2000, "ending")
+                .run(() -> MimicMod.LOG.info("[FIGHT] done ending={} hp={} step={}", Story.S.ending, Story.S.v("hp"), Story.S.step))
+                .run(() -> Minecraft.getInstance().stop());
+    }
+
     static void video() { video(false); }
 
     static void video(boolean end) {

@@ -699,8 +699,29 @@ def burst(t):
     return P
 
 
+@anim("stagger", 0.9, loop=False)
+def stagger(t):
+    """struck: the body snaps back from the blow, the head whips, every arm flails, then it gathers itself"""
+    P = Pose()
+    hit = ramp(t, 0, 0.08)
+    rec = ramp(t, 0.35, 0.9)
+    k = hit * (1 - rec)
+    j = math.sin(t * 55) * k
+    legs_stand(P, 1.0 + 0.4 * k)
+    P.p("all", 0, 0, 3.5 * k)
+    P.r("hips", -8 * k).r("spine", -16 * k).r("chest", -20 * k + j * 2)
+    P.r("neck", -12 * k).r("head", -38 * k + j * 6, twitch(t, 3, 2, 10) * 18 * k, j * 5)
+    mouth(P, (10 + 55 * k) / 38)
+    for side, sg in SIDES:
+        for tag in TAGS:
+            P.r(f"arm{tag}_{side}", -35 * k + j * 12, 0, sg * (12 + 45 * k))
+            P.r(f"fore{tag}_{side}", -30 * k)
+            fingers(P, tag, side, lerp(22, -12, k), 10 * k, 0, t, 14 * k)
+    return P
+
+
 # animations triggered once by the action controller: never looping, whatever their source says
-ACTION_ONLY = {"twitch", "listen", "sniff", "search", "bang", "mimic_talk", "roar", "scream", "grab", "kill", "emerge", "death",
+ACTION_ONLY = {"stagger", "twitch", "listen", "sniff", "search", "bang", "mimic_talk", "roar", "scream", "grab", "kill", "emerge", "death",
                "vanish", "lean_in", "stand_up", "drop", "burst"}
 
 

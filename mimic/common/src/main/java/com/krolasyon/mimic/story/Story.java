@@ -292,6 +292,11 @@ public final class Story {
     }
 
     /** an inner-voice line: "line.<key>" */
+    static int age() { return age; }
+
+    /** the player struck the mimic: the story decides what that does */
+    public static boolean onMimicHit(ServerPlayer p) { return S.active && Steps.onFightHit(p); }
+
     private static final java.util.Map<String, Integer> THOUGHT_AT = new java.util.HashMap<>();
 
     /** an inner-voice line: "line.<key>", in Sam's voice when it has one (not again if it was just said) */

@@ -144,6 +144,32 @@ public final class AutoTest {
             cue(40, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("endings")) {
+            Qte.auto = true;
+            cue(10, () -> srv("step:c5_corn"));
+            cue(80, () -> {});
+            String[][] ends = {{"end_dawn", "60,185,290,362,380,505,640"}, {"end_harvest", "60,170,280,420,620"},
+                    {"end_passenger", "55,135,150,300,430,500"}, {"end_learned", "170,330,440,470,520"}};
+            for (String[] e : ends) {
+                cue(20, () -> srv("cut:" + e[0]));
+                int prev = 0;
+                for (String ts : e[1].split(",")) {
+                    int tt = Integer.parseInt(ts);
+                    cue(tt - prev, () -> shot("e_" + e[0] + "_" + tt));
+                    prev = tt;
+                }
+                cue(260, () -> {});
+                cue(10, () -> srv("step:c5_corn"));
+                cue(80, () -> {});
+            }
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        if (mode.contains("fight")) {
+            Qte.auto = true;
+            Scenarios.fight();
+            return;
+        }
         if (mode.contains("held")) {
             cue(10, () -> srv("step:c1_radio"));
             cue(60, () -> { if (ClientState.cutId != null) com.krolasyon.mimic.net.Net.toServer(com.krolasyon.mimic.net.Msg.of("cut_done").s("id", ClientState.cutId)); });

@@ -121,7 +121,7 @@ public class CutsceneScreen extends HScreen {
             }
         }
         if (fade > 0) g.fill(0, 0, w, h, Hud.argb(Math.min(1, fade), 0x000000));
-        if (cut != null && cut.black) g.fill(0, 0, w, h, 0xFF000000);
+        if (cut != null && cut.blackAt((int) t)) g.fill(0, 0, w, h, 0xFF000000);
         if (ClientState.flashT > 0) g.fill(0, 0, w, h, Hud.argb(ClientState.flashT * 0.08f, 0xDDE6FF));
         if (ClientState.jumpT > 0) g.fill(0, 0, w, h, Hud.argb(0.8f, 0x000000));
         for (Cutscenes.Line l : cut.lines) {

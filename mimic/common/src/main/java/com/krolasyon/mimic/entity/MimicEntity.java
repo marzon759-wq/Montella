@@ -37,7 +37,7 @@ public class MimicEntity extends MimicBase {
     public static final int IDLE = 0, WATCH = 1, STALK = 2, HUNT = 3, SEARCH = 4, AMBUSH = 5, TALK = 6, SCRIPT = 7, EMERGE = 8, VANISH = 9, SLEEP = 10;
     public static final int F_DUCK = 1, F_CRAWL = 2, F_SLEEP = 4, F_SIT = 8, F_FROZEN = 16, F_MOVING = 32, F_RUN = 64, F_NOLOOK = 128,
             F_EAT = 256, F_DRAG = 512, F_CLIMB = 1024, F_SPREAD = 2048, F_STALKWALK = 4096;
-    private static final String[] ACTIONS = {"emerge", "vanish", "roar", "scream", "grab", "kill", "search", "lean_in", "stand_up", "twitch",
+    private static final String[] ACTIONS = {"stagger", "emerge", "vanish", "roar", "scream", "grab", "kill", "search", "lean_in", "stand_up", "twitch",
             "listen", "sniff", "drop", "burst", "death", "mimic_talk", "bang"};
 
     public boolean story = false;
@@ -643,6 +643,7 @@ public class MimicEntity extends MimicBase {
     public boolean hurt(DamageSource src, float amount) {
         if (src.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(src, amount);
         if (src.is(DamageTypeTags.IS_FIRE)) return false;
+        if (!level().isClientSide && src.getEntity() instanceof ServerPlayer sp && com.krolasyon.mimic.story.Story.onMimicHit(sp)) return false;
         if (!level().isClientSide && src.getEntity() instanceof ServerPlayer && actionLock == 0) {
             act("twitch", 12, "mm.twitch");
             if (!story && getState() != HUNT) beginHunt();

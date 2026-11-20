@@ -138,7 +138,14 @@
  "v.cut.burn.1": 35,
  "v.cut.end_dawn.1": 46,
  "v.cut.end_dawn.2": 33,
- "v.cut.end_passenger.0": 40,
+ "v.cut.end_passenger.0": 41,
  "v.cut.end_learned.0": 36,
- "v.cut.end_learned.1": 66
+ "v.cut.end_learned.1": 66,
+ "v.you.fork_found": 82,
+ "v.you.bare_hands": 50,
+ "v.cut.end_dawn.3": 47,
+ "v.cut.end_dawn.4": 37,
+ "v.cut.end_dawn.5": 43,
+ "v.cut.end_harvest.1": 44,
+ "v.cut.end_passenger.1": 40
 }

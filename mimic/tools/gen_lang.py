@@ -161,6 +161,8 @@ def main():
         "shed": "Oh god. Oh god, the smell. Don't look. Find the coat.",
         "coat": "Dad. I'm so sorry, Dad. ...The keys are in his pocket.",
         "coat2": "I can't look at him again.",
+        "fork_found": "Dad's pitchfork, stuck in the dirt by the scarecrow. It'll have to do.",
+        "bare_hands": "Not with my bare hands. The pitchfork.",
         "crowbar": "That'll open the tool cabinet in the workshop.",
         "lighter": "Dad's Zippo. It still sparks.",
         "pitchfork": "If it grabs me... at least I can make it let go.",
@@ -233,6 +235,7 @@ def main():
         "dont_move": "Don't move",
         "run": "RUN",
         "shed": "Find Dad's truck keys in the shed: search his coat",
+        "fight": "It let go of Lily. Stab it with the pitchfork",
         "slip_away": "Get to the silo",
         "run_silo": "RUN to the silo",
         "padlock": "Cut the padlock on the silo",
@@ -246,6 +249,7 @@ def main():
         put(f"obj.mimic.{k}", v)
 
     hints = {
+        "fight": "Left-click to stab it. When it rears back with its hands open, step aside. If it gets you, hammer SPACE.",
         "run": "Running takes your breath. Out of breath you can't run - and you pant. It can hear that.",
         "light": "Press %s for the flashlight. It sees the light.",
         "walkie": "Right-click with the walkie-talkie in your hand to call Lily.",
@@ -334,10 +338,11 @@ def main():
         "ambush": [VOICES["v.lily.field1"], "Sam! I'm in the corn! Get the truck started, I'll find you!"],
         "two": [VOICES["v.mlily.truck1"], VOICES["v.lily.field2"]],
         "burn": ["Hey! HEY! Look at me!", "It's burning... it's burning!"],
-        "end_dawn": [VOICES["v.lily.end1"], "It doesn't matter. We're never coming back.", "Sam... it's morning."],
-        "end_harvest": [VOICES["v.lily.field2"], VOICES["v.mlily.radio_end"]],
-        "end_passenger": ["Sammy.", "...Butterscotch."],
-        "end_learned": ["It never stops learning.", "Somewhere, a phone is ringing. And it is using my voice."],
+        "end_dawn": [VOICES["v.lily.end1"], "It doesn't matter. We're never coming back.", "Sam... it's morning.",
+                     "Don't look back, Lily. Don't ever look back.", "Sam? ...What's the word?", "...Butterscotch, Lily. It's me."],
+        "end_harvest": [VOICES["v.lily.field2"], "I'm sorry. I'm so sorry, Lily.", VOICES["v.mlily.radio_end"], VOICES["v.mlily.help"]],
+        "end_passenger": ["Lily? ...Say something. Please.", "Sammy.", "...Butterscotch."],
+        "end_learned": ["It never stops learning.", "Somewhere, a phone is ringing. And it is using my voice.", VOICES["v.msam.its_me"]],
     }
     for cid, ls in cuts.items():
         for i, l in enumerate(ls):

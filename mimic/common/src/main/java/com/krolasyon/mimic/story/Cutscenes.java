@@ -59,6 +59,14 @@ public final class Cutscenes {
         Cut fog(float f) { fog = f; return this; }
 
         Cut black() { black = true; return this; }
+
+        /** black at this moment: the whole cutscene, or a held shot at 0,0,0 */
+        public boolean blackAt(int t) {
+            if (black) return true;
+            for (Shot sh : shots)
+                if (t >= sh.t0 && t < sh.t1) return sh.x0 == 0 && sh.y0 == 0 && sh.z0 == 0;
+            return false;
+        }
     }
 
     public static final Map<String, Cut> ALL = new HashMap<>();
@@ -118,26 +126,40 @@ public final class Cutscenes {
                 .shot(140, 76.5, 3.6, 77.5, 0, 14, 76.5, 4.4, 76.0, 0, 18, 56, 60)
                 .line(30, 60, "you").line(220, 60, "lily");
 
-        cut("end_dawn").fog(160)
-                .shot(140, 52, 3, 70, 200, -4, 52, 3.4, 78, 190, -2, 60, 54)
-                .shot(200, 50.5, 6, 116, 180, 6, 50.5, 7, 122, 180, 4, 50, 46)
-                .line(20, 100, "lily").line(140, 90, "you").line(240, 90, "lily");
+        // ---- the endings. A held shot at 0,0,0 is a black screen (sound only).
+        cut("end_dawn").fog(170)
+                .shot(120, 75.0, 8.0, 78.5, -12, 48, 75.4, 7.0, 79.5, -12, 52, 56, 50)          // it lies in the corn, the fork standing out of it
+                .shot(130, 69.0, 2.2, 75.0, -45, 6, 69.4, 2.2, 75.4, -45, 6, 50, 44)             // Lily, holding on to you
+                .shot(80, 40.0, 4.0, 58.0, -150, 12, 41.0, 4.2, 56.5, -150, 12, 58, 54)          // the yard at dawn, the truck turning over
+                .shot(130, 54.0, 1.7, 104.0, 148, -4, 53.8, 1.7, 103.4, 150, -3, 62, 60)         // the chained gate - straight through it
+                .shot(110, 51.6, 2.6, 100.5, -8, 2, 51.4, 2.8, 101.0, -4, 4, 56, 50)             // the road, the truck going away
+                .shot(260, 50.5, 14.0, 124.0, 180, 24, 50.5, 18.0, 128.0, 180, 26, 62, 58)      // the farm from the road, the sun coming up
+                .line(20, 100, "lily").line(140, 90, "you").line(260, 70, "lily").line(470, 80, "you").line(600, 80, "lily_q").line(700, 60, "you");
 
         cut("end_harvest").fog(60)
-                .shot(120, 72.5, 2.62, 80.0, 0, 4, 72.5, 2.62, 78.0, 0, 2, 60, 52)
-                .shot(200, 50.5, 4, 106, 180, 2, 50.5, 4, 116, 180, 2, 56, 50)
-                .line(20, 70, "lily").line(150, 120, "lily_q");
+                .shot(120, 72.5, 2.62, 80.0, 0, 4, 72.5, 2.62, 78.0, 0, 2, 60, 52)             // it has her
+                .shot(100, 42.0, 2.5, 52.0, -150, 6, 42.6, 2.5, 51.2, -150, 6, 56, 52)           // the truck: you, alone
+                .shot(120, 54.0, 1.7, 104.0, 148, -4, 53.8, 1.7, 103.4, 150, -3, 62, 60)         // the gate
+                .shot(160, 51.6, 2.6, 100.5, -8, 2, 51.4, 2.8, 101.0, -4, 4, 56, 50)             // tail lights down the road, the walkie talking
+                .shot(220, 50.5, 6.0, 124.0, 180, 8, 50.5, 6.5, 120.0, 180, 8, 50, 40)           // the farm - and something at the gate, watching
+                .line(20, 70, "lily").line(150, 80, "you").line(370, 120, "lily_q").line(560, 60, "lily_q");
 
         cut("end_passenger").fog(60)
-                .shot(140, 50.5, 4, 106, 180, 2, 50.5, 4, 116, 180, 2, 56, 50)
-                .shot(110, 47.0, 2.4, 48.6, 120, 4, 47.0, 2.4, 48.6, 120, 4, 50, 44)
-                .shot(40, 47.4, 2.4, 48.2, 120, 4, 47.6, 2.4, 48.0, 120, 4, 34, 28)
-                .line(150, 60, "lily_q").line(220, 40, "lily_q");
+                .shot(110, 42.0, 2.5, 52.0, -150, 6, 42.6, 2.5, 51.2, -150, 6, 56, 52)           // the truck pulls away, Lily beside you
+                .shot(120, 54.0, 1.7, 104.0, 148, -4, 53.8, 1.7, 103.4, 150, -3, 62, 60)         // the gate
+                .shot(150, 50.5, 4, 106, 180, 2, 50.5, 4, 116, 180, 2, 56, 50)                   // the farm falling away behind
+                .shot(110, 46.4, 2.4, 48.2, -125, 2, 46.5, 2.4, 48.0, -125, 2, 54, 48)          // the passenger seat
+                .shot(50, 46.5, 2.5, 47.9, -125, 0, 46.6, 2.5, 47.8, -125, 0, 40, 34)
+                .hold(90, 0, 0, 0, 0, 0, 60)
+                .line(280, 70, "you").line(400, 60, "lily_q").line(470, 40, "lily_q");
 
-        cut("end_learned").fog(20).black()
-                .hold(80, 0, 0, 0, 0, 0, 60)
-                .hold(220, 0, 0, 0, 0, 0, 60)
-                .line(80, 100, "you").line(190, 100, "you");
+        cut("end_learned").fog(40)
+                .hold(80, 0, 0, 0, 0, 0, 60)                                                      // black: the last thing you hear
+                .shot(170, 25.5, 3.0, 88.0, 180, 2, 25.5, 3.0, 82.0, 180, 2, 58, 50)             // morning: the farmhouse, quiet
+                .shot(160, 25.4, 2.6, 62.6, 162, 10, 25.2, 2.6, 61.6, 162, 12, 56, 44)           // the telephone in the hall, ringing
+                .shot(150, 25.5, 2.6, 67.8, 180, -24, 25.5, 2.7, 67.0, 180, -26, 60, 50)         // up the stairs: it is standing there
+                .hold(100, 0, 0, 0, 0, 0, 60)
+                .line(110, 100, "you").line(300, 110, "you").line(420, 80, "it");
     }
 
     private Cutscenes() {}

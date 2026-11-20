@@ -1770,5 +1770,61 @@
    }
   ],
   "subtitle": "cut.end_learned.1"
+ },
+ "v.you.fork_found": {
+  "sounds": [
+   {
+    "name": "mimicry:v_you_fork_found"
+   }
+  ],
+  "subtitle": "line.fork_found"
+ },
+ "v.you.bare_hands": {
+  "sounds": [
+   {
+    "name": "mimicry:v_you_bare_hands"
+   }
+  ],
+  "subtitle": "line.bare_hands"
+ },
+ "v.cut.end_dawn.3": {
+  "sounds": [
+   {
+    "name": "mimicry:v_cut_end_dawn_3"
+   }
+  ],
+  "subtitle": "cut.end_dawn.3"
+ },
+ "v.cut.end_dawn.4": {
+  "sounds": [
+   {
+    "name": "mimicry:v_cut_end_dawn_4"
+   }
+  ],
+  "subtitle": "cut.end_dawn.4"
+ },
+ "v.cut.end_dawn.5": {
+  "sounds": [
+   {
+    "name": "mimicry:v_cut_end_dawn_5"
+   }
+  ],
+  "subtitle": "cut.end_dawn.5"
+ },
+ "v.cut.end_harvest.1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_cut_end_harvest_1"
+   }
+  ],
+  "subtitle": "cut.end_harvest.1"
+ },
+ "v.cut.end_passenger.1": {
+  "sounds": [
+   {
+    "name": "mimicry:v_cut_end_passenger_1"
+   }
+  ],
+  "subtitle": "cut.end_passenger.1"
  }
 }

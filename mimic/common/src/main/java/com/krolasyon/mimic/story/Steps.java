@@ -305,6 +305,31 @@ final class Steps {
                 }
                 later(40, () -> voiceAt(76.5, G1 + 1, 85.5, "v.lily.field2", "lily"));
             }
+            case "c5_fight" -> {
+                // it lets go of her and turns on you
+                obj("fight");
+                S.v("hp", 5);
+                S.v("ph", 0);
+                S.v("pt", 0);
+                S.v("grab", 0);
+                if (!has("pitchfork")) {
+                    give("pitchfork");
+                    think("fork_found");
+                }
+                holdItem(p, "pitchfork");
+                if (hm != null) {
+                    hm.setFlag(MimicEntity.F_DRAG, false);
+                    hm.scriptStop();
+                    hm.face(p.position());
+                    hm.act("roar", 40, "mm.roar");
+                }
+                if (lily != null) {
+                    lily.dragged(false);
+                    lily.runTo(w(72.5, G1, 78.5));
+                }
+                fx("shake", 24);
+                hint("fight");
+            }
             case "credits" -> {
                 obj("");
                 removeMimic();
@@ -326,7 +351,7 @@ final class Steps {
         if (st.startsWith("c1_chase") || st.equals("c1_hide") || st.equals("c1_sneak") || st.equals("c1_up") || st.equals("c1_voice")) { tp(p, 25.5, G1, 58.5, 180); enter("c1_voice"); return; }
         if (st.equals("c3_trap") || st.equals("c3_throw") || st.equals("c3_sneak") || st.equals("c3_run")) { tp(p, 44.5, G1, 22.5, 180); enter("c3_trap"); return; }
         if (st.equals("c4_follow") || st.equals("c4_corn")) { tp(p, 82.5, G1, 31.5, 90); enter("c4_follow"); return; }
-        if (st.equals("c5_corn")) { tp(p, 74.5, G1, 74.5, 180); enter("c5_corn"); return; }
+        if (st.equals("c5_corn") || st.equals("c5_fight")) { tp(p, 74.5, G1, 74.5, 180); enter("c5_corn"); return; }
         if (st.equals("c5_truck")) { spawnTruck(); enter("c5_truck"); return; }
         if (st.equals("intro") || st.equals("ending")) { enter("c1_gate"); return; }
         if (S.chapter >= 2) spawnTruck();
@@ -501,6 +526,7 @@ final class Steps {
                     enter("c5_truck");
                 }
             }
+            case "c5_fight" -> tickFight(p);
             case "c5_corn" -> {
                 if (lily != null && hm != null && p.distanceTo(lily) < 12 && S.v("sub") == 0) {
                     S.v("sub", 1);
@@ -974,29 +1000,151 @@ final class Steps {
             }
             case "face" -> {
                 if (result.equals("face")) {
-                    if (has("lighter") && S.f("gas_left")) {
-                        cutscene("burn");
-                    } else if (has("pitchfork")) {
-                        qte("mash", 100);
-                        S.v("sub", 2);
-                    } else endingCut("learned", "end_learned");
+                    if (has("lighter") && S.f("gas_left")) cutscene("burn");
+                    else enter("c5_fight");
                 } else endingCut("harvest", "end_harvest");
             }
             default -> {}
         }
     }
 
-    static void onQteMash(boolean ok) {
-        if (!S.step.equals("c5_corn") || S.v("sub") != 2) return;
-        if (ok) {
-            snd("fx.stab", 1f, 1f);
-            if (hm != null) {
-                hm.act("scream", 30, "mm.scream");
-                hm.setFlag(MimicEntity.F_DRAG, false);
+    // ================================================================== the fight in the corn
+    private static int lastHit = -100;
+
+    /** put a story item in the player's hand (and tell the client which slot) */
+    static void holdItem(ServerPlayer p, String id) {
+        var inv = p.getInventory();
+        var it = com.krolasyon.mimic.registry.ModItems.story(id);
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (!inv.getItem(i).is(it)) continue;
+            if (i >= 9) {
+                var held = inv.getItem(inv.selected);
+                inv.setItem(inv.selected, inv.getItem(i));
+                inv.setItem(i, held);
+            } else inv.selected = i;
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(inv.selected));
+            p.inventoryMenu.broadcastChanges();
+            return;
+        }
+    }
+
+    /** circling, a growl and a lunge you can see coming, an opening after a miss */
+    static void tickFight(ServerPlayer p) {
+        if (hm == null || S.v("ph") == 9 || S.v("grab") == 1) return;
+        double d = hm.distanceTo(p);
+        if (d > 30) {
+            // you ran: it takes her
+            S.v("ph", 9);
+            endingCut("harvest", "end_harvest");
+            return;
+        }
+        int ph = S.v("ph"), pt = inc("pt");
+        switch (ph) {
+            case 0 -> {
+                // circling, three or four steps away, never taking its eyes off you
+                if (pt == 1 || pt % 20 == 0) {
+                    Vec3 from = hm.position().subtract(p.position()).multiply(1, 0, 1).normalize();
+                    double a = Math.toRadians(S.v("hp") % 2 == 0 ? 38 : -38);
+                    Vec3 dir = new Vec3(from.x * Math.cos(a) - from.z * Math.sin(a), 0, from.x * Math.sin(a) + from.z * Math.cos(a));
+                    hm.scriptMove(p.position().add(dir.scale(3.8)), 2.4);
+                }
+                if (pt % 40 == 10) hm.say("mm.growl", 1f, 0.9f);
+                if (pt > 45 + RND.nextInt(35)) { S.v("ph", 1); S.v("pt", 0); }
             }
+            case 1 -> {
+                // the wind-up: it rears back with the big hands open - that is the moment to step aside
+                if (pt == 1) {
+                    hm.scriptStop();
+                    hm.face(p.position());
+                    hm.act("grab", 28, "mm.roar");
+                }
+                if (pt == 11) {
+                    Vec3 at = p.position();
+                    Vec3 dir = at.subtract(hm.position()).multiply(1, 0, 1).normalize();
+                    hm.scriptMove(at.add(dir.scale(1.5)), 9.0);
+                }
+                if (pt >= 11 && pt <= 22 && hm.distanceTo(p) < 1.9) {
+                    hm.scriptStop();
+                    S.v("grab", 1);
+                    fx("shake", 30);
+                    fx("jumpscare", 6);
+                    snd("mm.grab", 1f, 1f);
+                    qte("mash", 70);
+                    return;
+                }
+                if (pt > 24) {
+                    // missed: it stumbles past, open
+                    hm.scriptStop();
+                    hm.act("twitch", 20, "mm.twitch");
+                    S.v("ph", 2);
+                    S.v("pt", 0);
+                }
+            }
+            default -> {
+                if (pt > 36) { S.v("ph", 0); S.v("pt", 0); }
+            }
+        }
+    }
+
+    /** a blow from the player: only the pitchfork hurts it */
+    static boolean onFightHit(ServerPlayer p) {
+        if (!S.step.equals("c5_fight") || hm == null || S.v("ph") == 9) return false;
+        if (age() - lastHit < 10) return true;
+        if (!p.getMainHandItem().is(com.krolasyon.mimic.registry.ModItems.story("pitchfork"))) {
+            think("bare_hands");
+            return true;
+        }
+        lastHit = age();
+        // circling, it is ready for you: it bats the fork aside and comes at you. Wait for it to miss.
+        if (S.v("ph") == 0 && RND.nextFloat() < 0.7f) {
+            hm.act("twitch", 10, "mm.growl");
+            snd("fx.wood_break", 0.7f, 1.5f);
+            fx("shake", 6);
+            S.v("ph", 1);
+            S.v("pt", 0);
+            return true;
+        }
+        wound(p);
+        return true;
+    }
+
+    private static void wound(ServerPlayer p) {
+        int hp = S.v("hp") - 1;
+        S.v("hp", hp);
+        snd("fx.stab", 1f, 0.9f + RND.nextFloat() * 0.2f);
+        hm.act("stagger", 16, "mm.scream");
+        fx("shake", 8);
+        if (p.level() instanceof ServerLevel sl)
+            sl.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
+                    net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState()), hm.getX(), hm.getY() + 1.6, hm.getZ(), 40, 0.35, 0.5, 0.35, 0.15);
+        Vec3 away = hm.position().subtract(p.position()).multiply(1, 0, 1).normalize();
+        hm.scriptMove(hm.position().add(away.scale(2.6)), 5.0);
+        S.v("ph", 2);
+        S.v("pt", 0);
+        if (hp == 2 && lily != null) voiceAt(lily.getX() - S.ox, lily.getY() - S.oy + 1, lily.getZ() - S.oz, "v.lily.field1", "lily");
+        if (hp <= 0) {
+            // the last one goes in up to the handle
+            S.v("ph", 9);
             S.flags.add("stabbed");
-            endingCut("dawn", "end_dawn");
-        } else endingCut("learned", "end_learned");
+            hm.scriptStop();
+            hm.act("death", 80, "mm.howl");
+            fx("shake", 40);
+            later(70, () -> endingCut("dawn", "end_dawn"));
+        }
+    }
+
+    static void onQteMash(boolean ok) {
+        if (!S.step.equals("c5_fight") || S.v("grab") != 1) return;
+        S.v("grab", 0);
+        ServerPlayer p = player();
+        if (ok && p != null && hm != null) {
+            // you get the fork up between you and drive it in
+            wound(p);
+        } else {
+            S.v("ph", 9);
+            if (hm != null) hm.act("kill", 80, "mm.kill");
+            later(40, () -> endingCut("learned", "end_learned"));
+        }
     }
 
     static void endingCut(String ending, String cut) {
@@ -1012,6 +1160,7 @@ final class Steps {
         ServerPlayer p = player();
         if (p == null) return;
         ServerLevel lvl = p.serverLevel();
+        gateRam(lvl);
         // a cutscene line that is not one of the story's voiced lines has its own recording
         Cutscenes.Cut cut = Cutscenes.ALL.get(id);
         if (cut != null)
@@ -1110,17 +1259,42 @@ final class Steps {
             }
             case "end_dawn" -> {
                 if (t == 1) {
-                    lvl.setDayTime(23400);
+                    lvl.setDayTime(23300);
                     S.flags.add("dawn");
+                    // it stays where it fell, the fork standing out of it
+                    if (hm != null) hm.scriptStop();
+                    if (lily == null) spawnLily(72.0, G1, 78.0, -135);
+                    // where you fought, the corn is flattened
+                    for (int x = 68; x <= 76; x++)
+                        for (int z = 74; z <= 81; z++)
+                            for (int y = 1; y <= 2; y++) {
+                                BlockPos wpos = wp(new BlockPos(x, y, z));
+                                if (lvl.getBlockState(wpos).getBlock().getDescriptionId().contains("corn")) lvl.setBlock(wpos, Blocks.AIR.defaultBlockState(), 3);
+                            }
+                }
+                if (t == 20) snd("v.lily.end1", 1f, 1f);
+                if (t == 120) {
                     removeMimic();
+                    if (lily != null) {
+                        lily.follow(false);
+                        lily.dragged(false);
+                        Vec3 at = w(72.0, G1, 78.0);
+                        lily.teleportTo(at.x, at.y, at.z);
+                        lily.setYRot(135);
+                        lily.playAction("hug");
+                    }
+                }
+                if (t == 250) {
+                    if (lily != null) lily.discard();
+                    lily = null;
                     spawnTruck();
                     if (truck != null) {
                         truck.lights(true);
                         truck.driveTo(w(50.5, G1, 74.5), w(50.5, G1, 130.5));
                     }
-                    setDoor("gate", true);
+                    snd("fx.engine_start", 1f, 1f);
                 }
-                if (t == 20) snd("v.lily.end1", 1f, 1f);
+                if (t == 480) lvl.setDayTime(23700);
             }
             case "end_harvest" -> {
                 if (t == 1) {
@@ -1132,18 +1306,28 @@ final class Steps {
                     }
                 }
                 if (t == 20) snd("v.lily.field2", 1f, 1f);
-                if (t == 120) {
+                if (t == 110) {
                     removeMimic();
                     if (lily != null) lily.discard();
                     lily = null;
                     spawnTruck();
-                    if (truck != null) {
-                        truck.lights(true);
-                        truck.driveTo(w(50.5, G1, 74.5), w(50.5, G1, 130.5));
-                    }
-                    setDoor("gate", true);
                 }
-                if (t == 150) snd("v.mlily.radio_end", 1f, 1f);
+                if (t == 130 && truck != null) {
+                    truck.lights(true);
+                    truck.driveTo(w(50.5, G1, 74.5), w(50.5, G1, 130.5));
+                    snd("fx.engine_start", 1f, 1f);
+                }
+                if (t == 360) {
+                    // something is standing in the broken gate, watching you go
+                    MimicEntity e = spawnMimic(50.5, G1, 97.5, 0);
+                    if (e != null) e.scriptStop();
+                    snd("fx.radio_click", 0.9f, 1f);
+                }
+                if (t == 370) snd("v.mlily.radio_end", 1f, 1f);
+                if (t == 560) {
+                    if (hm != null) hm.act("mimic_talk", 60, null);
+                    sndAt(50.5, G1 + 2, 97.5, "v.mlily.help", 1.2f, 1f);
+                }
             }
             case "end_passenger" -> {
                 if (t == 1) {
@@ -1152,9 +1336,9 @@ final class Steps {
                         truck.lights(true);
                         truck.driveTo(w(50.5, G1, 74.5), w(50.5, G1, 130.5));
                     }
-                    setDoor("gate", true);
+                    snd("fx.engine_start", 1f, 1f);
                 }
-                if (t == 140) {
+                if (t == 380) {
                     if (truck != null) truck.discard();
                     truck = null;
                     spawnTruck();
@@ -1165,23 +1349,66 @@ final class Steps {
                         e.face(w(46.0, G1 + 1.4, 49.0));
                     }
                 }
-                if (t == 220) snd("v.mlily.word_ok", 1f, 0.8f);
-                if (t == 230 && hm != null) {
+                if (t == 470) snd("v.mlily.word_ok", 1f, 0.8f);
+                if (t == 500 && hm != null) {
                     hm.act("scream", 40, "mm.scream");
                     snd("fx.jumpscare", 1f, 1f);
                     fx("jumpscare", 30);
                 }
+                if (t == 545) snd("mm.kill", 1f, 1f);
             }
             case "end_learned" -> {
                 if (t == 1) {
                     snd("mm.kill", 1f, 1f);
                     fx("jumpscare", 30);
                 }
-                if (t == 100) snd("fx.phone_ring", 1f, 1f);
-                if (t == 190) snd(S.f("learned:its_me") ? "v.msam.its_me" : S.f("learned:loud") ? "v.msam.loud" : "v.msam.ask", 1f, 1f);
+                if (t == 80) {
+                    lvl.setDayTime(23600);
+                    removeMimic();
+                }
+                if (t == 260 || t == 330) sndAt(24.5, G1 + 1, 58.5, "fx.phone_ring", 1.2f, 1f);
+                if (t == 400) {
+                    // on the landing, wearing your voice
+                    MimicEntity e = spawnMimic(25.5, 5, 63.5, 0);
+                    if (e != null) e.scriptStop();
+                    // the landing lamp, guttering: just enough to see it by
+                    lvl.setBlock(wp(new BlockPos(26, 6, 64)), Blocks.LIGHT.defaultBlockState().setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 9), 3);
+                    later(220, () -> lvl.setBlock(wp(new BlockPos(26, 6, 64)), Blocks.AIR.defaultBlockState(), 3));
+                    fx("flash", 6);
+                }
+                if (t == 420) {
+                    sndAt(25.5, 6.5, 63.5, "v.msam.its_me", 1.2f, 1f);
+                    fx("flash", 5);
+                    if (hm != null) hm.act("mimic_talk", 60, null);
+                }
+                if (t == 560) {
+                    if (hm != null) hm.act("scream", 40, "mm.scream");
+                    fx("jumpscare", 20);
+                }
             }
             default -> {}
         }
+    }
+
+    /** the truck does not pass through the chained gate: it smashes it */
+    static void gateRam(ServerLevel lvl) {
+        if (truck == null || S.f("gate_broken")) return;
+        Vec3 l = truck.position().subtract(S.ox, S.oy, S.oz);
+        if (l.z < 95.0 || l.z > 102 || Math.abs(l.x - 50.5) > 4) return;
+        S.flags.add("gate_broken");
+        for (int x = 48; x <= 52; x++) {
+            for (BlockPos lp : new BlockPos[]{new BlockPos(x, 1, 99), new BlockPos(x, 2, 98)}) {
+                BlockPos wpos = wp(lp);
+                BlockState st = lvl.getBlockState(wpos);
+                if (st.isAir()) continue;
+                lvl.levelEvent(2001, wpos, net.minecraft.world.level.block.Block.getId(st));
+                lvl.setBlock(wpos, Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+        sndAt(50.5, G1, 99.5, "fx.wood_break", 2f, 0.8f);
+        sndAt(50.5, G1, 99.5, "fx.chain", 1.6f, 0.9f);
+        sndAt(50.5, G1, 99.5, "fx.thump", 1.6f, 0.7f);
+        fx("shake", 16);
     }
 
     private static void burnCorn(ServerLevel lvl) {

@@ -39,6 +39,9 @@ def lines():
             t = en[f"cut.{cid}.{i}"]
             if t.strip() in voiced:
                 continue
+            # in the good ending the voice that asks for the word is really her
+            if sp == "lily_q" and cid == "end_dawn":
+                sp = "lily"
             out[f"v.cut.{cid}.{i}"] = (sp, t)
     return out
 
