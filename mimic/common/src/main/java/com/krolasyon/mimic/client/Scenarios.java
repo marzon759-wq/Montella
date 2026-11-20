@@ -236,6 +236,67 @@ final class Scenarios {
 
     // ================================================================================== the gameplay video
     /** a real playthrough on foot for the five minute video: Dawn ending, every chapter, the big decisions on screen */
+    // ================================================================================== real: a whole game, played only the way a person can
+    // no teleports, no story commands, no opened doors: walking, looking, real right clicks, the hotbar and the keys
+    static void real() {
+        PlayDriver.real = true;
+        PlayDriver d = new PlayDriver(AutoTest::srv);
+        AutoTest.drive = d;
+        d.wait(20).until(() -> ClientState.cutId == null && Story.S.step.equals("c1_gate"), 1800, "intro").wait(20);
+        // chapter 1: through the gap in the fence, the key in the bird box, the house
+        d.hold("flashlight").light(true).pitch(4)
+                .go(false, 55.5, 1, 101).go(false, 56.5, 1, 98.5).go(false, 53.5, 1, 95)
+                .go(true, 50.5, 1, 88).go(true, 50.5, 1, 76).go(true, 30, 1, 75).go(true, 25.5, 1, 72);
+        d.click("door:front").wait(30).click("birdbox").wait(30).click("door:front").wait(20)
+                .go(false, 25.5, 1, 69.5).go(false, 24.5, 1, 66).go(false, 24.5, 1, 60.5);
+        d.step("c1_phone").talk(0).step("c1_kitchen");
+        d.go(false, 24.5, 1, 56).go(false, 25.6, 1, 55.5).click("door:kitchen").wait(15)
+                .go(false, 28.6, 1, 55.5).go(false, 30.5, 1, 57.6)
+                .read("note:kitchen", 40).wait(10)
+                .click("pickup:walkie").wait(20);
+        d.useHeld("walkie").talk(0, 0).step("c1_voice");
+        d.look(25.5, 7, 60, 40).talk(1).step("c1_hide");
+        d.hold("flashlight").go(true, 32.5, 1, 57.5).click("wardrobe:pantry")
+                .until(() -> Story.S.step.equals("c2_yard"), 2400, "search").wait(30).getOut().wait(20);
+        // chapter 2: the barn, without waking it
+        d.go(false, 31.5, 1, 52.5).click("door:back").wait(15)
+                .go(false, 31.5, 1, 49.5)
+                .go(true, 40, 1, 47).go(true, 60, 1, 48).go(true, 70.5, 1, 49)
+                .go(false, 70.5, 1, 45.5).cutStart().cutEnd();
+        d.light(false).sneak(true)
+                .go(false, 70.5, 1, 41).go(false, 67.5, 1, 33.5).go(false, 61.5, 1, 33.5)
+                .click("drawer:item:crowbar").wait(20)
+                .go(false, 67.5, 1, 34.5).go(false, 73.5, 1, 40.5).go(false, 78.5, 1, 41.5)
+                .hold("crowbar").click("toolcab").wait(20)
+                .go(false, 76, 1, 42.5).click("pickup:gas_can").sneak(false)
+                .step("c2_wake").look(70.5, 6, 30.5, 30).talk(1).step("c3_shed").wait(20);
+        // chapter 3: out of the north door, round to Dad's shed
+        d.hold("flashlight").light(true)
+                .go(true, 67.5, 1, 38).go(true, 70.5, 1, 20).go(true, 70.5, 1, 18)
+                .click("door:barn_n").wait(15)
+                .go(true, 70.5, 1, 14.5).go(true, 66, 1, 10).go(true, 52, 1, 11).go(true, 52, 1, 30).go(true, 44.5, 1, 30)
+                .click("door:shed").wait(20)
+                .go(false, 44.5, 1, 26).go(false, 44.5, 1, 21)
+                .click("pickup:meat").wait(10)
+                .click("coat").wait(40)
+                .look(44.5, 2, 30, 30).step("c3_trap").talk(0)
+                .go(true, 44.5, 1, 29.5).go(true, 37, 1, 30).go(true, 37, 1, 14).go(true, 56, 1, 12).go(true, 76, 1, 12).go(true, 83.5, 1, 20).go(true, 83.5, 1, 31.5)
+                .step("c4_silo");
+        // chapter 4: the silo
+        d.hold("bolt_cutters").click("door:silo").talk(0, 0).cutStart().cutEnd().step("c4_follow")
+                .hold("flashlight").go(false, 82.5, 1, 36).go(false, 84, 1, 48).go(false, 76, 1, 50).go(false, 71.5, 1, 50.5)
+                .cutStart().cutEnd().step("c4_corn")
+                .go(true, 60, 1, 50.5).go(true, 48.5, 1, 49.5).step("c5_truck");
+        // chapter 5: fuel, start, and the two voices
+        d.look(46.5, 1.5, 46.5, 15).clickTruck().wait(30).clickTruck().cutStart().cutEnd().talk(1).step("c5_corn")
+                .go(true, 60, 1, 53).go(true, 76.5, 1, 51).go(true, 76.5, 1, 60).go(true, 76.5, 1, 78)
+                .look(76.5, 1, 85.5, 10).talk(0)
+                .until(() -> Story.S.step.equals("credits"), 3000, "ending").wait(100)
+                .run(() -> MimicMod.LOG.info("[REAL] done ending={} step={} misses={} stuck={} timeouts={} caught={}", Story.S.ending, Story.S.step,
+                        PlayDriver.misses, PlayDriver.stuck, PlayDriver.timeouts, Story.S.caught))
+                .run(() -> Minecraft.getInstance().stop());
+    }
+
     static void video() { video(false); }
 
     static void video(boolean end) {

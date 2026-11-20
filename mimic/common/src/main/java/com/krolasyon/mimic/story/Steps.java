@@ -85,6 +85,8 @@ final class Steps {
                 S.hasLight = true;
                 S.battery = 100;
                 if (!has("flashlight")) give("flashlight");
+                // Dad's truck is parked by the house from the start (no keys, no gas: it waits for chapter 5)
+                spawnTruck();
                 obj("house");
                 S.haunt = 1;
                 checkpoint("", 50.5, 1, 102.5, 180);
@@ -193,6 +195,7 @@ final class Steps {
             }
             // ---------------------------------------------------------------- chapter 3: the butcher's shed
             case "c3_shed" -> {
+                unlock("shed");
                 removeMimic();
                 later(20, () -> chapter(3));
                 obj("shed");
@@ -650,8 +653,18 @@ final class Steps {
                 return false;
             }
             case "storage" -> {
-                snd("fx.lock", 1f, 0.8f);
-                think("storage");
+                if (S.unlocked.contains("storage")) return false;
+                if (!has("crowbar")) {
+                    snd("fx.lock", 1f, 0.8f);
+                    think("storage");
+                    return true;
+                }
+                // the crowbar takes the boards off: loud
+                unlock("storage");
+                snd("fx.crowbar", 1f, 0.9f);
+                noiseEvent(local(p.blockPosition()), 24);
+                setDoor("storage", true);
+                think("storage_open");
                 return true;
             }
             case "silo" -> {
@@ -681,6 +694,8 @@ final class Steps {
                     think("shed_locked");
                     return true;
                 }
+                // chapter 3 opens Dad's shed (it is one of the doors the story keeps locked until then)
+                unlock("shed");
                 return false;
             }
             default -> {

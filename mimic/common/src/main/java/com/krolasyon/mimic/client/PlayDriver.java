@@ -122,6 +122,7 @@ final class PlayDriver {
             if (c.getAsBoolean()) return true;
             if (a > timeout) {
                 MimicMod.LOG.error("[PLAY] timeout waiting for {} (step {})", what, Story.S.step);
+                timeouts++;
                 return true;
             }
             return false;
@@ -172,10 +173,86 @@ final class PlayDriver {
                 bestAge[0] = a;
             } else if (a - bestAge[0] > 50) {
                 MimicMod.LOG.warn("[PLAY] stuck near {} going to {},{},{} - teleporting", p.position().subtract(Story.S.ox, Story.S.oy, Story.S.oz), pt[0], pt[1], pt[2]);
+                stuck++;
                 srv.accept("tp:" + pt[0] + "," + pt[1] + "," + pt[2] + "," + p.getYRot() + "," + p.getXRot());
                 bestAge[0] = a;
             }
             return false;
+        });
+    }
+
+    // ------------------------------------------------------------------ finding a way like a person would: around things, through open doors
+    private static double topAt(BlockPos w) {
+        var lvl = mc().level;
+        var st = lvl.getBlockState(w);
+        if (st.getBlock() instanceof net.minecraft.world.level.block.LadderBlock) return 0;
+        if (st.getBlock() instanceof net.minecraft.world.level.block.DoorBlock && st.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)) return 0;
+        if (st.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock && st.getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN)) return 0;
+        if (st.hasProperty(com.krolasyon.mimic.block.OpenableBlock.OPEN) && st.getValue(com.krolasyon.mimic.block.OpenableBlock.OPEN)) return 0;
+        var sh = st.getCollisionShape(lvl, w);
+        return sh.isEmpty() ? 0 : sh.max(net.minecraft.core.Direction.Axis.Y);
+    }
+
+    /** feet in world cell c: is that a place to stand */
+    private static boolean standAt(BlockPos c) {
+        double h = topAt(c);
+        if (h > 0.55) return false;
+        if (topAt(c.above()) > 0 || (h > 0 && topAt(c.above(2)) > 0)) return false;
+        return h > 0 || topAt(c.below()) >= 0.5;
+    }
+
+    /** breadth-first path over standable cells, in local coordinates */
+    static List<double[]> path(Vec3 fromW, double tx, double ty, double tz) {
+        BlockPos start = BlockPos.containing(fromW.x, fromW.y + 0.2, fromW.z);
+        BlockPos goal = BlockPos.containing(Story.S.ox + tx, Story.S.oy + ty + 0.2, Story.S.oz + tz);
+        java.util.Map<BlockPos, BlockPos> prev = new java.util.HashMap<>();
+        ArrayDeque<BlockPos> q = new ArrayDeque<>();
+        q.add(start);
+        prev.put(start, start);
+        BlockPos found = null;
+        while (!q.isEmpty() && prev.size() < 60000) {
+            BlockPos c = q.poll();
+            if (c.getX() == goal.getX() && c.getZ() == goal.getZ() && Math.abs(c.getY() - goal.getY()) <= 1) { found = c; break; }
+            for (var d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                for (int dy = 1; dy >= -1; dy--) {
+                    BlockPos n = c.relative(d).above(dy);
+                    if (prev.containsKey(n) || !standAt(n)) continue;
+                    if (dy == 1 && topAt(c.above(2)) > 0) continue;
+                    if (dy == -1 && topAt(n.above(2)) > 0) continue;
+                    prev.put(n, c);
+                    q.add(n);
+                    break;
+                }
+            }
+        }
+        if (found == null) return null;
+        List<double[]> out = new ArrayList<>();
+        for (BlockPos c = found; !c.equals(start); c = prev.get(c))
+            out.add(0, new double[]{c.getX() + 0.5 - Story.S.ox, c.getY() - Story.S.oy, c.getZ() + 0.5 - Story.S.oz});
+        // keep every third cell: smoother walking, the turns are still there
+        List<double[]> thin = new ArrayList<>();
+        for (int i = 0; i < out.size(); i++) if (i % 3 == 2 || i == out.size() - 1) thin.add(out.get(i));
+        return thin;
+    }
+
+    /** walk to a place by a path found around everything in the way */
+    PlayDriver go(boolean sprint, double x, double y, double z) {
+        final PlayDriver[] inner = {null};
+        final List<double[]>[] pts = new List[]{null};
+        final int[] i = {0};
+        return add(a -> {
+            if (pts[0] == null) {
+                pts[0] = path(mc().player.position(), x, y, z);
+                if (pts[0] == null) {
+                    misses++;
+                    MimicMod.LOG.warn("[REAL] no way on foot from {} to {},{},{}", mc().player.position().subtract(Story.S.ox, Story.S.oy, Story.S.oz), x, y, z);
+                    pts[0] = new ArrayList<>(List.of(new double[]{x, y, z}));
+                }
+                inner[0] = new PlayDriver(srv);
+                inner[0].walk(sprint, pts[0].toArray(new double[0][]));
+            }
+            inner[0].tick();
+            return inner[0].done();
         });
     }
 
@@ -210,7 +287,64 @@ final class PlayDriver {
         });
     }
 
-    PlayDriver use(String tag) { return srv("use:" + tag); }
+    PlayDriver use(String tag) { return real ? click(tag) : srv("use:" + tag); }
+
+    /** problems a real player would have had: a click that did not land on the thing, a walk that got stuck */
+    static int misses = 0, stuck = 0, timeouts = 0;
+    /** true: never cheat (no teleports when stuck, real clicks only) */
+    static boolean real = false;
+
+    /** a real right click, through the client like a player's: look at the thing, then click what the crosshair is on */
+    PlayDriver click(String tag) {
+        lookAtTag(tag, 14);
+        return run(() -> {
+            var mc = mc();
+            BlockPos want = House.first(tag);
+            if (want == null) { misses++; MimicMod.LOG.error("[REAL] no hotspot {}", tag); return; }
+            net.minecraft.world.phys.BlockHitResult bh = null;
+            if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult h && h.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
+                BlockPos l = h.getBlockPos().offset(-Story.S.ox, -Story.S.oy, -Story.S.oz);
+                String got = House.HOT.get(l);
+                if (tag.equals(got)) bh = h;
+                else MimicMod.LOG.warn("[REAL] aiming at {} but the crosshair is on {} ({})", tag, got, l);
+            }
+            if (bh == null) {
+                misses++;
+                Vec3 c = w(want.getX() + 0.5, want.getY() + 0.5, want.getZ() + 0.5);
+                bh = new net.minecraft.world.phys.BlockHitResult(c, net.minecraft.core.Direction.UP, want.offset(Story.S.ox, Story.S.oy, Story.S.oz), false);
+            }
+            double d = mc.player.getEyePosition().distanceTo(bh.getLocation());
+            if (d > 4.5) { misses++; MimicMod.LOG.warn("[REAL] {} is {} away: out of reach", tag, d); }
+            mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, bh);
+            MimicMod.LOG.info("[REAL] click {} step={}", tag, Story.S.step);
+        });
+    }
+
+    /** right click with the item in the hand */
+    PlayDriver useHeld(String id) {
+        hold(id);
+        return run(() -> mc().gameMode.useItem(mc().player, net.minecraft.world.InteractionHand.MAIN_HAND));
+    }
+
+    /** right click on the truck */
+    PlayDriver clickTruck() {
+        return run(() -> {
+            var mc = mc();
+            net.minecraft.world.entity.Entity truck = null;
+            for (var e : mc.level.entitiesForRendering())
+                if (e instanceof com.krolasyon.mimic.entity.TruckEntity && e.distanceTo(mc.player) < 6) truck = e;
+            if (truck == null) { misses++; MimicMod.LOG.warn("[REAL] no truck in reach"); return; }
+            mc.gameMode.interact(mc.player, truck, net.minecraft.world.InteractionHand.MAIN_HAND);
+        });
+    }
+
+    /** leave a hiding place: sneak */
+    PlayDriver getOut() {
+        return add(a -> {
+            mc().options.keyShift.setDown(a < 6);
+            return a > 10;
+        });
+    }
 
     /** look at it, use it, hold each page of the note on screen, turn pages, close */
     PlayDriver read(String tag, int perPage) {

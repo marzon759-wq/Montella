@@ -126,7 +126,7 @@ def main():
         "walkie_static": "Only static. And something breathing, very far away.",
         "threw_meat": "You throw the meat into the dark.",
         "item_house_key": "The spare key to the farmhouse.",
-        "item_crowbar": "Heavy. It would open anything nailed or padlocked.",
+        "item_crowbar": "Heavy. It will pry open the tool cabinet - and anything nailed shut.",
         "item_bolt_cutters": "For the silo padlock. And the chain on the gate.",
         "item_gas_can": "Half full. Enough for the truck.",
         "item_truck_keys": "Dad's keys. There's blood dried in the teeth.",
@@ -168,7 +168,9 @@ def main():
         "meat": "It's hungry all the time. Lily said so.",
         "toolcab_locked": "Padlocked. I need something to pry it.",
         "toolcab_empty": "Empty now.",
-        "storage": "Nailed shut from the inside. Someone wrote 'DON'T' on the boards.",
+        "storage": "Nailed shut. Someone wrote 'DON'T' on the boards. A crowbar would get them off.",
+        "storage_open": "The boards come away with a shriek. Everything for a mile heard that.",
+        "storage_later": "Not now. Lily first.",
         "silo_locked": "Padlocked. I need the bolt cutters from the barn.",
         "silo_later": "Not yet. She said keys first, then come for her.",
         "shed_locked": "Dad's shed. Something is buzzing in there. Flies. Thousands of them.",
@@ -230,7 +232,7 @@ def main():
         "stay_hidden": "Stay hidden. Hold your breath",
         "dont_move": "Don't move",
         "run": "RUN",
-        "shed": "Find Dad's truck keys in the shed",
+        "shed": "Find Dad's truck keys in the shed: search his coat",
         "slip_away": "Get to the silo",
         "run_silo": "RUN to the silo",
         "padlock": "Cut the padlock on the silo",
@@ -253,7 +255,10 @@ def main():
         put(f"hint.mimic.{k}", v)
 
     hud = {"objective": "OBJECTIVE", "notes": "Notes: %s/%s", "chapter": "CHAPTER %s", "skip": "Hold SPACE to skip",
-           "close": "click to close", "page": "page %s of %s - click", "cover": "in the corn"}
+           "close": "click to close", "page": "page %s of %s - click", "cover": "in the corn",
+           "act.take": "Right-click: take %s", "act.search": "Right-click: search", "act.read": "Right-click: read", "act.hide": "Right-click: hide",
+           "act.look": "Right-click: look", "act.open": "Right-click: open", "act.coat": "Right-click: search Dad's coat", "act.tape": "Right-click: play the tape",
+           "act.use": "Right-click: use"}
     for k, v in hud.items():
         put(f"hud.mimic.{k}", v)
     put("qte.mimic.breath", "HOLD [SPACE] - HOLD YOUR BREATH")

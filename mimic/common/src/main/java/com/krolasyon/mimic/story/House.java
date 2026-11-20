@@ -843,8 +843,11 @@ public final class House {
     private void silo() {
         int cx = 88, cz = 31;
         if (lvl != null) {
-            // clear only from x=84: the barn's east wall (x=82) and its roof eave (x=83) stand right next to the silo
+            // the yard between barn and silo: the barn's outer boards there are gone (its inner wall at x=81 stays), but its roof eave stays
+            air(cx - 6, 1, cz - 6, cx - 5, 10, cz + 6);
             air(cx - 4, 1, cz - 6, cx + 6, 28, cz + 6);
+            // the two barn windows on that stretch sit in the inner wall now
+            for (int z : new int[]{27, 33}) set(cx - 7, 4, z, face("window_pane", Direction.EAST));
             for (int x = cx - 6; x <= cx + 6; x++)
                 for (int z = cz - 6; z <= cz + 6; z++) {
                     double d = Math.sqrt((x - cx) * (x - cx) + (z - cz) * (z - cz));
@@ -904,7 +907,7 @@ public final class House {
         }
         // Dad, on the floor by the table, in his coat
         prop(43, 1, 19, "corpse_head", Direction.SOUTH, "coat");
-        prop(43, 1, 20, "corpse_legs", Direction.SOUTH);
+        prop(43, 1, 20, "corpse_legs", Direction.SOUTH, "coat");
         prop(42, 1, 19, "blood_pool", Direction.NORTH);
         prop(44, 1, 19, "blood_pool", Direction.NORTH);
         prop(43, 1, 21, "blood_pool", Direction.NORTH);

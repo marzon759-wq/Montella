@@ -177,6 +177,11 @@ public final class AutoTest {
             cue(60, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("real")) {
+            Qte.auto = true;
+            Scenarios.real();
+            return;
+        }
         if (mode.contains("video")) {
             Qte.auto = true;
             Scenarios.video(mode.contains("end"));

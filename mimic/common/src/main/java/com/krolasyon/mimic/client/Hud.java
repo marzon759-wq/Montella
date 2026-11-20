@@ -57,6 +57,30 @@ public final class Hud {
         return ClientEvents.KEY_LIGHT.getTranslatedKeyMessage().getString().toUpperCase();
     }
 
+    /** the prompt for the story thing under the crosshair, or null */
+    static String actionPrompt(Minecraft mc) {
+        if (!(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bh) || bh.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return null;
+        if (mc.player == null || bh.getLocation().distanceTo(mc.player.getEyePosition()) > 4.2) return null;
+        com.krolasyon.mimic.story.House.ensureIndexed();
+        net.minecraft.core.BlockPos l = bh.getBlockPos().offset(-ClientState.ox, -ClientState.oy, -ClientState.oz);
+        String tag = com.krolasyon.mimic.story.House.HOT.get(l);
+        if (tag == null) return null;
+        String k;
+        String arg = "";
+        if (tag.startsWith("pickup:")) {
+            k = "take";
+            arg = I18n.get("item.mimicry." + tag.substring(7));
+        } else if (tag.startsWith("drawer:")) k = "search";
+        else if (tag.startsWith("note:")) k = "read";
+        else if (tag.startsWith("wardrobe:")) k = "hide";
+        else if (tag.startsWith("look:")) k = "look";
+        else if (tag.startsWith("door:")) k = "open";
+        else if (tag.equals("coat")) k = "coat";
+        else if (tag.equals("tape")) k = "tape";
+        else k = "use";
+        return I18n.get("hud.mimic.act." + k, arg);
+    }
+
     public static void render(GuiGraphics g, float pt, int w, int h) {
         if (!ClientState.active) return;
         Minecraft mc = Minecraft.getInstance();
@@ -105,6 +129,11 @@ public final class Hud {
             int r = 6 + (int) (n * 14);
             int c = argb(0.18f + 0.4f * n, n > 0.8f ? 0xFF5040 : 0xE8E0C8);
             g.fill(w / 2 - r, h / 2 + 22, w / 2 + r, h / 2 + 23, c);
+        }
+        // ---- what the crosshair is on: a quiet prompt, so nothing usable goes unnoticed
+        if (!cut && !ClientState.hidden && !ClientState.dialogue && mc.screen == null) {
+            String act = actionPrompt(mc);
+            if (act != null) g.drawString(font, act, (w - font.width(act)) / 2, h / 2 + 12, argb(0.75f, 0xE8E0C8), true);
         }
         if (!cut && ClientState.cover) {
             String s2 = I18n.get("hud.mimic.cover");
