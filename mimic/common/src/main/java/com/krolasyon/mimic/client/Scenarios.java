@@ -144,7 +144,8 @@ final class Scenarios {
         use("pickup:gas_can");
         cue(60, () -> {});
         expect("c2_wake");
-        cue(70, () -> shot("p_wake_choice"));
+        // running for the ladder has to start the moment the choice is made: it is already awake
+        if (!passenger) cue(70, () -> shot("p_wake_choice"));
         if (dawn) {
             cue(1, () -> {});
             cue(120, () -> {});
@@ -154,8 +155,7 @@ final class Scenarios {
             cue(200, () -> srv("qte:breath:1"));
             cue(600, () -> {});
         } else if (passenger) {
-            cue(1, () -> {});
-            cue(120, () -> {});
+            cue(30, () -> {});
             expect("c2_ladder");
             tp(62.5, 7, 44.5, 180);
             cue(10, () -> {});
