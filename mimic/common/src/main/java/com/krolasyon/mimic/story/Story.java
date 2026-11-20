@@ -314,7 +314,8 @@ public final class Story {
                 MimicMod.LOG.warn("no voice lengths", ex);
             }
         }
-        return VOICE_LEN.getOrDefault(sound, 80);
+        // the server does not know the player's language: wait for the longer of the two recordings
+        return Math.max(VOICE_LEN.getOrDefault(sound, 80), VOICE_LEN.getOrDefault("tr." + sound, 0));
     }
 
     /** a voice somewhere in the world, with its subtitle */

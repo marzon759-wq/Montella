@@ -35,6 +35,7 @@ public final class ClientCompat {
         });
         modBus.addListener((RegisterGuiOverlaysEvent e) ->
                 e.registerAboveAll("mimic_hud", (gui, g, pt, w, h) -> Hud.render(g, pt, w, h)));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.sound.PlaySoundEvent e) -> e.setSound(com.krolasyon.mimic.client.VoiceLang.remap(e.getSound())));
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END) ClientEvents.clientTick();
         });

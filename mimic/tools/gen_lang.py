@@ -354,8 +354,8 @@ def main():
     for k, ls in epi.items():
         for i, l in enumerate(ls):
             put(f"ending.mimic.{k}.{i}", l)
-    credits = ["MIMIC", "Harrow Farm", "Story, farm, creature and code", "krolasyon, made with Claude",
-               "Voices", "ElevenLabs", "Thank you for playing", "It is still listening.", "Every word you said tonight, it kept."]
+    credits = ["MIMIC", "Harrow Farm", "Story, farm, creature and code", "krolasyon",
+               "Voices and sound", "krolasyon", "Thank you for playing", "It is still listening.", "Every word you said tonight, it kept."]
     for i, c in enumerate(credits):
         put(f"credits.mimic.{i}", c)
     put("credits.mimic.stats", "Notes found: %s/%s    Times caught: %s    Words it learned from you: %s")
@@ -385,6 +385,8 @@ def main():
 
     os.makedirs(os.path.join(A, "lang"), exist_ok=True)
     json.dump(T, open(os.path.join(A, "lang/en_us.json"), "w"), indent=1, ensure_ascii=False)
+    from lang_tr import TR
+    json.dump({k: TR.get(k, v) for k, v in T.items()}, open(os.path.join(A, "lang/tr_tr.json"), "w"), indent=1, ensure_ascii=False)
     print("lang", len(T))
 
 

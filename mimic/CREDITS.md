@@ -1,6 +1,6 @@
 # MIMIC: Harrow Farm — credits
 
-Story, farm, creature, props, animation and code: krolasyon & Claude.
+Story, farm, creature, props, animation and code: krolasyon.
 
 ## Voices
 Spoken lines are synthesised with **Kokoro** (Apache-2.0, hexgrad/Kokoro-82M, ONNX build by thewh1teagle) and then treated

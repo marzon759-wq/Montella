@@ -35,6 +35,7 @@ public final class ClientCompat {
         });
         MinecraftForge.EVENT_BUS.addListener((CustomizeGuiOverlayEvent.Chat e) ->
                 Hud.render(e.getGuiGraphics(), e.getPartialTick(), e.getWindow().getGuiScaledWidth(), e.getWindow().getGuiScaledHeight()));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.sound.PlaySoundEvent e) -> e.setSound(com.krolasyon.mimic.client.VoiceLang.remap(e.getSound())));
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post e) -> ClientEvents.clientTick());
         MinecraftForge.EVENT_BUS.addListener((TickEvent.RenderTickEvent.Pre e) -> ClientEvents.renderTick());
     }
