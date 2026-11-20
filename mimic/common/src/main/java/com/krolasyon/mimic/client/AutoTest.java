@@ -126,7 +126,7 @@ public final class AutoTest {
         }
         if (mode.contains("video")) {
             Qte.auto = true;
-            Scenarios.video();
+            Scenarios.video(mode.contains("end"));
             return;
         }
         if (mode.contains("play")) {

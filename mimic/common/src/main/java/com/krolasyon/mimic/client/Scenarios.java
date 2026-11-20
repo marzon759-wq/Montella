@@ -228,10 +228,17 @@ final class Scenarios {
 
     // ================================================================================== the gameplay video
     /** a real playthrough on foot for the five minute video: Dawn ending, every chapter, the big decisions on screen */
-    static void video() {
+    static void video() { video(false); }
+
+    static void video(boolean end) {
         PlayDriver d = new PlayDriver(AutoTest::srv);
         AutoTest.drive = d;
         d.wait(20).mark("start");
+        if (end) {
+            d.until(() -> ClientState.cutId != null, 600, "intro").srv("step:c4_silo").wait(40).srv("item:lighter").srv("light:on").srv("tp:81.5,1,31.5,-90,0").wait(30);
+            videoEnd(d);
+            return;
+        }
         // prologue: let the voicemail play
         d.until(() -> ClientState.cutId == null && Story.S.step.equals("c1_gate"), 1200, "intro").wait(20);
         d.mark("gate").light(true).pitch(4)
@@ -278,11 +285,15 @@ final class Scenarios {
                 .walk(true, PlayDriver.P(44.5, 1, 29.5), PlayDriver.P(37, 1, 30), PlayDriver.P(37, 1, 14), PlayDriver.P(56, 1, 12),
                         PlayDriver.P(76, 1, 12), PlayDriver.P(83.5, 1, 20), PlayDriver.P(81.5, 1, 31.5))
                 .step("c4_silo");
+        videoEnd(d);
+    }
+
+    private static void videoEnd(PlayDriver d) {
         // chapter 4: the silo
         d.mark("silo").lookAtTag("door:silo", 15).use("door:silo").talk(0, 0).cutStart().cutEnd().step("c4_follow")
                 .walk(false, PlayDriver.P(82.5, 1, 36), PlayDriver.P(84, 1, 48), PlayDriver.P(76, 1, 50), PlayDriver.P(71.5, 1, 50.5))
-                .cutStart().cutEnd().step("c4_corn")
-                .walk(true, PlayDriver.P(60, 1, 50.5), PlayDriver.P(48.5, 1, 49.5)).step("c5_truck");
+                .cutStart().cutEnd().step("c4_corn").srv("speedcap:3.2")
+                .walk(true, PlayDriver.P(60, 1, 50.5), PlayDriver.P(48.5, 1, 49.5)).step("c5_truck").srv("speedcap:0");
         // chapter 5: the truck - and two voices
         d.mark("truck").look(46.5, 1.5, 46.5, 15).srv("truck_use").wait(30).srv("truck_use").cutStart().cutEnd().talk(1).step("c5_corn")
                 .walk(true, PlayDriver.P(60, 1, 53), PlayDriver.P(74.5, 1, 53), PlayDriver.P(76.5, 1, 60), PlayDriver.P(76.5, 1, 74.5))
