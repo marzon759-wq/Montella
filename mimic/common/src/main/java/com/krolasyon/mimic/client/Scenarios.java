@@ -221,8 +221,10 @@ final class Scenarios {
             expect("c5_corn");
             tp(76.5, 1, 78.5, 0);
             cue(40, () -> shot("p_face_choice"));
+            // learned: it gets hold of you in the fight and you do not fight free
+            if (learned) cue(1, () -> Qte.auto = false);
             cue(1, () -> {});
-            cue(150, () -> {});
+            cue(learned ? 450 : 150, () -> {});
             cue(60, () -> shot("p_ending"));
         } else cue(60, () -> shot("p_ending"));
         skipCut(100);
