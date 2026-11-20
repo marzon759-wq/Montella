@@ -4,6 +4,7 @@ import com.krolasyon.mimic.block.OpenableBlock;
 import com.krolasyon.mimic.entity.GuestEntity;
 import com.krolasyon.mimic.entity.MimicEntity;
 import com.krolasyon.mimic.entity.TruckEntity;
+import com.krolasyon.mimic.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -1011,6 +1012,11 @@ final class Steps {
         ServerPlayer p = player();
         if (p == null) return;
         ServerLevel lvl = p.serverLevel();
+        // a cutscene line that is not one of the story's voiced lines has its own recording
+        Cutscenes.Cut cut = Cutscenes.ALL.get(id);
+        if (cut != null)
+            for (int i = 0; i < cut.lines.size(); i++)
+                if (cut.lines.get(i).t == t && ModSounds.has("v.cut." + id + "." + i)) snd("v.cut." + id + "." + i, 1f, 1f);
         switch (id) {
             case "intro" -> {
                 if (t == 10) snd("v.lily.vm1", 1f, 1f);
@@ -1159,7 +1165,7 @@ final class Steps {
                         e.face(w(46.0, G1 + 1.4, 49.0));
                     }
                 }
-                if (t == 150) snd("v.mlily.truck_ok", 1f, 0.8f);
+                if (t == 220) snd("v.mlily.word_ok", 1f, 0.8f);
                 if (t == 230 && hm != null) {
                     hm.act("scream", 40, "mm.scream");
                     snd("fx.jumpscare", 1f, 1f);

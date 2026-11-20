@@ -289,6 +289,7 @@ TR = {
     "hint.mimic.light": "El feneri için %s tuşuna bas. Işığı görür.",
     "hint.mimic.walkie": "Lily'yi aramak için telsiz elindeyken sağ tıkla.",
     "hint.mimic.hide": "Gardıroplar ve saman yığınları: saklanmak için sağ tıkla. Yaklaştığında nefesini tutmak için BOŞLUK'a basılı tut.",
+    "hint.mimic.run": "Koşmak nefesini tüketir. Nefesin kesilince koşamazsın - ve nefes nefese kalırsın. Bunu duyabilir.",
     "hint.mimic.crouch": "Sessiz ilerlemek için eğil. Sese göre avlanır.",
     "hud.mimic.objective": "GÖREV",
     "hud.mimic.notes": "Notlar: %s/%s",

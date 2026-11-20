@@ -6,6 +6,7 @@ import com.krolasyon.mimic.net.Msg;
 import com.krolasyon.mimic.net.Net;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
@@ -47,6 +48,11 @@ public final class ClientEvents {
         }
         if (mc.isPaused()) return;
         ClientState.ticks++;
+        // out of breath: no running until it comes back
+        if (ClientState.active && ClientState.tired) {
+            mc.options.keySprint.setDown(false);
+            if (p.isSprinting()) p.setSprinting(false);
+        }
         if (DialogueScreen.pending != null && mc.screen == null) DialogueScreen.show(DialogueScreen.pending);
         while (KEY_LIGHT.consumeClick()) {
             if (ClientState.active && ClientState.hasLight && ClientState.cutId == null) Net.toServer(Msg.of("light"));
@@ -165,6 +171,27 @@ public final class ClientEvents {
                 unhideCooldown = 20;
                 Net.toServer(Msg.of("unhide"));
             }
+        }
+    }
+
+    /** the camera of a body that runs and breathes: a heavier sway when sprinting, the chest heaving when out of breath.
+     *  angles: {yaw, pitch, roll}, changed in place */
+    public static void cameraAngles(float[] a, float pt) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer p = mc.player;
+        if (p == null || !ClientState.active || ClientState.cutId != null || !mc.options.getCameraType().isFirstPerson()) return;
+        float t = ClientState.ticks + pt;
+        if (p.isSprinting() && p.onGround()) {
+            float w = p.walkDist * 1.9f;
+            a[2] += Mth.sin(w) * 1.1f;
+            a[1] += Math.abs(Mth.cos(w)) * 0.9f;
+        } else if (p.isCrouching() && p.getDeltaMovement().horizontalDistanceSqr() > 0.0005) {
+            a[2] += Mth.sin(p.walkDist * 1.3f) * 0.5f;
+        }
+        float out = Math.max(0, (30 - ClientState.stamina) / 30f);
+        if (out > 0) {
+            a[1] += Mth.sin(t * 0.28f) * 1.4f * out;
+            a[2] += Mth.sin(t * 0.14f) * 0.5f * out;
         }
     }
 }

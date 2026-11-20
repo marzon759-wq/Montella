@@ -3,7 +3,8 @@ package com.krolasyon.mimic.client;
 /** Everything the client knows about the running story. Written by ClientNet, read by the HUD and screens. */
 public final class ClientState {
     public static boolean active, lightOn, hasLight, hidden, hayHide, chase, cover, dawn;
-    public static float battery = 100, fear, disturb = -1, noise;
+    public static float battery = 100, fear, disturb = -1, noise, stamina = 100;
+    public static boolean tired;
     public static int spare, notes, notesMax = 15, chapter;
     public static String objective = "", objArg = "", amb = "outside";
     public static int ox, oy, oz;

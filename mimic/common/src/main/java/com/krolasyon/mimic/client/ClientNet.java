@@ -111,6 +111,10 @@ public final class ClientNet {
                 if (!ClientState.hidden) Qte.cancel();
             }
             case "qte" -> Qte.start(m.s("t"), m.i("n"));
+            case "body" -> {
+                ClientState.stamina = m.f("stam");
+                ClientState.tired = m.b("tired");
+            }
             case "hint" -> {
                 ClientState.hintKey = m.s("key");
                 ClientState.hintT = 0;

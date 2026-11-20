@@ -35,6 +35,13 @@ public final class ClientCompat {
         });
         MinecraftForge.EVENT_BUS.addListener((CustomizeGuiOverlayEvent.Chat e) ->
                 Hud.render(e.getGuiGraphics(), e.getPartialTick(), e.getWindow().getGuiScaledWidth(), e.getWindow().getGuiScaledHeight()));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles e) -> {
+            float[] ang = {e.getYaw(), e.getPitch(), e.getRoll()};
+            com.krolasyon.mimic.client.ClientEvents.cameraAngles(ang, (float) e.getPartialTick());
+            e.setYaw(ang[0]);
+            e.setPitch(ang[1]);
+            e.setRoll(ang[2]);
+        });
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.sound.PlaySoundEvent e) -> e.setSound(com.krolasyon.mimic.client.VoiceLang.remap(e.getSound())));
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post e) -> ClientEvents.clientTick());
         MinecraftForge.EVENT_BUS.addListener((TickEvent.RenderTickEvent.Pre e) -> ClientEvents.renderTick());

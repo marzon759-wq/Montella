@@ -292,7 +292,24 @@ public final class Story {
     }
 
     /** an inner-voice line: "line.<key>" */
-    static void think(String key) { say("line." + key, "you", 90); }
+    private static final java.util.Map<String, Integer> THOUGHT_AT = new java.util.HashMap<>();
+
+    /** an inner-voice line: "line.<key>", in Sam's voice when it has one (not again if it was just said) */
+    static void think(String key) {
+        String n = "v.you." + key;
+        Integer last = THOUGHT_AT.get(key);
+        boolean repeat = last != null && age - last < 100;
+        if (!ModSounds.has(n) || skipping || repeat) {
+            if (!repeat) say("line." + key, "you", 90);
+            return;
+        }
+        THOUGHT_AT.put(key, age);
+        int d = voiceSlot(n);
+        later(Math.max(0, d), () -> {
+            sndNow(n, 1f, 1f);
+            say("line." + key, "you", Math.max(60, voiceTicks(n) + 12));
+        });
+    }
 
     static void hint(String key) {
         ServerPlayer p = player();
@@ -442,6 +459,42 @@ public final class Story {
             noisePos = v;
             noiseRadius = radius;
             noiseAge = 0;
+        }
+    }
+
+    // ================================================================== the body: breath for running
+    static float stamina = 100;
+    static boolean tired = false;
+    private static int breathCd = 0;
+    private static float sentStam = -1;
+    private static boolean sentTired = false;
+
+    /** sprinting spends breath (about nine seconds of it), walking and crouching give it back. Out of breath you cannot
+     *  run, and you pant: it can hear that. */
+    static void tickBody(ServerPlayer p) {
+        boolean moving = p.getDeltaMovement().horizontalDistanceSqr() > 0.002;
+        if (p.isSprinting() && moving) stamina -= 0.55f;
+        else if (p.isCrouching() || !moving) stamina += 0.7f;
+        else stamina += 0.35f;
+        stamina = Math.max(0, Math.min(100, stamina));
+        if (stamina <= 0 && !tired) {
+            tired = true;
+            if (!S.f("hint_run")) {
+                S.flags.add("hint_run");
+                hint("run");
+            }
+        }
+        if (tired && stamina >= 35) tired = false;
+        if (tired && p.isSprinting()) p.setSprinting(false);
+        if (stamina < 30 && hiddenId == null && --breathCd <= 0) {
+            breathCd = 24 + (int) stamina;
+            p.playNotifySound(ModSounds.get("fx.gasp"), SoundSource.PLAYERS, 0.35f + (30 - stamina) / 60f, 0.8f + RND.nextFloat() * 0.15f);
+            noiseEvent(local(p.blockPosition()), p.isCrouching() ? 4 : 9);
+        }
+        if (Math.abs(stamina - sentStam) >= 1.5f || tired != sentTired || (stamina >= 100 && sentStam < 100)) {
+            sentStam = stamina;
+            sentTired = tired;
+            Net.toPlayer(p, Msg.of("body").f("stam", stamina).b("tired", tired));
         }
     }
 
@@ -1130,6 +1183,8 @@ public final class Story {
     }
 
     private static void respawn(ServerPlayer p) {
+        stamina = 100;
+        tired = false;
         removeMimic();
         timers.clear();
         voiceBusy = 0;
@@ -1394,6 +1449,7 @@ public final class Story {
             if (hudDirty) sendHud(p);
             return;
         }
+        tickBody(p);
         // the flashlight
         if (S.lightOn) {
             S.battery -= 100f / (20f * 300f);

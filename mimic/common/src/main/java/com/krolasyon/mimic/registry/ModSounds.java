@@ -45,6 +45,7 @@ public final class ModSounds {
 
     static {
         for (String n : NAMES) MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
+        for (String n : ExtraVoices.NAMES) MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
     }
 
     public static SoundEvent get(String name) {

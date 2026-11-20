@@ -278,6 +278,7 @@
  "obj.mimic.fuel": "Fuel the truck",
  "obj.mimic.start": "Start the truck",
  "obj.mimic.lily_corn": "Find Lily in the corn",
+ "hint.mimic.run": "Running takes your breath. Out of breath you can't run - and you pant. It can hear that.",
  "hint.mimic.light": "Press %s for the flashlight. It sees the light.",
  "hint.mimic.walkie": "Right-click with the walkie-talkie in your hand to call Lily.",
  "hint.mimic.hide": "Wardrobes and hay piles: right-click to hide. Hold SPACE to hold your breath when it is close.",

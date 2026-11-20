@@ -246,6 +246,7 @@ def main():
         put(f"obj.mimic.{k}", v)
 
     hints = {
+        "run": "Running takes your breath. Out of breath you can't run - and you pant. It can hear that.",
         "light": "Press %s for the flashlight. It sees the light.",
         "walkie": "Right-click with the walkie-talkie in your hand to call Lily.",
         "hide": "Wardrobes and hay piles: right-click to hide. Hold SPACE to hold your breath when it is close.",

@@ -859,7 +859,7 @@ public final class House {
                         if (d <= 2.2) set(x, 26, z, slab("tin_slab", false));
                     }
                 }
-            ladder(cx + 3, 1, 22, cz, Direction.WEST);
+            // (no ladder up the inside: it led nowhere)
         }
         door(84, G + 1, 31, "farm_door", Direction.WEST, false, "silo");
         air(85, G + 1, 31, 85, G + 2, 31);

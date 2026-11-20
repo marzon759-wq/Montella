@@ -123,6 +123,14 @@ public final class Hud {
             String k = "[" + keyName() + "]";
             g.drawString(font, k, bx, by - 11, argb(0.45f, 0xD8D0B8), false);
         }
+        // ---- breath: a thin line over the hotbar, only while it is not full
+        if (!cut && !ClientState.hidden && ClientState.stamina < 99) {
+            int bw = 80, bx = (w - bw) / 2, by = h - 52;
+            float st = ClientState.stamina / 100f;
+            int col = ClientState.tired ? ((t / 5) % 2 == 0 ? 0xD03028 : 0x802018) : 0xD8D0B8;
+            g.fill(bx - 1, by - 1, bx + bw + 1, by + 2, 0x70000000);
+            g.fill(bx, by, bx + (int) (bw * st), by + 1, argb(ClientState.tired ? 0.9f : 0.55f, col));
+        }
         // ---- how loud you are: rings under the crosshair
         if (!cut && !ClientState.hidden && ClientState.noise > 0.5f) {
             float n = Math.min(1f, ClientState.noise / 17f);

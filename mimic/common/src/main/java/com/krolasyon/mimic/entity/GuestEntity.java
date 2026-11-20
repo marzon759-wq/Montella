@@ -81,10 +81,14 @@ public class GuestEntity extends GuestBase {
             ServerPlayer p = Story.player(sl.getServer());
             if (p != null) {
                 double dist = distanceTo(p);
-                if (dist > 24) {
-                    // she would never let you out of her sight again
-                    Vec3 behind = p.position().subtract(p.getViewVector(1f).multiply(2, 0, 2));
-                    teleportTo(behind.x, p.getY(), behind.z);
+                // stuck: up a ladder, behind something, or not getting any closer - she catches up out of sight
+                boolean apart = dist > 5 && (Math.abs(getY() - p.getY()) > 2.5 || dist > 24 || dist > bestDist - 0.3);
+                if (dist < bestDist - 0.3 || dist <= 5) { bestDist = dist; stuckT = 0; }
+                else if (apart) stuckT++;
+                if (dist > 24 || stuckT > 60) {
+                    catchUp(p);
+                    stuckT = 0;
+                    bestDist = 1e9;
                 } else if (dist > 3 && tickCount % 8 == 0) {
                     getNavigation().moveTo(p, speedMod(dist > 7 ? 5.2 : 3.2));
                 } else if (dist <= 2.5) getNavigation().stop();
@@ -94,6 +98,25 @@ public class GuestEntity extends GuestBase {
             setYRot(homeYaw);
             yBodyRot = homeYaw;
         }
+    }
+
+    private int stuckT = 0;
+    private double bestDist = 1e9;
+
+    /** reappear a couple of steps behind the player, on free ground */
+    private void catchUp(ServerPlayer p) {
+        Vec3 back = p.getViewVector(1f).multiply(1, 0, 1).normalize();
+        for (double k : new double[]{2.0, 1.4, 3.0, 0.8}) {
+            Vec3 at = p.position().subtract(back.scale(k));
+            net.minecraft.world.phys.AABB box = getDimensions(getPose()).makeBoundingBox(at);
+            if (level().noCollision(this, box) && !level().getBlockState(net.minecraft.core.BlockPos.containing(at.x, at.y - 0.5, at.z)).getCollisionShape(level(), net.minecraft.core.BlockPos.containing(at.x, at.y - 0.5, at.z)).isEmpty()) {
+                getNavigation().stop();
+                teleportTo(at.x, at.y, at.z);
+                return;
+            }
+        }
+        getNavigation().stop();
+        teleportTo(p.getX(), p.getY(), p.getZ());
     }
 
     @Override
