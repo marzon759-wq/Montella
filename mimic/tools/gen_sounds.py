@@ -216,7 +216,7 @@ def effects():
         "fx.tape": ["fx_tape"], "fx.thunder": ["fx_thunder0", "fx_thunder1"], "fx.creak": ["fx_creak0", "fx_creak1"], "fx.thump": ["fx_thump"],
         "fx.jumpscare": ["fx_jumpscare"], "fx.sting": ["fx_sting0", "fx_sting1"], "fx.chapter": ["fx_chapter"], "fx.glass": ["fx_glass"],
         "fx.wood_break": ["fx_wood_break0", "fx_wood_break1"], "fx.crow": ["fx_crow"], "fx.clock_tick": ["fx_clock_tick"],
-        "fx.static": ["fx_static0", "fx_static1"], "fx.light_flicker": ["fx_bulb_pop"],
+        "fx.static": ["fx_static0", "fx_static1"], "fx.type": ["fx_type"], "fx.light_flicker": ["fx_bulb_pop"],
     }
     for e, fs in simple.items():
         outs = []

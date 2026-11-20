@@ -40,7 +40,7 @@ public final class ModSounds {
             "fx.bell", "fx.well", "fx.bucket", "fx.thunder", "fx.creak", "fx.thump", "fx.jumpscare", "fx.sting", "fx.chapter", "fx.gas_pour",
             "fx.engine_fail", "fx.engine_start", "fx.fire", "fx.glass", "fx.wood_break", "fx.crow", "fx.clock_tick", "fx.clock_chime",
             "fx.breath_hold", "fx.gasp", "fx.qte", "fx.choice", "fx.hay", "fx.corn", "fx.stove", "fx.water", "fx.cow", "fx.chain",
-            "fx.truck_door", "fx.static", "fx.gore", "fx.stab", "fx.lighter", "fx.throw"
+            "fx.truck_door", "fx.static", "fx.type", "fx.gore", "fx.stab", "fx.lighter", "fx.throw"
     };
 
     static {

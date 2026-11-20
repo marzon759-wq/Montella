@@ -9,6 +9,7 @@ public final class ClientNet {
     private ClientNet() {}
 
     static void ui(String sound, float pitch, float vol) {
+        if (!ModSounds.has(sound)) return;
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(ModSounds.get(sound), pitch, vol));
     }
 

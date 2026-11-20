@@ -41,7 +41,13 @@ final class PlayDriver {
 
     static Vec3 w(double x, double y, double z) { return new Vec3(Story.S.ox + x, Story.S.oy + y, Story.S.oz + z); }
 
+    static boolean sneaking = false;
+
+    PlayDriver sneak(boolean on) { return run(() -> sneaking = on); }
+
     private static void keys(boolean fwd, boolean sprint, boolean sneak) {
+        sneak |= sneaking;
+        sprint &= !sneaking;
         mc().options.keyUp.setDown(fwd);
         mc().options.keySprint.setDown(sprint);
         mc().options.keyShift.setDown(sneak);

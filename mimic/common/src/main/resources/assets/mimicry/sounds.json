@@ -1075,5 +1075,12 @@
     "stream": true
    }
   ]
+ },
+ "fx.type": {
+  "sounds": [
+   {
+    "name": "mimicry:x_fx_type"
+   }
+  ]
  }
 }
