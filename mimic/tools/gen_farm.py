@@ -237,7 +237,7 @@ def gen():
     for x in (1, 5, 9, 13):
         ban.append(box((x, 0, 14.2), (x + 1.6, 14, 15.8), "w"))
     ban.append(box((0, 0, 13.8), (2, 16, 16), "w"))
-    facing("banister", {"w": "m_wood_dark"}, ban, [0, 0, 14, 16, 16, 16], kind="wood")
+    facing("banister", {"w": "m_wood_dark"}, ban, [0, 0, 14, 16, 16, 16], kind="prop")
 
     # ------------------------------------------------------------------ furniture (farmhouse)
     chair = legs("w", 3, 3, 13, 13, 7.5, 1.4) + [
@@ -667,7 +667,8 @@ def slab_block(name, tex, kind):
 
 def staircase():
     """the farmhouse staircase: treads with a nosing, a dark riser, a carved stringer and a runner down the middle"""
-    els = [box((0, 0, 8), (16, 8, 16), "r"), box((0, 8, 0), (16, 16, 8), "r"),  # solid core (dark)
+    # the core fills exactly the vanilla stair shape (bottom slab + back half), so faces it hides are really covered
+    els = [box((0, 0, 0), (16, 8, 16), "r"), box((0, 8, 0), (16, 16, 8), "r"),  # solid core (dark)
            box((0, 7, -0.6), (16, 8.2, 8), "t"), box((0, 15, 7.4), (16, 16.2, 16), "t"),  # treads with nosing
            box((4, 8.2, 0), (12, 8.4, 7.4), "c"), box((4, 16.2, 8), (12, 16.4, 16), "c"),  # runner
            box((4, 0, -0.1), (12, 7, 0), "c"), box((4, 8, 7.9), (12, 15, 8), "c")]
@@ -724,7 +725,7 @@ def ladder_block():
             v[f"facing={f},waterlogged={wl}"] = e
     W("blockstates/farm_ladder.json", {"variants": v})
     ITEM_MODEL["farm_ladder"] = "farm_ladder"
-    SPEC.append(("farm_ladder", f"new LadderBlock({j_props('wood')})"))
+    SPEC.append(("farm_ladder", f"new LadderBlock({j_props('wood')}.noOcclusion())"))
 
 
 def barbed_fence():

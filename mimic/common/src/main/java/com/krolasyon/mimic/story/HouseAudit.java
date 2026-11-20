@@ -115,6 +115,7 @@ public final class HouseAudit {
                 }
             }
         }
+        leaks();
         // ---------------------------------------------------------------- 2. every room must be walkable
         Map<String, Integer> perRoom = new HashMap<>();
         for (BlockPos p : reach) {
@@ -190,6 +191,63 @@ public final class HouseAudit {
                     issues.add("wall prop " + id + " has no wall behind it at " + fmt(l));
             }
         }
+    }
+
+    // ---------------------------------------------------------------- 6. holes you can see the outside through
+    private static final java.util.Set<String> SOLIDISH = java.util.Set.of("window_pane", "boarded_window", "window_lit", "curtain");
+
+    private boolean seeThrough(BlockPos l) {
+        BlockState s = st(l);
+        if (s.isAir()) return true;
+        if (isOpenable(s)) return false;
+        String id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(s.getBlock()).getPath();
+        if (SOLIDISH.contains(id)) return false;
+        return !s.canOcclude();
+    }
+
+    private static boolean outdoors(String room) {
+        return room == null || room.equals("YARD") || room.equals("FIELD") || room.equals("ROAD") || room.equals("PORCH") || room.equals("NONE") || room.isEmpty();
+    }
+
+    /** in no building room at all */
+    private static boolean outside(BlockPos p, java.util.Set<String> skip) {
+        for (Map.Entry<String, int[]> e : House.ROOMS.entrySet()) {
+            if (skip.contains(e.getKey())) continue;
+            int[] r = e.getValue();
+            if (p.getX() >= r[0] - 1 && p.getX() <= r[3] + 1 && p.getY() >= r[1] - 1 && p.getY() <= r[4] + 1 && p.getZ() >= r[2] - 1 && p.getZ() <= r[5] + 1) return false;
+        }
+        return true;
+    }
+
+    private void leaks() {
+        java.util.Set<String> skip = java.util.Set.of("PORCH", "ROAD", "FIELD", "YARD", "B_TUNNEL");
+        Map<BlockPos, String> found = new java.util.TreeMap<>();
+        for (Map.Entry<String, int[]> e : House.ROOMS.entrySet()) {
+            if (skip.contains(e.getKey())) continue;
+            int[] r = e.getValue();
+            int x1 = r[0] - 1, y1 = r[1] - 1, z1 = r[2] - 1, x2 = r[3] + 1, y2 = r[4] + 1, z2 = r[5] + 1;
+            ArrayDeque<BlockPos> q = new ArrayDeque<>();
+            Set<BlockPos> seen = new HashSet<>();
+            for (int x = r[0]; x <= r[3]; x++) for (int z = r[2]; z <= r[5]; z++) {
+                BlockPos c = new BlockPos(x, r[1] + 1, z);
+                if (seeThrough(c) && seen.add(c)) q.add(c);
+            }
+            while (!q.isEmpty()) {
+                BlockPos c = q.poll();
+                for (Direction d : Direction.values()) {
+                    BlockPos nb = c.relative(d);
+                    if (seen.contains(nb) || !seeThrough(nb)) continue;
+                    boolean in = nb.getX() >= x1 && nb.getX() <= x2 && nb.getY() >= y1 && nb.getY() <= y2 && nb.getZ() >= z1 && nb.getZ() <= z2;
+                    if (!in) {
+                        if (outside(nb, skip)) found.putIfAbsent(c, e.getKey() + " " + d + " -> " + fmt(nb) + " [" + st(c).getBlock().getName().getString() + "]");
+                        continue;
+                    }
+                    seen.add(nb);
+                    q.add(nb);
+                }
+            }
+        }
+        for (Map.Entry<BlockPos, String> e : found.entrySet()) issues.add("LEAK " + fmt(e.getKey()) + " " + e.getValue());
     }
 
     private boolean stairwell(BlockPos c) {

@@ -82,14 +82,14 @@ public final class ModBlocks {
     public static final RegistryObject<Block> FARM_DOOR = reg("farm_door", () -> Compat.door(wood().noOcclusion()));
     public static final RegistryObject<Block> BARN_DOOR = reg("barn_door", () -> Compat.door(wood().noOcclusion()));
     public static final RegistryObject<Block> HATCH = reg("hatch", () -> Compat.trapdoor(wood().noOcclusion()));
-    public static final RegistryObject<Block> FARM_LADDER = reg("farm_ladder", () -> new LadderBlock(wood()));
+    public static final RegistryObject<Block> FARM_LADDER = reg("farm_ladder", () -> new LadderBlock(wood().noOcclusion()));
     public static final RegistryObject<Block> BARBED_FENCE = reg("barbed_fence", () -> new FenceBlock(wood().noOcclusion()));
     public static final RegistryObject<Block> FARM_GATE = reg("farm_gate", () -> new OpenableBlock(prop(), new double[]{0, 0, 7, 16, 16, 9}, true));
     public static final RegistryObject<Block> POST = reg("post", () -> new FacingBlock(wood(), new double[]{5, 0, 5, 11, 16, 11}, true));
     public static final RegistryObject<Block> BEAM = reg("beam", () -> new FacingBlock(wood(), new double[]{5, 10, 0, 11, 16, 16}, true));
     public static final RegistryObject<Block> BRACE = reg("brace", () -> new FacingBlock(wood(), new double[]{6, 0, 0, 10, 16, 16}, false));
     public static final RegistryObject<Block> RAFTER = reg("rafter", () -> new FacingBlock(wood(), new double[]{6, 13, 0, 10, 16, 16}, false));
-    public static final RegistryObject<Block> BANISTER = reg("banister", () -> new FacingBlock(wood(), new double[]{0, 0, 14, 16, 16, 16}, true));
+    public static final RegistryObject<Block> BANISTER = reg("banister", () -> new FacingBlock(prop(), new double[]{0, 0, 14, 16, 16, 16}, true));
     public static final RegistryObject<Block> CHAIR = reg("chair", () -> new FacingBlock(prop(), new double[]{3, 0, 3, 13, 9, 13}, true));
     public static final RegistryObject<Block> CHAIR_FALLEN = reg("chair_fallen", () -> new FacingBlock(prop(), new double[]{2, 0, 2, 14, 6, 14}, false));
     public static final RegistryObject<Block> BENCH = reg("bench", () -> new FacingBlock(prop(), new double[]{0, 0, 3, 16, 9, 13}, true));

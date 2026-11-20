@@ -500,7 +500,7 @@ public final class House {
         lamp(31, G + 2, 55, "oil_lamp", Direction.NORTH, "H_KITCHEN", 0);
         drawer(32, G + 1, 52, "counter", Direction.SOUTH, "battery");
         if (lvl != null) {
-            set(33, G, 59, blk("hatch").defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.SOUTH).setValue(TrapDoorBlock.HALF, Half.TOP).setValue(TrapDoorBlock.OPEN, false));
+            set(33, G, 59, blk("hatch").defaultBlockState().setValue(TrapDoorBlock.FACING, Direction.NORTH).setValue(TrapDoorBlock.HALF, Half.TOP).setValue(TrapDoorBlock.OPEN, false));
         }
         DOORS.put("cellar", new BlockPos(33, G, 59));
         tag(33, G, 59, "door:cellar");
@@ -843,7 +843,8 @@ public final class House {
     private void silo() {
         int cx = 88, cz = 31;
         if (lvl != null) {
-            air(cx - 6, 1, cz - 6, cx + 6, 28, cz + 6);
+            // clear only from x=84: the barn's east wall (x=82) and its roof eave (x=83) stand right next to the silo
+            air(cx - 4, 1, cz - 6, cx + 6, 28, cz + 6);
             for (int x = cx - 6; x <= cx + 6; x++)
                 for (int z = cz - 6; z <= cz + 6; z++) {
                     double d = Math.sqrt((x - cx) * (x - cx) + (z - cz) * (z - cz));

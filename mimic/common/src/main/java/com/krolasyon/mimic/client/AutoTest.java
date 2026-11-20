@@ -114,6 +114,36 @@ public final class AutoTest {
             cue(60, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("audit")) {
+            cue(10, () -> srv("step:c1_radio"));
+            cue(60, () -> { if (ClientState.cutId != null) com.krolasyon.mimic.net.Net.toServer(com.krolasyon.mimic.net.Msg.of("cut_done").s("id", ClientState.cutId)); });
+            cue(40, () -> srv("audit"));
+            // walk up the farmhouse stairs
+            cue(20, () -> srv("tp:25.5,1,67.5,180,0"));
+            cue(20, () -> Minecraft.getInstance().options.keyUp.setDown(true));
+            cue(80, () -> { Minecraft.getInstance().options.keyUp.setDown(false); MimicMod.LOG.info("[WALK] stairs y={} z={}", Minecraft.getInstance().player.getY() - Story.S.oy, Minecraft.getInstance().player.getZ() - Story.S.oz); });
+            // climb the barn ladder to the loft
+            cue(20, () -> srv("tp:68.5,1,38.5,90,-30"));
+            cue(20, () -> { Minecraft.getInstance().options.keyUp.setDown(true); Minecraft.getInstance().options.keyJump.setDown(true); });
+            cue(140, () -> { Minecraft.getInstance().options.keyUp.setDown(false); Minecraft.getInstance().options.keyJump.setDown(false); MimicMod.LOG.info("[WALK] ladder y={}", Minecraft.getInstance().player.getY() - Story.S.oy); });
+            // the cellar ladder
+            cue(20, () -> { srv("open:cellar"); srv("tp:33.5,-4,58.5,0,-30"); });
+            cue(20, () -> { Minecraft.getInstance().options.keyUp.setDown(true); Minecraft.getInstance().options.keyJump.setDown(true); });
+            cue(140, () -> { Minecraft.getInstance().options.keyUp.setDown(false); Minecraft.getInstance().options.keyJump.setDown(false); MimicMod.LOG.info("[WALK] cellar ladder y={}", Minecraft.getInstance().player.getY() - Story.S.oy); });
+            // the staircase from the landing, looking down and up: no holes
+            cue(10, () -> { srv("time:6000"); srv("nv"); srv("tp:25.5,1,68.5,180,-20"); Minecraft.getInstance().options.hideGui = true; });
+            cue(30, () -> shot("w_stairs_up"));
+            cue(5, () -> srv("tp:25.5,6,61.2,0,35"));
+            cue(30, () -> shot("w_stairs_down"));
+            cue(5, () -> srv("tp:33.5,1,57.5,0,60"));
+            cue(30, () -> shot("w_hatch"));
+            cue(5, () -> srv("tp:86,3,22,30,5"));
+            cue(30, () -> shot("w_barn_east"));
+            cue(5, () -> srv("tp:79.5,1,29.5,-90,-5"));
+            cue(30, () -> shot("w_slaughter_window"));
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("held")) {
             cue(10, () -> srv("step:c1_radio"));
             cue(60, () -> { if (ClientState.cutId != null) com.krolasyon.mimic.net.Net.toServer(com.krolasyon.mimic.net.Msg.of("cut_done").s("id", ClientState.cutId)); });
