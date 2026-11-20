@@ -27,6 +27,10 @@ Upload these in this order. The first one can be marked as **featured**.
 | File | Title | Description |
 |---|---|---|
 | cover_1920x1080.jpg | MIMIC: Harrow Farm | It learned your sister's voice. Now it is learning yours. |
+| cover_corn_1920x1080.jpg | In the corn | Six arms. A skull for a face. It hunts by sound. |
+| cover_stairs_1920x1080.jpg | Don't go upstairs | Whatever you hear tonight... don't go upstairs. |
+| cover_sleeping_1920x1080.jpg | The barn | It sleeps in the barn. Don't wake it. |
+| cover_lily_1920x1080.jpg | The silo | Lily has been in the silo for three days. Is that really her voice? |
 | 01_barn_roar.jpg | The thing in the barn | Something has been living under Harrow Farm since July. |
 | 02_corn.jpg | The corn field | Six arms. A skull for a face. It hunts by sound. |
 | 03_choice.jpg | Timed decisions | Until Dawn-style choices with a clock running out. Silence is a choice too. |

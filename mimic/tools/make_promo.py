@@ -123,3 +123,33 @@ for i,(name,cap,gm) in enumerate(G,1):
     im=grain(im,0.035,i)
     im.save(O+f'{i:02d}_{name[3:]}.jpg',quality=92)
 print('ok')
+
+# ---------------- alternative covers
+def alt_cover(srcname, out, gm, title_xy, right, tag1, tag2, shift=0):
+    im=lift(Image.open(C+srcname+'.png'),gm)
+    if shift: im=ImageChops.offset(im,shift,0)
+    m=Image.new('L',(W,H),0); dm=ImageDraw.Draw(m)
+    for x in range(W):
+        f=(x-1100)/600 if right else (820-x)/600
+        dm.line([(x,0),(x,H)],fill=int(255*min(1,max(0,f))*0.85))
+    im=Image.composite(Image.new('RGB',(W,H),(3,4,5)),im,m.filter(ImageFilter.GaussianBlur(40)))
+    im=vignette(im,0.5)
+    x,y=title_xy; a='r' if right else 'l'
+    def t(d): spaced(d,(x,y),'MIMIC',TITLE,BONE,14,anchor=a,shadow=False)
+    im=glow(im,t,18,0.55)
+    d=ImageDraw.Draw(im)
+    spaced(d,(x,y),'MIMIC',TITLE,BONE,14,anchor=a)
+    spaced(d,(x+(-6 if right else 8),y+220),'HARROW  FARM',SUB,RED,24,anchor=a)
+    lx0,lx1=(x-480,x) if right else (x+8,x+490)
+    d.line([(lx0,y+305),(lx1,y+305)],fill=(130,28,24),width=2)
+    for k,tline in enumerate((tag1,tag2)):
+        d.text((x if right else x+8, y+340+56*k), tline, font=TAG, fill=BONE, anchor='ra' if right else 'la')
+    spaced(d,(x+(-4 if right else 10),y+580),'HORROR STORY MOD  ·  FORGE 1.20.1 & 1.21.1',SMALL,DIM,3,anchor=a,shadow=False)
+    im=grain(im,0.045)
+    im.save(O+out,quality=93)
+
+alt_cover('pr_corn','cover_corn_1920x1080.jpg',0.85,(1820,250),True,'Six arms. A skull for a face.','It hunts by sound.',-260)
+alt_cover('pr_stairs','cover_stairs_1920x1080.jpg',0.62,(110,250),False,'Whatever you hear tonight...','don\'t go upstairs.',300)
+alt_cover('pr_sleeping','cover_sleeping_1920x1080.jpg',0.6,(1820,250),True,'It sleeps in the barn.','Don\'t wake it.',-280)
+alt_cover('pr_silo','cover_lily_1920x1080.jpg',0.75,(110,250),False,'Lily has been in the silo for three days.','Is that really her voice?',360)
+print('alt ok')
