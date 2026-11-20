@@ -97,7 +97,7 @@ final class Scenarios {
         cue(30, () -> shot("p_radio"));
         cue(1, () -> {});           // whisper or shout
         cue(1, () -> {});      // say the word out loud (it learns it) or whisper
-        cue(1100, () -> {});
+        cue(1500, () -> {});
         expect("c1_voice|c1_hide|c1_sneak|c1_up|c1_chase");
         cue(240, () -> shot("p_upstairs_choice"));
         // ---- the voice upstairs: ask (hide), go up (chase), or stay quiet (sneak)
@@ -176,8 +176,9 @@ final class Scenarios {
         cue(30, () -> shot("p_shed"));
         use("pickup:meat");
         use("tape");
-        cue(1000, () -> {});
+        cue(1300, () -> {});
         use("coat");
+        cue(200, () -> { if (!Story.S.opened.contains("coat")) srv("use:coat"); });
         cue(100, () -> {});
         expect("c3_trap");
         cue(160, () -> shot("p_trap_choice"));
