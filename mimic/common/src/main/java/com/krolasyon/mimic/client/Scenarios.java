@@ -44,6 +44,18 @@ final class Scenarios {
 
     static void play(String mode) {
         boolean dawn = mode.contains("dawn"), passenger = mode.contains("passenger"), harvest = mode.contains("harvest"), learned = mode.contains("learned");
+        // every decision of the run, in story order: each is answered the moment its screen comes up
+        AutoTest.pendingAnswer("phone", passenger || learned ? 1 : 0);
+        AutoTest.pendingAnswer("r1", dawn ? 0 : 1);
+        AutoTest.pendingAnswer("r5", passenger ? 0 : 1);
+        AutoTest.pendingAnswer("upstairs", dawn ? 1 : passenger ? 0 : 2);
+        AutoTest.pendingAnswer("wake", dawn ? 1 : passenger ? 0 : 2);
+        AutoTest.pendingAnswer("trap", dawn ? 0 : passenger ? 1 : 2);
+        AutoTest.pendingAnswer("silo1", dawn ? 1 : 0);
+        if (!dawn) AutoTest.pendingAnswer("silo_ask", 0);
+        AutoTest.pendingAnswer("two", passenger ? 2 : 1);
+        if (passenger) AutoTest.pendingAnswer("two_ask", 0);
+        else AutoTest.pendingAnswer("face", harvest ? 1 : 0);
         // ---- prologue
         expect("intro");
         cue(80, () -> shot("p_intro"));
@@ -67,7 +79,7 @@ final class Scenarios {
         cue(60, () -> {});
         expect("c1_phone");
         cue(60, () -> shot("p_phone_choice"));
-        decide(10, "phone", passenger || learned ? 1 : 0);
+        cue(1, () -> {});
         cue(90, () -> srv("advance:0"));
         cue(90, () -> srv("advance:0"));
         cue(40, () -> {});
@@ -82,14 +94,14 @@ final class Scenarios {
         if (dawn) cue(4, () -> srv("use:drawer:item:lighter"));
         cue(10, () -> srv("use_item:walkie"));
         cue(30, () -> shot("p_radio"));
-        decide(4, "r1", dawn ? 0 : 1);           // whisper or shout
-        decide(4, "r5", passenger ? 0 : 1);      // say the word out loud (it learns it) or whisper
+        cue(1, () -> {});           // whisper or shout
+        cue(1, () -> {});      // say the word out loud (it learns it) or whisper
         cue(1100, () -> {});
         expect("c1_voice");
         cue(240, () -> shot("p_upstairs_choice"));
         // ---- the voice upstairs: ask (hide), go up (chase), or stay quiet (sneak)
         if (dawn) {
-            decide(10, "upstairs", 1);
+            cue(1, () -> {});
             cue(200, () -> {});
             expect("c1_hide");
             cue(4, () -> srv("hide:pantry"));
@@ -97,7 +109,7 @@ final class Scenarios {
             cue(200, () -> srv("qte:breath:1"));
             cue(400, () -> {});
         } else if (passenger) {
-            decide(10, "upstairs", 0);
+            cue(1, () -> {});
             cue(200, () -> {});
             tp(25.5, 6, 61.5, 180);
             cue(30, () -> shot("p_landing"));
@@ -107,7 +119,7 @@ final class Scenarios {
             tp(31.5, 1, 45.5, 180);
             cue(120, () -> {});
         } else {
-            decide(10, "upstairs", 2);
+            cue(1, () -> {});
             cue(200, () -> {});
             expect("c1_sneak");
             tp(31.5, 1, 45.5, 180);
@@ -133,7 +145,7 @@ final class Scenarios {
         expect("c2_wake");
         cue(70, () -> shot("p_wake_choice"));
         if (dawn) {
-            decide(4, "wake", 1);
+            cue(1, () -> {});
             cue(120, () -> {});
             cue(10, () -> {});
             expect("c2_hay");
@@ -141,7 +153,7 @@ final class Scenarios {
             cue(200, () -> srv("qte:breath:1"));
             cue(600, () -> {});
         } else if (passenger) {
-            decide(4, "wake", 0);
+            cue(1, () -> {});
             cue(120, () -> {});
             expect("c2_ladder");
             tp(62.5, 7, 44.5, 180);
@@ -149,7 +161,7 @@ final class Scenarios {
             skipCut(30);
             cue(30, () -> {});
         } else {
-            decide(4, "wake", 2);
+            cue(1, () -> {});
             cue(120, () -> {});
             expect("c2_still");
             cue(150, () -> shot("p_still"));
@@ -168,7 +180,7 @@ final class Scenarios {
         cue(100, () -> {});
         expect("c3_trap");
         cue(160, () -> shot("p_trap_choice"));
-        decide(10, "trap", dawn ? 0 : passenger ? 1 : 2);
+        cue(1, () -> {});
         cue(120, () -> {});
         cue(30, () -> {});
         tp(82.5, 1, 31.5, 90);
@@ -177,8 +189,8 @@ final class Scenarios {
         // ---- the silo
         use("door:silo");
         cue(60, () -> shot("p_silo"));
-        decide(4, "silo1", dawn ? 1 : 0);
-        if (!dawn) decide(4, "silo_ask", 0);
+        cue(1, () -> {});
+        if (!dawn) cue(1, () -> {});
         cue(500, () -> {});
         skipCut(40);
         cue(20, () -> {});
@@ -197,17 +209,17 @@ final class Scenarios {
         skipCut(30);
         cue(20, () -> shot("p_two_choice"));
         if (passenger) {
-            decide(10, "two", 2);
+            cue(1, () -> {});
             cue(200, () -> shot("p_two_ask"));
-            decide(10, "two_ask", 0);
+            cue(1, () -> {});
             cue(150, () -> {});
-        } else { decide(10, "two", 1); cue(150, () -> {}); }
+        } else { cue(1, () -> {}); cue(150, () -> {}); }
         cue(20, () -> {});
         if (!passenger) {
             expect("c5_corn");
             tp(76.5, 1, 78.5, 0);
             cue(40, () -> shot("p_face_choice"));
-            decide(10, "face", harvest ? 1 : 0);
+            cue(1, () -> {});
             cue(150, () -> {});
             cue(60, () -> shot("p_ending"));
         } else cue(60, () -> shot("p_ending"));
