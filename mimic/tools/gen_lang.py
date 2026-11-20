@@ -339,6 +339,19 @@ def main():
     endings = {"dawn": "Dawn", "harvest": "The Harvest", "passenger": "Passenger", "learned": "Learned"}
     for k, v in endings.items():
         put(f"ending.mimic.{k}", v)
+    epi = {
+        "dawn": ["The sun came up over Harrow Farm for the first time in weeks.", "Lily slept the whole drive to the interstate, her hand in yours.",
+                 "Behind you, the corn burned until noon.", "Sometimes, at night, she still asks you for the word. You always know it."],
+        "harvest": ["You drove until the tank ran dry.", "The walkie-talkie on the passenger seat never stopped talking.",
+                    "It sounds exactly like her. It knows everything she knew.", "You never turned it off."],
+        "passenger": ["You made it to the highway before it spoke again.", "'Sammy,' it said. Only Dad ever called you that.",
+                      "Back in the corn, Lily waited for a truck that never came back.", "It is learning to drive."],
+        "learned": ["They found the truck at the gate, keys in the ignition.", "They never found you.",
+                    "Two weeks later, your best friend got a voicemail in your voice.", "'Please... please just come home.'"],
+    }
+    for k, ls in epi.items():
+        for i, l in enumerate(ls):
+            put(f"ending.mimic.{k}.{i}", l)
     credits = ["MIMIC", "Harrow Farm", "Story, farm, creature and code", "krolasyon, made with Claude",
                "Voices", "ElevenLabs", "Thank you for playing", "It is still listening.", "Every word you said tonight, it kept."]
     for i, c in enumerate(credits):
