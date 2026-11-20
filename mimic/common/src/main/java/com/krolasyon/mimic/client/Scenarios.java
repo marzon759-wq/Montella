@@ -249,7 +249,7 @@ final class Scenarios {
         }
         // prologue: let the voicemail play
         d.until(() -> ClientState.cutId == null && Story.S.step.equals("c1_gate"), 1200, "intro").wait(20);
-        d.mark("gate").light(true).pitch(4)
+        d.mark("gate").hold("flashlight").light(true).pitch(4)
                 .walk(false, PlayDriver.P(55.5, 1, 101), PlayDriver.P(56.5, 1, 98.5), PlayDriver.P(53.5, 1, 95))
                 .walk(true, PlayDriver.P(50.5, 1, 88), PlayDriver.P(50.5, 1, 76), PlayDriver.P(30, 1, 75), PlayDriver.P(25.5, 1, 74.6));
         // the porch: locked, the key in the bird box
@@ -262,12 +262,12 @@ final class Scenarios {
         d.walk(false, PlayDriver.P(24.5, 1, 56), PlayDriver.P(25.6, 1, 55.5)).run(() -> AutoTest.srv("open:kitchen"))
                 .walk(false, PlayDriver.P(28.6, 1, 55.5), PlayDriver.P(30.5, 1, 57.6))
                 .read("note:kitchen", 50).wait(10)
-                .lookAtTag("pickup:walkie", 15).use("pickup:walkie").wait(30);
+                .lookAtTag("pickup:walkie", 15).use("pickup:walkie").wait(10).hold("walkie").wait(30);
         // Lily on the walkie: whisper, but say the word out loud (it hears)
         d.mark("radio").srv("use_item:walkie").talk(0, 0).step("c1_voice");
         // "Sam, I'm up here!": ask for the word
         d.mark("upstairs").look(25.5, 7, 60, 40).talk(1).step("c1_hide");
-        d.walk(true, PlayDriver.P(32.5, 1, 57.5)).lookAtTag("wardrobe:pantry", 6).use("wardrobe:pantry")
+        d.hold("flashlight").walk(true, PlayDriver.P(32.5, 1, 57.5)).lookAtTag("wardrobe:pantry", 6).use("wardrobe:pantry")
                 .mark("hidden").until(() -> Story.S.step.equals("c2_yard"), 2400, "search").mark("searched").wait(30).srv("unhide").wait(10);
         // chapter 2: the barn
         d.mark("barn").run(() -> AutoTest.srv("open:back"))
@@ -276,18 +276,18 @@ final class Scenarios {
                 .walk(false, PlayDriver.P(70.5, 1, 45.5)).cutStart().cutEnd();
         d.mark("sneak").light(false).sneak(true)
                 .walk(false, PlayDriver.P(70.5, 1, 41), PlayDriver.P(67.5, 1, 33.5), PlayDriver.P(61.5, 1, 33.5))
-                .lookAtTag("drawer:item:crowbar", 10).use("drawer:item:crowbar").wait(20)
+                .lookAtTag("drawer:item:crowbar", 10).use("drawer:item:crowbar").wait(5).hold("crowbar").wait(20)
                 .walk(false, PlayDriver.P(67.5, 1, 34.5), PlayDriver.P(73.5, 1, 40.5), PlayDriver.P(78.5, 1, 41.5))
-                .lookAtTag("toolcab", 10).use("toolcab").wait(20)
-                .walk(false, PlayDriver.P(76, 1, 42.5)).lookAtTag("pickup:gas_can", 10).use("pickup:gas_can").sneak(false)
+                .lookAtTag("toolcab", 10).use("toolcab").wait(5).hold("bolt_cutters").wait(20)
+                .walk(false, PlayDriver.P(76, 1, 42.5)).lookAtTag("pickup:gas_can", 10).use("pickup:gas_can").wait(5).hold("gas_can").sneak(false)
                 .mark("wake").step("c2_wake").look(70.5, 6, 30.5, 30).talk(1).step("c3_shed").wait(20);
         // chapter 3: the shed
-        d.mark("shed").run(() -> AutoTest.srv("open:barn_n")).light(true)
+        d.mark("shed").run(() -> AutoTest.srv("open:barn_n")).hold("flashlight").light(true)
                 .walk(true, PlayDriver.P(67.5, 1, 38), PlayDriver.P(70.5, 1, 20), PlayDriver.P(70.5, 1, 14.5), PlayDriver.P(66, 1, 10),
                         PlayDriver.P(52, 1, 11), PlayDriver.P(52, 1, 30), PlayDriver.P(44.5, 1, 30))
                 .use("door:shed").wait(10).run(() -> AutoTest.srv("open:shed"))
                 .walk(false, PlayDriver.P(44.5, 1, 26), PlayDriver.P(44.5, 1, 21)).look(43, 1, 19.5, 40)
-                .lookAtTag("pickup:meat", 10).use("pickup:meat").wait(10)
+                .lookAtTag("pickup:meat", 10).use("pickup:meat").wait(5).hold("meat").wait(10)
                 .lookAtTag("coat", 20).use("coat").wait(40)
                 .mark("trap").look(44.5, 2, 30, 30).step("c3_trap").talk(0)
                 .walk(true, PlayDriver.P(44.5, 1, 29.5), PlayDriver.P(37, 1, 30), PlayDriver.P(37, 1, 14), PlayDriver.P(56, 1, 12),
@@ -298,7 +298,7 @@ final class Scenarios {
 
     private static void videoEnd(PlayDriver d) {
         // chapter 4: the silo
-        d.mark("silo").lookAtTag("door:silo", 15).use("door:silo").talk(0, 0).cutStart().cutEnd().step("c4_follow")
+        d.mark("silo").hold("flashlight").lookAtTag("door:silo", 15).use("door:silo").talk(0, 0).cutStart().cutEnd().step("c4_follow")
                 .walk(false, PlayDriver.P(82.5, 1, 36), PlayDriver.P(84, 1, 48), PlayDriver.P(76, 1, 50), PlayDriver.P(71.5, 1, 50.5))
                 .cutStart().cutEnd().step("c4_corn").srv("speedcap:3.2")
                 .walk(true, PlayDriver.P(60, 1, 50.5), PlayDriver.P(48.5, 1, 49.5)).step("c5_truck").srv("speedcap:0");

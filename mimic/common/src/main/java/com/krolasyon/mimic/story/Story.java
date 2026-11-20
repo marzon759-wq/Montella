@@ -1551,6 +1551,8 @@ public final class Story {
             case "kill" -> removeMimic();
             case "give" -> debugGiveAll(p);
             case "item" -> give(a[1]);
+            case "nv" -> p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 20000, 0, false, false));
+            case "hold" -> p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(ModItems.story(a[1])));
             case "gm" -> p.setGameMode(a[1].equals("spec") ? GameType.SPECTATOR : GameType.ADVENTURE);
             case "obj" -> obj(a.length > 1 ? a[1] : "");
             case "cut" -> cutscene(a[1]);

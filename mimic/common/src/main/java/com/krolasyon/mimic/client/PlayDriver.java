@@ -106,6 +106,15 @@ final class PlayDriver {
 
     PlayDriver mark(String name) { return run(() -> MimicMod.LOG.info("[AUTOTEST] MARK {} {}", name, System.currentTimeMillis())); }
 
+    /** put a story item in the hand, like scrolling the hotbar to it */
+    PlayDriver hold(String id) {
+        return run(() -> {
+            var inv = mc().player.getInventory();
+            for (int i = 0; i < 9; i++)
+                if (inv.getItem(i).is(com.krolasyon.mimic.registry.ModItems.story(id))) { inv.selected = i; return; }
+        });
+    }
+
     PlayDriver wait(int ticks) { return add(a -> a >= ticks); }
 
     PlayDriver until(BooleanSupplier c, int timeout, String what) {

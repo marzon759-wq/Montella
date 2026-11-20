@@ -114,6 +114,31 @@ public final class AutoTest {
             cue(60, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("held")) {
+            cue(10, () -> srv("step:c1_radio"));
+            cue(60, () -> { if (ClientState.cutId != null) com.krolasyon.mimic.net.Net.toServer(com.krolasyon.mimic.net.Msg.of("cut_done").s("id", ClientState.cutId)); });
+            cue(40, () -> { srv("time:6000"); srv("nv"); });
+            cue(10, () -> srv("tp:24.5,1,64.5,180,10"));
+            cue(2, () -> Minecraft.getInstance().options.hideGui = false);
+            for (String id : com.krolasyon.mimic.registry.ModItems.STORY_IDS) {
+                cue(10, () -> srv("hold:" + id));
+                cue(25, () -> shot("h_fp_" + id));
+            }
+            cue(5, () -> Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT));
+            for (String id : com.krolasyon.mimic.registry.ModItems.STORY_IDS) {
+                cue(10, () -> srv("hold:" + id));
+                cue(25, () -> shot("h_tp_" + id));
+            }
+            cue(5, () -> { srv("hold:flashlight"); srv("light:on"); Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); });
+            cue(30, () -> shot("h_fp_lit"));
+            cue(5, () -> Minecraft.getInstance().player.getInventory().selected = 1);
+            cue(20, () -> shot("h_inv"));
+            cue(5, () -> srv("give"));
+            cue(5, () -> Minecraft.getInstance().setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(Minecraft.getInstance().player)));
+            cue(20, () -> shot("h_inventory"));
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("gallery")) {
             cue(10, () -> srv("gm:spec"));
             cue(5, () -> Minecraft.getInstance().options.hideGui = true);
