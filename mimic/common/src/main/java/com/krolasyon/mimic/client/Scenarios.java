@@ -301,4 +301,33 @@ final class Scenarios {
                 .until(() -> Story.S.step.equals("credits"), 3000, "ending").wait(200).mark("end")
                 .run(() -> Minecraft.getInstance().stop());
     }
+
+    // ================================================================================== order: nothing of a later chapter works early
+    static void order() {
+        String[] early = {"drawer:item:crowbar", "pickup:gas_can", "toolcab", "pickup:pitchfork", "pickup:meat", "coat", "door:silo", "door:shed"};
+        skipCut(80);
+        cue(40, () -> {});
+        expect("c1_gate");
+        for (String tag : early) use(tag);
+        cue(10, () -> srv("truck"));
+        cue(10, () -> srv("truck_use"));
+        cue(20, () -> {
+            var inv = Minecraft.getInstance().player.getInventory();
+            String bad = "";
+            for (String id : new String[]{"crowbar", "gas_can", "bolt_cutters", "pitchfork", "meat", "truck_keys"})
+                for (int i = 0; i < inv.getContainerSize(); i++) if (inv.getItem(i).is(com.krolasyon.mimic.registry.ModItems.story(id))) bad += id + " ";
+            if (!bad.isEmpty()) fails++;
+            MimicMod.LOG.info("[PLAY] early items in chapter 1: [{}] step={} {}", bad.trim(), Story.S.step, bad.isEmpty() && Story.S.step.equals("c1_gate") ? "OK" : "FAIL");
+        });
+        // chapter 2 items do not let you skip ahead either: the silo stays shut until its chapter
+        cue(10, () -> srv("step:c2_barn"));
+        cue(20, () -> {});
+        for (String tag : new String[]{"drawer:item:crowbar", "toolcab", "pickup:gas_can"}) use(tag);
+        cue(60, () -> {});
+        expect("c2_wake");
+        cue(10, () -> srv("use:door:silo"));
+        cue(10, () -> srv("truck_use"));
+        cue(30, () -> MimicMod.LOG.info("[PLAY] order fails={} silo_open={}", fails, Story.S.flags.contains("silo_open")));
+        cue(20, () -> Minecraft.getInstance().stop());
+    }
 }

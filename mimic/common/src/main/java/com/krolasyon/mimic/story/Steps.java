@@ -137,7 +137,7 @@ final class Steps {
                 obj("barn");
                 S.haunt = 1;
                 checkpoint("", 37.5, G1, 60.5, -90);
-                later(120, () -> radio("v.lily.r7", 140));
+                laterIn("c2_yard", 120, () -> radio("v.lily.r7", 140));
             }
             case "c2_barn" -> {
                 obj("cutters");
@@ -198,7 +198,7 @@ final class Steps {
                 obj("shed");
                 S.haunt = 2;
                 checkpoint("", 56.5, G1, 14.5, 90);
-                later(100, () -> radio("v.lily.r9", 160));
+                laterIn("c3_shed", 100, () -> radio("v.lily.r9", 160));
             }
             case "c3_trap" -> {
                 obj("");
@@ -209,14 +209,15 @@ final class Steps {
                     e.scriptStop();
                     e.setFlag(MimicEntity.F_EAT, true);
                 }
+                String b = bait();
                 laterIn("c3_trap", 70, () -> {
                     if (hm != null) {
                         hm.setFlag(MimicEntity.F_EAT, false);
                         hm.act("listen", 30, null);
                     }
-                    voiceAt(44.5, G1 + 2, 31.5, bait(), "it");
+                    voiceAt(44.5, G1 + 2, 31.5, b, "it");
                 });
-                laterIn("c3_trap", 150, () -> startDialogue("trap", "trap"));
+                laterIn("c3_trap", 70 + voiceTicks(b) + 20, () -> startDialogue("trap", "trap"));
             }
             case "c3_throw" -> {
                 obj("slip_away");
@@ -279,7 +280,7 @@ final class Steps {
                     MimicEntity e = hunter(80.5, G1, 56.5, 3.9, true);
                     if (e != null) e.huntPatience = 120;
                 });
-                later(80, () -> radio("v.lily.corn2", 100));
+                laterIn("c4_corn", 80, () -> radio("v.lily.corn2", 100));
             }
             // ---------------------------------------------------------------- chapter 5: dawn
             case "c5_truck" -> {
@@ -483,7 +484,9 @@ final class Steps {
             }
             case "c4_silo" -> {}
             case "c4_follow" -> {
-                if (l.x < 73 && l.x > 58 && l.z > 45 && l.z < 56 && S.v("sub") == 0) {
+                // the ambush comes on the way to the truck, whichever way you go
+                boolean nearTruck = nearLocal(p, 46, G1, 46, 20);
+                if (((l.x < 73 && l.x > 58 && l.z > 45 && l.z < 56) || nearTruck) && S.v("sub") == 0) {
                     S.v("sub", 1);
                     cutscene("ambush");
                 }
@@ -895,7 +898,8 @@ final class Steps {
         if (node.equals("two_ask")) {
             boolean learned = S.f("learned:word") || S.f("word_loud");
             voiceAt(47.5, G1 + 1, 46.5, learned ? "v.mlily.truck_ok" : "v.mlily.truck_bad", "lily_q");
-            later(60, () -> voiceAt(70.5, G1 + 1, 66.5, "v.lily.word", "lily"));
+            String fake = learned ? "v.mlily.truck_ok" : "v.mlily.truck_bad";
+            later(voiceTicks(fake) + 10, () -> voiceAt(70.5, G1 + 1, 66.5, "v.lily.word", "lily"));
         }
     }
 
@@ -918,9 +922,11 @@ final class Steps {
                     case "up" -> enter("c1_up");
                     case "ask" -> {
                         boolean knows = S.f("word_loud");
-                        later(50, () -> voiceAt(25.5, F1 + 1, 58.5, knows ? "v.mlily.word_ok" : "v.mlily.word_bad", "lily_q"));
-                        later(130, () -> voiceAt(25.5, F1 + 1, 58.5, "v.mlily.up2", "lily_q"));
-                        later(200, () -> think("not_her"));
+                        String ans = knows ? "v.mlily.word_ok" : "v.mlily.word_bad";
+                        int t1 = 40, t2 = t1 + voiceTicks(ans) + 15, t3 = t2 + voiceTicks("v.mlily.up2") + 15;
+                        later(t1, () -> voiceAt(25.5, F1 + 1, 58.5, ans, "lily_q"));
+                        later(t2, () -> voiceAt(25.5, F1 + 1, 58.5, "v.mlily.up2", "lily_q"));
+                        later(t3, () -> think("not_her"));
                         enter("c1_hide");
                     }
                     default -> enter("c1_sneak");

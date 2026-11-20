@@ -192,6 +192,8 @@ def main():
         "truck_nokeys": "The keys. Dad had the keys.",
         "truck_nogas": "Bone dry. I need gas.",
         "lily_stay": "Stay close to me.",
+        "not_yet_lily": "Not now. Lily first. Find Lily.",
+        "not_yet": "Not yet. One thing at a time.",
         "caught0": "...Again. Do it again. Quieter.",
         "caught1": "Not like that. Think.",
         "caught2": "Keep the light off it. Keep low.",

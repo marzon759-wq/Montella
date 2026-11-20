@@ -354,15 +354,23 @@ public final class Story {
     static void fx(String type, int ticks) { fx(player(), type, ticks); }
 
     static void snd(String name, float vol, float pitch) {
+        logVoice(name);
         ServerPlayer p = player();
         if (p != null) p.playNotifySound(ModSounds.get(name), SoundSource.AMBIENT, vol, pitch);
     }
 
     static void sndAt(double x, double y, double z, String name, float vol, float pitch) {
+        logVoice(name);
         ServerPlayer p = player();
         if (p == null) return;
         Vec3 v = w(x, y, z);
         p.serverLevel().playSound(null, v.x, v.y, v.z, ModSounds.get(name), SoundSource.AMBIENT, vol, pitch);
+    }
+
+    /** development: every voice line with the tick it starts on and how long it runs, to check nothing talks over anything */
+    private static void logVoice(String name) {
+        if (name.startsWith("v.") && System.getProperty("mimic.autotest") != null)
+            MimicMod.LOG.info("[VOICE] {} {} {} step={}", age, voiceTicks(name), name, S.step);
     }
 
     static void later(int ticks, Runnable r) { timers.add(new Object[]{age + ticks, r}); }
@@ -730,6 +738,10 @@ public final class Story {
             return false;
         }
         String posKey = lpos.getX() + "," + lpos.getY() + "," + lpos.getZ();
+        if (notYet(tag)) {
+            think(S.chapter <= 1 ? "not_yet_lily" : "not_yet");
+            return true;
+        }
         if (tag.startsWith("pickup:")) {
             String item = tag.substring(7);
             if (S.opened.contains(posKey)) return true;
@@ -783,6 +795,16 @@ public final class Story {
         }
         Steps.onUse(p, tag, lpos);
         return true;
+    }
+
+    /** a chapter's things wait for their chapter: nothing of the next task can be done early */
+    static boolean notYet(String tag) {
+        int need = switch (tag) {
+            case "drawer:item:crowbar", "pickup:gas_can", "toolcab", "pickup:pitchfork" -> 2;
+            case "pickup:meat", "coat", "tape" -> 3;
+            default -> 0;
+        };
+        return S.chapter < need;
     }
 
     /** right click on one of our entities */
@@ -1137,13 +1159,26 @@ public final class Story {
             Dialogues.Choice c = n.choices.get(idx);
             if (!meets(c.need)) return;
             if (c.say != null) {
-                // you say it out loud: in your own voice, where it can hear
+                // you say it out loud: in your own voice, where it can hear - and the answer waits until you have finished
+                logVoice(c.say);
                 p.serverLevel().playSound(null, p.getX(), p.getY() + 1.6, p.getZ(), ModSounds.get(c.say), SoundSource.PLAYERS, 1f, 1f);
+                say("sub." + c.say, "you", voiceTicks(c.say) + 6);
             }
             if (c.anger > 0) noiseEvent(local(p.blockPosition()), c.anger);
             if (c.learn != null) S.flags.add("learned:" + c.learn);
             if (c.flag != null) S.flags.add(c.flag);
             next = c.next;
+            if (c.say != null) {
+                final String nx = next;
+                dlgNode = null; // nothing else can be answered while you speak
+                dlgAuto = -1;
+                later(voiceTicks(c.say) + 4, () -> {
+                    if (dlgId == null) return;
+                    if (nx.startsWith("end")) finishDialogue(nx.length() > 4 ? nx.substring(4) : "");
+                    else sendNode(nx);
+                });
+                return;
+            }
         }
         if (next.startsWith("end")) finishDialogue(next.length() > 4 ? next.substring(4) : "");
         else sendNode(next);

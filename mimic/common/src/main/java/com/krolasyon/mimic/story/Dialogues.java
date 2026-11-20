@@ -80,15 +80,15 @@ public final class Dialogues {
         n("r1", "lily").sound("v.lily.r1").time(20, "r2s")
                 .c(c("r2").say("v.sam.whisper"))
                 .c(loud("r2s", 30).say("v.sam.loud").learn("loud").flag("was_loud"));
-        n("r2s", "lily").sound("v.lily.r2").next("r3");
-        n("r2", "lily").sound("v.lily.r2").next("r3");
-        n("r3", "lily").sound("v.lily.r3").next("r4");
-        n("r4", "lily").sound("v.lily.r4").next("r5");
+        n("r2s", "lily").sound("v.lily.r2").auto(1).next("r3");
+        n("r2", "lily").sound("v.lily.r2").auto(1).next("r3");
+        n("r3", "lily").sound("v.lily.r3").auto(1).next("r4");
+        n("r4", "lily").sound("v.lily.r4").auto(1).next("r5");
         n("r5", "lily").sound("v.lily.r5").time(20, "r6")
                 .c(loud("r6", 20).say("v.sam.word").learn("word").flag("word_loud"))
                 .c(c("r6").say("v.sam.whisper2"))
                 .c(c("r6").flag("clicked"));
-        n("r6", "lily").sound("v.lily.r6").next("end:radio1");
+        n("r6", "lily").sound("v.lily.r6").auto(1).next("end:radio1");
 
         // ============ the voice upstairs
         n("upstairs", "narr").big(6, "end:quiet")
@@ -121,9 +121,9 @@ public final class Dialogues {
         n("silo_ask", "lily").sound("v.lily.ask").time(15, "silo_bad")
                 .c(c("silo_ok").say("v.sam.word"))
                 .c(c("silo_bad"));
-        n("silo_word", "lily").sound("v.lily.word").next("silo_ok");
-        n("silo_bad", "lily").sound("v.lily.hurry").next("silo_ok");
-        n("silo_ok", "lily").sound("v.lily.silo2").next("end:silo");
+        n("silo_word", "lily").sound("v.lily.word").auto(1).next("silo_ok");
+        n("silo_bad", "lily").sound("v.lily.hurry").auto(1).next("silo_ok");
+        n("silo_ok", "lily").sound("v.lily.silo2").auto(1).next("end:silo");
 
         // ============ the truck: two Lilys
         n("two", "narr").big(8, "end:drive")
