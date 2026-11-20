@@ -22,12 +22,10 @@ public final class AutoTest {
     private static final List<Object[]> cues = new ArrayList<>();
     private static int at = 0;
     static PlayDriver drive = null;
-    private static String ansNode = null;
-    private static int ansIdx = 0;
+    private static final java.util.ArrayDeque<Object[]> answers = new java.util.ArrayDeque<>();
 
     static void pendingAnswer(String node, int idx) {
-        ansNode = node;
-        ansIdx = idx;
+        answers.add(new Object[]{node, idx});
     }
 
     private AutoTest() {}
@@ -160,10 +158,11 @@ public final class AutoTest {
             return;
         }
         n++;
-        if (ansNode != null && DialogueScreen.pending != null && ansNode.equals(DialogueScreen.pending.s("node"))) {
-            MimicMod.LOG.info("[PLAY] decide {} -> {}", ansNode, ansIdx);
-            srv("advance:" + ansIdx);
-            ansNode = null;
+        Object[] ans = answers.peek();
+        if (ans != null && DialogueScreen.pending != null && ans[0].equals(DialogueScreen.pending.s("node"))) {
+            MimicMod.LOG.info("[PLAY] decide {} -> {}", ans[0], ans[1]);
+            srv("advance:" + ans[1]);
+            answers.poll();
         }
         // test runs read every note for a second and put it down again
         if (Qte.auto && mc.screen instanceof NoteScreen) {

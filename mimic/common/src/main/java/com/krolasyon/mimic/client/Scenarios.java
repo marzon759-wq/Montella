@@ -82,11 +82,9 @@ final class Scenarios {
         if (dawn) cue(4, () -> srv("use:drawer:item:lighter"));
         cue(10, () -> srv("use_item:walkie"));
         cue(30, () -> shot("p_radio"));
-        answer(10, dawn ? 0 : 1);            // whisper or shout
-        for (int i = 0; i < 4; i++) answer(40, 0);
-        answer(40, passenger ? 0 : 1);       // say the word out loud (it learns it) or whisper
-        answer(40, 0);
-        cue(140, () -> {});
+        decide(4, "r1", dawn ? 0 : 1);           // whisper or shout
+        decide(4, "r5", passenger ? 0 : 1);      // say the word out loud (it learns it) or whisper
+        cue(1100, () -> {});
         expect("c1_voice");
         cue(240, () -> shot("p_upstairs_choice"));
         // ---- the voice upstairs: ask (hide), go up (chase), or stay quiet (sneak)
@@ -165,8 +163,7 @@ final class Scenarios {
         cue(30, () -> shot("p_shed"));
         use("pickup:meat");
         use("tape");
-        for (int i = 0; i < 4; i++) cue(160, () -> {});
-        cue(10, () -> {});
+        cue(1000, () -> {});
         use("coat");
         cue(100, () -> {});
         expect("c3_trap");
@@ -180,11 +177,9 @@ final class Scenarios {
         // ---- the silo
         use("door:silo");
         cue(60, () -> shot("p_silo"));
-        answer(10, dawn ? 1 : 0);
-        cue(60, () -> srv("advance:0"));
-        cue(80, () -> srv("advance:0"));
-        cue(60, () -> srv("advance:0"));
-        cue(40, () -> {});
+        decide(4, "silo1", dawn ? 1 : 0);
+        if (!dawn) decide(4, "silo_ask", 0);
+        cue(500, () -> {});
         skipCut(40);
         cue(20, () -> {});
         expect("c4_follow");

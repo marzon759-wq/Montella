@@ -1038,7 +1038,7 @@ final class Steps {
                     spawnLily(87.5, G1, 32.5, 90);
                 }
                 if (t == 60) snd("v.lily.silo3", 1f, 1f);
-                if (t == 220) snd("v.lily.end2", 1f, 1f);
+                if (t == 225) snd("v.lily.end2", 1f, 1f);
             }
             case "ambush" -> {
                 if (t == 2) {

@@ -319,15 +319,20 @@ public final class Story {
 
     /** a voice somewhere in the world, with its subtitle */
     static void voiceAt(double x, double y, double z, String sound, String speaker) {
-        sndAt(x, y, z, sound, 1.3f, 1f);
-        say("sub." + sound, speaker, voiceTicks(sound) + 10);
+        if (skipping) return;
+        int d = voiceSlot(sound);
+        later(Math.max(0, d), () -> {
+            sndAtNow(x, y, z, sound, 1.3f, 1f);
+            say("sub." + sound, speaker, voiceTicks(sound) + 10);
+        });
     }
 
     /** a voice on the walkie-talkie in your pocket */
     static void radio(String sound, int ticks) {
-        snd("fx.radio_click", 0.9f, 1f);
-        later(6, () -> {
-            snd(sound, 1f, 1f);
+        int d = voiceSlot(sound);
+        later(Math.max(0, d), () -> snd("fx.radio_click", 0.9f, 1f));
+        later(Math.max(0, d) + 6, () -> {
+            sndNow(sound, 1f, 1f);
             say("sub." + sound, "lily", Math.max(ticks, voiceTicks(sound) + 10));
         });
         ServerPlayer p = player();
@@ -353,13 +358,50 @@ public final class Story {
 
     static void fx(String type, int ticks) { fx(player(), type, ticks); }
 
+    // ---------------------------------------------------------------- one voice at a time
+    /** the tick the last queued voice line finishes; every spoken line waits its turn, nobody talks over anybody */
+    private static int voiceBusy = 0;
+    /** set while a skipped cutscene runs its remaining cues: they happen, but silently */
+    static boolean skipping = false;
+
+    /** reserve the voice channel: returns how many ticks to wait before this line may start */
+    static int voiceSlot(String name) {
+        int start = Math.max(age, voiceBusy);
+        voiceBusy = start + voiceTicks(name) + 6;
+        return start - age;
+    }
+
     static void snd(String name, float vol, float pitch) {
+        if (name.startsWith("v.")) {
+            if (skipping) return;
+            int d = voiceSlot(name);
+            if (d > 0) {
+                later(d, () -> sndNow(name, vol, pitch));
+                return;
+            }
+        }
+        sndNow(name, vol, pitch);
+    }
+
+    private static void sndNow(String name, float vol, float pitch) {
         logVoice(name);
         ServerPlayer p = player();
         if (p != null) p.playNotifySound(ModSounds.get(name), SoundSource.AMBIENT, vol, pitch);
     }
 
     static void sndAt(double x, double y, double z, String name, float vol, float pitch) {
+        if (name.startsWith("v.")) {
+            if (skipping) return;
+            int d = voiceSlot(name);
+            if (d > 0) {
+                later(d, () -> sndAtNow(x, y, z, name, vol, pitch));
+                return;
+            }
+        }
+        sndAtNow(x, y, z, name, vol, pitch);
+    }
+
+    private static void sndAtNow(double x, double y, double z, String name, float vol, float pitch) {
         logVoice(name);
         ServerPlayer p = player();
         if (p == null) return;
@@ -1089,6 +1131,7 @@ public final class Story {
     private static void respawn(ServerPlayer p) {
         removeMimic();
         timers.clear();
+        voiceBusy = 0;
         qteType = null;
         if (hiddenId != null) {
             hiddenId = null;
@@ -1141,7 +1184,11 @@ public final class Story {
         }
         m.i("count", count);
         Net.toPlayer(p, m);
-        if (n.sound != null) snd(n.sound, 1f, 1f);
+        if (n.sound != null) {
+            int wait = Math.max(0, voiceBusy - age);
+            snd(n.sound, 1f, 1f);
+            if (dlgAuto > 0) dlgAuto += wait;
+        }
         if (n.big) snd("fx.choice", 1f, 1f);
         Steps.onNode(nodeId);
     }
@@ -1160,9 +1207,15 @@ public final class Story {
             if (!meets(c.need)) return;
             if (c.say != null) {
                 // you say it out loud: in your own voice, where it can hear - and the answer waits until you have finished
-                logVoice(c.say);
-                p.serverLevel().playSound(null, p.getX(), p.getY() + 1.6, p.getZ(), ModSounds.get(c.say), SoundSource.PLAYERS, 1f, 1f);
-                say("sub." + c.say, "you", voiceTicks(c.say) + 6);
+                final String line = c.say;
+                int wait = voiceSlot(line);
+                later(Math.max(0, wait), () -> {
+                    ServerPlayer pp = player();
+                    if (pp == null) return;
+                    logVoice(line);
+                    pp.serverLevel().playSound(null, pp.getX(), pp.getY() + 1.6, pp.getZ(), ModSounds.get(line), SoundSource.PLAYERS, 1f, 1f);
+                    say("sub." + line, "you", voiceTicks(line) + 6);
+                });
             }
             if (c.anger > 0) noiseEvent(local(p.blockPosition()), c.anger);
             if (c.learn != null) S.flags.add("learned:" + c.learn);
@@ -1172,7 +1225,7 @@ public final class Story {
                 final String nx = next;
                 dlgNode = null; // nothing else can be answered while you speak
                 dlgAuto = -1;
-                later(voiceTicks(c.say) + 4, () -> {
+                later(Math.max(0, voiceBusy - age) + 2, () -> {
                     if (dlgId == null) return;
                     if (nx.startsWith("end")) finishDialogue(nx.length() > 4 ? nx.substring(4) : "");
                     else sendNode(nx);
@@ -1236,7 +1289,12 @@ public final class Story {
             case "cut_done" -> {
                 if (cutId != null && cutId.equals(m.s("id"))) {
                     Cutscenes.Cut c = Cutscenes.ALL.get(cutId);
-                    if (c != null) while (cutT < c.length) Steps.cutCue(cutId, ++cutT);
+                    skipping = true;
+                    try {
+                        if (c != null) while (cutT < c.length) Steps.cutCue(cutId, ++cutT);
+                    } finally {
+                        skipping = false;
+                    }
                     endCutscene();
                 }
             }
