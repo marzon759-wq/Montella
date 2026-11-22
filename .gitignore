@@ -29,3 +29,4 @@ kaiju/forge-*/run/
 kaiju/forge-*/.gradle/
 kaiju/tools/out/
 kaiju/tools/__pycache__/
+kaiju/tools/prev/
