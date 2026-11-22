@@ -36,6 +36,12 @@ public final class KaijuSpec {
     public final Map<String, List<String>> regions = new LinkedHashMap<>();
     public final List<String> regionNames = new ArrayList<>();
     public final List<Plate> plates = new ArrayList<>();
+    /** model/texture/animation base name under assets/kaiju (geo/entity/<model>.geo.json etc.) */
+    public final String model;
+    public final boolean canFly;
+    public final float flyPx, breathMinPx;
+    public final int breathPacingMin, breathPacingMax, beamStyle;
+    public final Map<String, String> keys = new HashMap<>();
 
     public record Node(String name, String bone, float r, int region, int sever) {}
 
@@ -94,6 +100,16 @@ public final class KaijuSpec {
         fastPx = j.get("fast_speed_px").getAsFloat();
         turnDeg = j.get("turn_deg").getAsFloat();
         heightPx = j.get("model_height_px").getAsFloat();
+        model = j.has("model") ? j.get("model").getAsString() : "kaiju";
+        canFly = j.has("can_fly") && j.get("can_fly").getAsBoolean();
+        flyPx = j.has("fly_speed_px") ? j.get("fly_speed_px").getAsFloat() : 0;
+        breathMinPx = j.has("breath_min_px") ? j.get("breath_min_px").getAsFloat() : 140;
+        beamStyle = j.has("beam_style") ? j.get("beam_style").getAsInt() : 0;
+        if (j.has("breath_pacing")) {
+            breathPacingMin = j.getAsJsonArray("breath_pacing").get(0).getAsInt() * 20;
+            breathPacingMax = j.getAsJsonArray("breath_pacing").get(1).getAsInt() * 20;
+        } else { breathPacingMin = 500; breathPacingMax = 800; }
+        if (j.has("keys")) for (Map.Entry<String, JsonElement> e : j.getAsJsonObject("keys").entrySet()) keys.put(e.getKey(), e.getValue().getAsString());
         for (Map.Entry<String, JsonElement> e : j.getAsJsonObject("sever_bones").entrySet()) {
             severBones.put(e.getKey(), e.getValue().getAsString());
             severGroups.add(e.getKey());
@@ -207,6 +223,9 @@ public final class KaijuSpec {
     }
 
     public Clip clip(String name) { return clips.get(name); }
+
+    /** which attack a rider's button means for this species (falls back to the atomic kaiju's id) */
+    public String key(String name, String fallback) { return keys.getOrDefault(name, fallback); }
 
     public int node(String name) { Integer i = nodeIndex.get(name); return i == null ? -1 : i; }
 

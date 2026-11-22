@@ -29,7 +29,7 @@ public final class KaijuBrain {
     float wanderYaw;
     final Random rnd = new Random();
     public boolean enabled = true;
-    public int nextBreath = 400, retreatTicks, retreatCd;
+    public int nextBreath = 400, retreatTicks, retreatCd, flyThink = 100;
     final java.util.Map<String, Integer> lastUse = new java.util.HashMap<>();
 
     public KaijuBrain(KaijuEntity e) { this.e = e; }
@@ -86,6 +86,8 @@ public final class KaijuBrain {
     // ------------------------------------------------------------------ scoring
     float score(KaijuSpec.Attack a, @Nullable KaijuEntity t, String only) {
         if (!e.ready(a) || !e.meets(a, t)) return 0;
+        if (a.cat.equals("fly") && !e.flying) return 0;   // take-off is decided by tickFlyer, not scored
+        if (a.id.equals("land")) return 0;
         if (e.controller == null && e.stamina < e.cost(a) * 0.8f) return 0;  // too tired for this one
         Integer used = lastUse.get(a.id);
         if (only != null && !only.contains(a.cat)) return 0;
@@ -126,7 +128,7 @@ public final class KaijuBrain {
             if (e.tickCount < nextBreath && !clash) return 0;
             if (a.id.equals("atomic_ground_pin")) { if (!(tDown && d < 90)) return 0; s *= 0.6f; }
             else if (a.id.equals("atomic_ground")) { if (d < 130) return 0; }
-            else if (d < 140) return 0;
+            else if (d < e.spec.breathMinPx && !a.has("air")) return 0;
             s *= d > 320 ? 3f : 1.2f;
             if (clash) s *= 6f;
             if (a.id.equals("atomic_charged_max")) s *= hp < 0.4f && d > 300 ? 1.5f : 0f;
@@ -201,6 +203,7 @@ public final class KaijuBrain {
         float d = distPx(t);
         float bear = bearing(t.position());
         e.faceYaw = yawTo(e.position(), t.position());
+        if (tickFlyer(t, d)) return;
         // tired or badly hurt: back off for a while, catch breath, then come again
         float hpr = e.hp / e.spec.maxHp;
         if (retreatCd > 0) retreatCd--;
@@ -218,8 +221,8 @@ public final class KaijuBrain {
             }
             if (d > 140 && --thinkTimer <= 0) {  // at range again: maybe the breath
                 thinkTimer = 20;
-                KaijuSpec.Attack a = pick(t, "atomic", 0.5f);
-                if (a != null && e.startAttack(a.id)) { nextBreath = e.tickCount + 500 + rnd.nextInt(300); retreatTicks = 0; return; }
+                KaijuSpec.Attack a = pick(t, "atomic,beam", 0.5f);
+                if (a != null && e.startAttack(a.id)) { nextBreath = e.tickCount + e.spec.breathPacingMin + rnd.nextInt(Math.max(1, e.spec.breathPacingMax - e.spec.breathPacingMin)); retreatTicks = 0; return; }
             }
             e.wantSpeed = d < 240 ? -e.spec.walkPx * 0.85f : 0;
             if (retreatTicks == 0 && rnd.nextFloat() < 0.35f) e.startAttack("roar");
@@ -229,7 +232,7 @@ public final class KaijuBrain {
             thinkTimer = d > 60 ? 12 + rnd.nextInt(14) : 3 + rnd.nextInt(5);
             KaijuSpec.Attack a = pick(t, null, d > 60 ? 0.9f : 0.25f);
             if (a != null && e.startAttack(a.id)) {
-                if (a.isBreath()) nextBreath = e.tickCount + 500 + rnd.nextInt(300);
+                if (a.isBreath()) nextBreath = e.tickCount + e.spec.breathPacingMin + rnd.nextInt(Math.max(1, e.spec.breathPacingMax - e.spec.breathPacingMin));
                 return;
             }
         }
@@ -274,7 +277,7 @@ public final class KaijuBrain {
         float d = t == null ? 9999 : distPx(t);
         if (t != null && d < 160 && rnd.nextFloat() < 0.12f) {
             KaijuSpec.Attack a = pick(t, "ground,atomic", 0.2f);
-            if (a != null && e.startAttack(a.id)) { if (a.isBreath()) nextBreath = e.tickCount + 500 + rnd.nextInt(300); return; }
+            if (a != null && e.startAttack(a.id)) { if (a.isBreath()) nextBreath = e.tickCount + e.spec.breathPacingMin + rnd.nextInt(Math.max(1, e.spec.breathPacingMax - e.spec.breathPacingMin)); return; }
         }
         if (e.downTicks > 30 + rnd.nextInt(30)) e.getUp();
     }
@@ -288,7 +291,7 @@ public final class KaijuBrain {
         if (e.state == KaijuEntity.State.DOWN) {
             if (in.pressed(ControlInput.ATTACK)) e.startAttack("ground_kick");
             else if (in.pressed(ControlInput.HEAVY)) e.startAttack("ground_tail_sweep");
-            else if (in.pressed(ControlInput.BREATH)) e.startAttack("atomic_ground");
+            else if (in.pressed(ControlInput.BREATH)) e.startAttack(e.spec.key("breath_ground", "atomic_ground"));
             else if (in.pressed(ControlInput.DODGE)) e.startAttack("roll_away");
             else if (in.pressed(ControlInput.GRAB)) e.startAttack("ground_claw_grab");
             else if (in.pressed(ControlInput.JUMP) || in.forward > 0.5f && e.downTicks > 10) {
@@ -298,6 +301,7 @@ public final class KaijuBrain {
             in.consume();
             return;
         }
+        if (e.flying) { tickControlledFlight(in, t); in.consume(); return; }
         // movement relative to the camera
         e.wantSpeed = 0;
         e.moveFwd = 1;
@@ -323,11 +327,12 @@ public final class KaijuBrain {
         if (in.pressed(ControlInput.ATTACK)) id = bestOf(t, "claw,bite,leg,body,mount", t != null && t.isDown() ? "stomp_downed" : (rnd.nextBoolean() ? "claw_swipe_l" : "claw_swipe_r"));
         else if (in.pressed(ControlInput.HEAVY)) id = bestOf(t, "tail,body,grapple,mount", "tail_spin_360");
         else if (in.pressed(ControlInput.BREATH)) {
-            if (t != null && t.isDown() && distPx(t) < 90) id = "atomic_ground_pin";
-            else if (in.pitch < -25) id = "atomic_aerial";
-            else if (sprint) id = "atomic_sweep";
-            else if (in.down(ControlInput.GUARD)) id = "atomic_charged_max";
-            else id = "atomic_breath";
+            if (e.flying) id = e.spec.key("breath_air", "atomic_breath");
+            else if (t != null && t.isDown() && distPx(t) < 90) id = e.spec.key("breath_down", "atomic_ground_pin");
+            else if (in.pitch < -25) id = e.spec.key("breath_up", "atomic_aerial");
+            else if (sprint) id = e.spec.key("breath_sprint", "atomic_sweep");
+            else if (in.down(ControlInput.GUARD)) id = e.spec.key("breath_guard", "atomic_charged_max");
+            else id = e.spec.key("breath", "atomic_breath");
         } else if (in.pressed(ControlInput.GRAB)) {
             if (e.heldDebris != null) id = t != null && distPx(t) < 80 ? "swing_held" : "throw_held";
             else if (t != null && distPx(t) < 58) id = in.down(ControlInput.GUARD) ? "grab_bodyslam" : "grab_throw";
@@ -341,12 +346,12 @@ public final class KaijuBrain {
                 case "front" -> "tail_spin_360";
                 default -> "tail_spin_360";
             };
-        } else if (in.pressed(ControlInput.BITE)) id = bestOf(t, "bite,grapple", "bite_lunge");
-        else if (in.pressed(ControlInput.PULSE)) id = "nuclear_pulse";
+        } else if (in.pressed(ControlInput.BITE)) id = e.spec.keys.containsKey("bite") ? e.spec.key("bite", "bite_lunge") : bestOf(t, "bite,grapple", "bite_lunge");
+        else if (in.pressed(ControlInput.PULSE)) id = e.spec.key("pulse", "nuclear_pulse");
         else if (in.pressed(ControlInput.ROAR)) id = "roar";
         else if (in.pressed(ControlInput.DODGE)) id = in.strafe > 0.1f ? "sidestep_l" : in.strafe < -0.1f ? "sidestep_r" : "backstep";
         else if (in.pressed(ControlInput.SPECIAL)) id = e.special;
-        else if (in.pressed(ControlInput.JUMP)) id = sprint ? "ground_pound" : (rnd.nextBoolean() ? "stomp_l" : "stomp_r");
+        else if (in.pressed(ControlInput.JUMP)) id = e.spec.canFly ? "takeoff" : sprint ? "ground_pound" : (rnd.nextBoolean() ? "stomp_l" : "stomp_r");
         else if (in.down(ControlInput.GUARD) && e.wantSpeed == 0) id = "block_arms";
         if (in.pressed(ControlInput.AI)) e.input.aiToggle = true;
         in.consume();
@@ -355,6 +360,48 @@ public final class KaijuBrain {
             if (a != null && !e.ready(a)) return;
             e.startAttack(id);
         }
+    }
+
+    /** a rider on the wing: W flies where the camera looks (up and down too), Space lands, the buttons are air moves */
+    void tickControlledFlight(ControlInput in, @Nullable KaijuEntity t) {
+        e.faceYaw = in.yaw;
+        e.wantSpeed = in.forward > 0.1f ? e.spec.flyPx * (in.down(ControlInput.SPRINT) ? 1.4f : 1f) : 0;
+        if (in.forward > 0.1f) e.flyAlt += -Math.sin(Math.toRadians(in.pitch)) * e.spec.flyPx * e.k() / 20f * 0.8f;
+        double ground = e.groundAt(e.position());
+        e.flyAlt = Mth.clamp(e.flyAlt, ground + 16 * e.k(), ground + 260 * e.k());
+        if (!e.canAct()) return;
+        String id = null;
+        if (in.pressed(ControlInput.JUMP)) id = "land";
+        else if (in.pressed(ControlInput.ATTACK)) id = e.spec.key("air_attack", "land");
+        else if (in.pressed(ControlInput.GRAB)) id = e.spec.key("air_grab", "land");
+        else if (in.pressed(ControlInput.BREATH)) id = e.spec.key("breath_air", "land");
+        else if (in.pressed(ControlInput.ROAR)) id = "roar";
+        if (id != null) e.startAttack(id);
+    }
+
+    /** the AI on the wing: climb over the enemy, then stoop, snatch or breathe, and come down again */
+    boolean tickFlyer(KaijuEntity t, float d) {
+        if (!e.spec.canFly) return false;
+        if (!e.flying) {
+            // far away it takes wing to close in; in the thick of it, now and then it breaks off into the air
+            if (--flyThink <= 0) {
+                flyThink = d > 230 ? 60 : 240;
+                float chance = d > 230 ? 0.35f : 0.18f;
+                if (retreatTicks > 0) chance = 0.5f;
+                if (rnd.nextFloat() < chance && e.stamina > 30 && e.startAttack("takeoff")) return true;
+            }
+            return false;
+        }
+        e.flyAlt = Math.max(e.flyAlt, t.getY() + 45 * e.k());
+        if (e.flyTicks > 900 || e.stamina < 18) { e.startAttack("land"); return true; }
+        if (--thinkTimer <= 0) {
+            thinkTimer = 15 + rnd.nextInt(20);
+            KaijuSpec.Attack a = pick(t, "fly,beam", 0.2f);
+            if (a != null && e.startAttack(a.id)) { if (a.isBreath()) nextBreath = e.tickCount + e.spec.breathPacingMin; return true; }
+        }
+        float horiz = d;
+        e.wantSpeed = horiz > 70 ? e.spec.flyPx : (horiz > 30 ? e.spec.flyPx * 0.4f : 0);
+        return true;
     }
 
     String bestOf(@Nullable KaijuEntity t, String cats, String fallback) {

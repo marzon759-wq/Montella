@@ -175,7 +175,8 @@ public final class KaijuCombat {
     /** the parts that carry the body's mass and shove: the head, jaw and arms slide past each other (they hit, but do not hold bodies apart) */
     static boolean massive(KaijuEntity e, int node) {
         String n = e.spec.nodes.get(node).name();
-        return !(n.equals("head") || n.equals("snout") || n.equals("jaw") || n.startsWith("hand") || n.startsWith("elbow") || n.startsWith("shoulder"));
+        return !(n.equals("head") || n.equals("snout") || n.equals("jaw") || n.equals("horn") || n.startsWith("hand") || n.startsWith("elbow")
+                || n.startsWith("shoulder") || n.startsWith("wing"));
     }
 
     // ------------------------------------------------------------------ continuous body contact (no interpenetration)
@@ -307,6 +308,13 @@ public final class KaijuCombat {
             case "pulse_hit" -> {
                 KaijuEntity v = a.holding;
                 if (v != null) {
+                    if (g.has("inject")) {
+                        int reg = Math.max(0, v.spec.nodes.get(Math.max(0, v.heldNode)).region());
+                        v.heat[reg] = Math.min(1f, v.heat[reg] + 0.18f);
+                        v.damage(60 * (k / 0.5f), v.heldNode, "beam");
+                        Vec3 at = v.nodePos(v.heldNode);
+                        sl.sendParticles(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.85f, 0.2f, 0.9f), 3f), at.x, at.y, at.z, 50, 2, 2, 2, 0.2);
+                    }
                     v.damage(90 * g.get("power").getAsFloat() * (k / 0.5f), v.heldNode, "bite");
                     v.hitstop = 4;
                     a.hitstop = 3;
@@ -374,6 +382,64 @@ public final class KaijuCombat {
                     le.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.WEAKNESS, 120, 1));
                 }
                 Net.shake(sl, a.position(), 1.2f, r);
+            }
+            case "takeoff" -> {
+                a.flying = true;
+                a.flyTicks = 0;
+                a.flyAlt = a.groundAt(a.position()) + g.get("altitude").getAsFloat() * k;
+                a.vy = 0.9 * k / 0.5;
+                WorldSmash.shockwave(sl, a.position(), 50 * k, 0.6f, a);
+                sound(a, a.position(), SoundEvents.ENDER_DRAGON_FLAP, 30f, 0.4f);
+                sl.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, a.getX(), a.getY() + 1, a.getZ(), 120, 30 * k, 1, 30 * k, 0.08);
+            }
+            case "land" -> {
+                a.flying = false;
+                a.vy = Math.min(a.vy, -0.3);
+            }
+            case "dive" -> {
+                // stoop onto the target: drop the cruising height to just above it
+                KaijuEntity t = a.brain.target;
+                double floor = t != null ? t.getY() + 6 * k : a.groundAt(a.position()) + 10 * k;
+                a.flyAlt = floor;
+                a.vy = -1.4 * k / 0.5;
+            }
+            case "climb" -> {
+                float h = g.has("height") ? g.get("height").getAsFloat() : 70;
+                a.flyAlt = a.groundAt(a.position()) + h * k;
+                a.vy = 0.8 * k / 0.5;
+            }
+            case "drop" -> {
+                // let go from on high: the victim falls the whole way and lands as hard as the height says
+                KaijuEntity v = a.holding;
+                a.holding = null;
+                a.gripNode = -1;
+                if (v != null && v.state == KaijuEntity.State.HELD) {
+                    v.heldBy = null;
+                    v.state = KaijuEntity.State.THROWN;
+                    v.vy = -0.2;
+                    v.knock = a.forward().scale(0.3);
+                    v.play("thrown");
+                    sound(a, v.position(), SoundEvents.ENDER_DRAGON_GROWL, 20f, 0.6f);
+                }
+            }
+            case "gust" -> {
+                // the wings slam the air: everything in front is shoved back, dust and debris fly
+                float r = g.get("radius").getAsFloat() * k, p = g.get("power").getAsFloat();
+                Vec3 at = a.nodePos(a.spec.node("chest")).add(a.forward().scale(r * 0.4));
+                for (KaijuEntity o : others(a, r * 1.5)) {
+                    Vec3 d = o.position().subtract(a.position());
+                    double dist = d.horizontalDistance();
+                    if (dist > r || d.normalize().dot(a.forward()) < 0.2) continue;
+                    float f = (float) (1 - dist / r) * p;
+                    o.knock = o.knock.add(new Vec3(d.x, 0, d.z).normalize().scale(0.5 * f));
+                    o.poise -= 45 * f;
+                    if (o.poise <= 0) o.knockdown(Vec3.ZERO, dirFrom(o, a.position()));
+                    else o.react(dirFrom(o, a.position()), 0.12f * f);
+                }
+                WorldSmash.shockwave(sl, new Vec3(at.x, a.groundAt(at), at.z), r * 0.6f, p * 0.8f, a);
+                sl.sendParticles(ParticleTypes.CLOUD, at.x, at.y, at.z, 200, r * 0.4, r * 0.2, r * 0.4, 0.6);
+                sound(a, at, SoundEvents.ENDER_DRAGON_FLAP, 30f, 0.3f);
+                Net.shake(sl, at, 1.6f, r * 3);
             }
             case "guard" -> a.guardTicks = (int) (g.get("secs").getAsFloat() * 20);
             case "dodge" -> a.dodgeTicks = (int) (g.get("secs").getAsFloat() * 20);

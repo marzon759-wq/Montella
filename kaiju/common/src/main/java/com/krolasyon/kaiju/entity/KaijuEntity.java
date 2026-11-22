@@ -64,10 +64,11 @@ public class KaijuEntity extends Mob implements GeoEntity {
     static final EntityDataAccessor<Float> AIM_YAW = SynchedEntityData.defineId(KaijuEntity.class, EntityDataSerializers.FLOAT);
     static final EntityDataAccessor<Float> AIM_PITCH = SynchedEntityData.defineId(KaijuEntity.class, EntityDataSerializers.FLOAT);
     static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(KaijuEntity.class, EntityDataSerializers.FLOAT);
+    static final EntityDataAccessor<Integer> BEAM_STYLE = SynchedEntityData.defineId(KaijuEntity.class, EntityDataSerializers.INT);
     static final EntityDataAccessor<Integer> POISE = SynchedEntityData.defineId(KaijuEntity.class, EntityDataSerializers.INT);
 
     public static final int F_DOWN = 1, F_HELD = 2, F_GUARD = 4, F_CONTROLLED = 8, F_CHARGING = 16, F_FIRING = 32, F_HOLDING = 64,
-            F_DEAD = 128, F_CLASH = 256, F_THROWN = 512, F_AI_ASSIST = 1024;
+            F_DEAD = 128, F_CLASH = 256, F_THROWN = 512, F_AI_ASSIST = 1024, F_FLYING = 2048;
 
     public enum State { IDLE, ACTION, REACT, DOWN, GETUP, HELD, THROWN, DEAD }
 
@@ -84,6 +85,10 @@ public class KaijuEntity extends Mob implements GeoEntity {
     public final Map<String, Integer> cooldown = new HashMap<>();
     public final Set<Long> hitOnce = new HashSet<>();
     public float hp, poise = 100, stamina = 100;
+    /** flight (species with wings): cruising altitude above the ground, set by take-off, dives and climbs */
+    public boolean flying;
+    public double flyAlt;
+    public int flyTicks;
     public int hitstop;
     public Vec3 knock = Vec3.ZERO;  // momentum-driven sliding, blocks/tick
     public double vy;
@@ -159,6 +164,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
         entityData.define(AIM_PITCH, 0f);
         entityData.define(SCALE, 0f);
         entityData.define(POISE, 100);
+        entityData.define(BEAM_STYLE, 0);
     }
 
     // ------------------------------------------------------------------ geometry helpers
@@ -218,7 +224,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
     private int[] headNodes;
 
     private void aimHead(float k, float yaw) {
-        if (headNodes == null) headNodes = new int[]{spec.node("head"), spec.node("snout"), spec.node("jaw"), spec.node("mouth"), spec.node("aim")};
+        if (headNodes == null) headNodes = new int[]{spec.node("head"), spec.node("snout"), spec.node("jaw"), spec.node("mouth"), spec.node("aim"), spec.node("horn"), spec.node("horn_tip")};
         Vec3 pivot = position().add(KaijuSpec.toWorld(0, 74, -2, yaw, k));
         Vec3 f = forward(), l = left(), up = new Vec3(0, 1, 0);
         double A = Math.toRadians(aimY), P = Math.toRadians(aimP);
@@ -289,6 +295,10 @@ public class KaijuEntity extends Mob implements GeoEntity {
 
     public float chargeClient() { return entityData.get(CHARGE); }
 
+    public int beamStyle() { return entityData.get(BEAM_STYLE); }
+
+    void setBeamStyle(int s) { entityData.set(BEAM_STYLE, s); }
+
     public float poiseClient() { return entityData.get(POISE); }
 
     // ------------------------------------------------------------------ clips
@@ -337,9 +347,13 @@ public class KaijuEntity extends Mob implements GeoEntity {
                 case "self_down" -> { if (state != State.DOWN) return false; }
                 case "enemy_low" -> { if (target == null || !(target.isDown() || target.getBbHeight() < getBbHeight() * 0.6)) return false; }
                 case "breath_ready" -> { if (beam.cooldown > tickCount) return false; }
+                case "can_fly" -> { if (!spec.canFly) return false; }
+                case "on_ground" -> { if (flying) return false; }
+                case "flying" -> { if (!flying) return false; }
                 default -> { }
             }
         }
+        if (flying && !a.need.contains("flying") && !a.cat.equals("intimidate")) return false;  // in the air only air moves
         if (state == State.DOWN && !a.need.contains("self_down")) return false;
         if (a.need.contains("self_down") && state != State.DOWN) return false;
         return true;
@@ -551,6 +565,15 @@ public class KaijuEntity extends Mob implements GeoEntity {
 
     private void locomotion() {
         float speed = wantSpeed;
+        if (flying) {
+            float diff = Mth.wrapDegrees(faceYaw - getYRot());
+            setYRot(getYRot() + Mth.clamp(diff, -6f, 6f));
+            loopClip(Math.abs(speed) > 0.01f ? "fly" : "hover");
+            float v = Math.abs(speed) * k() / 20f;
+            Vec3 dir = forward().scale(v);
+            knock = knock.add(dir.subtract(knock.multiply(1, 0, 1)).scale(0.12));
+            return;
+        }
         float diff = Mth.wrapDegrees(faceYaw - getYRot());
         float rate = controller != null && !flag(F_AI_ASSIST) ? 9f : spec.turnDeg * (speed > 0 ? 1.4f : 1f);  // a rider turns at once
         float turn = Mth.clamp(diff, -rate, rate);
@@ -591,8 +614,19 @@ public class KaijuEntity extends Mob implements GeoEntity {
         if (fl >= 0 && nodes[fl] != null && !isDown()) ground = Math.max(groundAt(nodes[fl]), groundAt(nodes[fr]));
         else if (hp_ >= 0 && nodes[hp_] != null) ground = Math.max(ground, groundAt(nodes[hp_]));
         double y = getY();
+        if (flying && (state == State.HELD || state == State.DEAD || state == State.REACT && clip.name.startsWith("knockdown"))) flying = false; // knocked out of the sky
         boolean flying = state == State.THROWN || vy > 0.05;
-        if (state == State.HELD) {
+        if (this.flying) {
+            // on the wings: hold the cruising height above whatever is below, glide down onto it when landing
+            flyTicks++;
+            double want = Math.max(ground + 18 * k / 0.5, flyAlt);
+            vy += Mth.clamp((want - y) * 0.03, -0.12, 0.12) - vy * 0.12;
+            vy = Mth.clamp(vy, -1.6, 1.2);
+            y += vy;
+            if (y < ground) { y = ground; vy = 0; }
+            onGround = false;
+            airTicks = 0;
+        } else if (state == State.HELD) {
             vy = 0;
         } else if (!flying && y - ground < 1.2 && ground - y < 14 * k / 0.5) {
             // step up/down smoothly onto terrain, like the legs absorbing it
@@ -614,7 +648,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
                 airTicks = 0;
             }
         }
-        double sp = knock.horizontalDistance(), cap = 2.2 * k() / 0.5;
+        double sp = knock.horizontalDistance(), cap = (this.flying ? 3.2 : 2.2) * k() / 0.5;
         if (sp > cap) knock = knock.scale(cap / sp);
         if (state != State.HELD) {
             Vec3 p = position().add(knock.x, 0, knock.z);
@@ -678,6 +712,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
         setFlag(F_HELD, state == State.HELD);
         setFlag(F_THROWN, state == State.THROWN);
         setFlag(F_DEAD, state == State.DEAD);
+        setFlag(F_FLYING, flying);
         setYBodyRot(getYRot());
         setYHeadRot(getYRot());
         yBodyRotO = yRotO;
@@ -898,6 +933,8 @@ public class KaijuEntity extends Mob implements GeoEntity {
         t.putInt("Sever", severMask);
         if (owner != null) t.putUUID("Owner", owner);
         t.putString("Special", special);
+        t.putBoolean("Flying", flying);
+        t.putDouble("FlyAlt", flyAlt);
     }
 
     @Override
@@ -908,6 +945,8 @@ public class KaijuEntity extends Mob implements GeoEntity {
         severMask = t.getInt("Sever");
         if (t.hasUUID("Owner")) owner = t.getUUID("Owner");
         if (t.contains("Special")) special = t.getString("Special");
+        flying = t.getBoolean("Flying");
+        flyAlt = t.getDouble("FlyAlt");
     }
 
     @Override

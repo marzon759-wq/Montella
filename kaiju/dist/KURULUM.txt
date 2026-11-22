@@ -3,7 +3,7 @@ KAIJU: Atomic - Minecraft 1.20.1 Forge modu
 Kurulum:
 1. Minecraft 1.20.1 icin Forge kur (47.x).
 2. GeckoLib'in Forge 1.20.1 surumunu (4.4 veya ustu) indir, mods klasorune at.
-3. kaiju-1.20.1-forge-0.2.5.jar dosyasini da mods klasorune at.
+3. kaiju-1.20.1-forge-0.3.0.jar dosyasini da mods klasorune at.
 
 Oyunda:
 - Atomic Kaiju Egg (Spawn Eggs sekmesi): yere kullan, kaiju cikar.
@@ -14,3 +14,10 @@ Kontroller (kaijuyu surerken):
 Sol tik hafif saldiri, Sag tik agir saldiri, R (basili) atomik nefes, G yakala/firlat,
 V kuyruk, C isirik, Bosluk ezme, Shift blok, Alt kacis, N nukleer dalga, B kukreme,
 Z tum saldirilar, Y ozel saldiri, H yapay zeka yardimi, F7 carpisma kureleri.
+
+YENI: DESTOROYAH (0.3.0)
+- Destoroyah Egg (Spawn Eggs sekmesi). Hizli test: /kaiju versus  (Godzilla vs Destoroyah)
+- Destoroyah'i surerken: R mikro-oksijen isini (Ctrl+R supuren, Shift+R lazer boynuz),
+  C boynuzla delme, N kanat firtinasi, Y kiskacla bogazlama, Bosluk havalan.
+- Havadayken: W baktigin yone uc (yukari/asagi dahil), Sol tik havadan pence dalisi,
+  G kapip yukseğe tasi ve birak, R havadan mikro-oksijen, Bosluk inis.

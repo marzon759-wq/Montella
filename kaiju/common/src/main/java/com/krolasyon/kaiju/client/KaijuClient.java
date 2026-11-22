@@ -48,6 +48,7 @@ public final class KaijuClient {
     public static void init(IEventBus mod) {
         mod.addListener((EntityRenderersEvent.RegisterRenderers e) -> {
             e.registerEntityRenderer(KaijuMod.ATOMIC.get(), ctx -> new KaijuRenderer(ctx, new KaijuModel()));
+            e.registerEntityRenderer(KaijuMod.DESTOROYAH.get(), ctx -> new KaijuRenderer(ctx, new KaijuModel()));
             e.registerEntityRenderer(KaijuMod.DEBRIS.get(), DebrisRenderer::new);
             e.registerEntityRenderer(KaijuMod.SEVERED.get(), SeveredPartRenderer::new);
         });
@@ -177,7 +178,7 @@ public final class KaijuClient {
             boolean me = k == mine;
             int bw = 200;
             int x = w / 2 - bw / 2;
-            String name = Component.translatable("entity.kaiju.atomic_kaiju").getString() + (me ? "  ★" : "");
+            String name = k.getType().getDescription().getString() + (me ? "  ★" : "");
             g.drawCenteredString(mc.font, name, w / 2, y, me ? 0x9FE8FF : 0xFFB0A0);
             y += 10;
             g.fill(x - 1, y - 1, x + bw + 1, y + 6, 0xAA000000);

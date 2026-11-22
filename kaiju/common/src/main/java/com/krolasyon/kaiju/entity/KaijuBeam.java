@@ -40,6 +40,8 @@ public final class KaijuBeam {
     Vec3 start = Vec3.ZERO, end = Vec3.ZERO, dir = new Vec3(0, 0, 1);
     float pitchExtra;
     boolean sweep;
+    int style;
+    String origin = "mouth", kind = "beam";
     // clash
     KaijuBeam clashWith;
     float clashS = 0.5f;
@@ -55,6 +57,10 @@ public final class KaijuBeam {
         power = b.get("power").getAsFloat();
         width = b.get("width").getAsFloat();
         pitchExtra = b.has("pitch") ? b.get("pitch").getAsFloat() : 0;
+        style = b.has("style") ? b.get("style").getAsInt() : e.spec.beamStyle;
+        origin = b.has("origin") ? b.get("origin").getAsString() : "mouth";
+        kind = b.has("kind") ? b.get("kind").getAsString() : "beam";
+        e.setBeamStyle(style);
         sweep = b.has("sweep");
         length = 0;
         fireTicks = 0;
@@ -157,6 +163,8 @@ public final class KaijuBeam {
         Vec3 mouth = e.nodePos(e.spec.node("mouth"));
         Vec3 aim = e.nodePos(e.spec.node("aim"));
         Vec3 headDir = aim.subtract(mouth).normalize();
+        int on = e.spec.node(origin);
+        if (on >= 0) mouth = e.nodePos(on);  // the laser horn fires from the horn tip along the head
         Vec3 want = e.brain.beamDirection(headDir, pitchExtra);
         // the neck limits the beam to a cone around where the head is pointing; turn smoothly
         // the beam leaves along the (turned) head; only a small correction toward the exact target
@@ -234,7 +242,7 @@ public final class KaijuBeam {
         float k = e.k();
         float dps = 5.5f * power * width * (k / 0.5f);
         if (o.guardTicks > 0) dps *= 0.45f;
-        o.damage(dps, node, "beam");
+        o.damage(kind.equals("cut") ? dps * 1.3f : dps, node, kind);
         int region = Math.max(0, o.spec.nodes.get(node).region());
         o.heat[region] = Math.min(1f, o.heat[region] + 0.03f * power);
         // heat spreads to the neighbouring regions a little

@@ -210,7 +210,7 @@ public final class AutoTest {
                 cmd(String.format("place feature minecraft:birch %d -60 %d", x + 6, z + 9));
             }
         });
-        cue(60, () -> cmd("kaiju fight 150"));
+        cue(60, () -> cmd(mode.contains("versus") ? "kaiju versus 150" : "kaiju fight 150"));
         cue(30, () -> { cmd("tp @s 0 -36 -70 0 2"); });
         if (mode.contains("demo")) { demo(); return; }
         if (mode.contains("rc")) { rc(); return; }

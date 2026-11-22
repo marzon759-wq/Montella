@@ -12,15 +12,15 @@ A = os.path.join(RES, "assets", "kaiju")
 sys.path.insert(0, HERE)
 
 
-def regen_texture():
+def regen_texture(name="kaiju"):
     """the same atlas re-coloured as raw, wet, regrowing flesh"""
-    base = np.asarray(Image.open(os.path.join(OUT, "kaiju.png")).convert("RGBA"), float)
+    base = np.asarray(Image.open(os.path.join(OUT, f"{name}.png")).convert("RGBA"), float)
     lum = base[..., :3].mean(-1, keepdims=True) / 255
     lo, mid, hi = np.array([60, 4, 10.]), np.array([170, 34, 40.]), np.array([240, 140, 130.])
     t = np.clip(lum * 2.2, 0, 1)
     rgb = np.where(t < 0.5, lo + (mid - lo) * (t / 0.5), mid + (hi - mid) * ((t - 0.5) / 0.5))
     out = np.concatenate([rgb, base[..., 3:]], -1).astype(np.uint8)
-    Image.fromarray(out, "RGBA").save(os.path.join(OUT, "kaiju_regen.png"))
+    Image.fromarray(out, "RGBA").save(os.path.join(OUT, f"{name}_regen.png"))
 
 
 def item_textures(dst):
@@ -39,6 +39,20 @@ def item_textures(dst):
         d.point((x, y), (110, 230, 255, 255))
     d.point((5, 5), (90, 88, 86, 255))
     im.save(os.path.join(dst, "atomic_kaiju_egg.png"))
+    # Destoroyah's egg: dark crimson with a bone-white crack and a yellow glint
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for y in range(16):
+        for x in range(16):
+            dx, dy = (x - 7.5) / 5.6, (y - 8.6) / 7.2
+            if dx * dx + dy * dy <= 1:
+                v = int(rng.integers(0, 30))
+                d.point((x, y), (70 + v, 10 + v // 3, 16 + v // 3, 255))
+    for (x, y) in [(8, 3), (8, 4), (7, 5), (8, 6), (9, 7), (8, 8)]:
+        d.point((x, y), (230, 220, 190, 255))
+    d.point((6, 9), (255, 230, 80, 255))
+    d.point((10, 9), (255, 230, 80, 255))
+    im.save(os.path.join(dst, "destoroyah_egg.png"))
     # controller: a dark remote with a cyan screen and a red button
     im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -81,11 +95,15 @@ TR = {
     "ground_claw_grab": "Yerden Bilek Yakalama",
     "block_arms": "Kollarla Blok", "sidestep_l": "Sola Kaçış", "sidestep_r": "Sağa Kaçış", "backstep": "Geri Adım", "parry_counter": "Savuştur ve Karşı Saldır",
     "roar": "Kükreme", "tail_lash_intimidate": "Kuyruk Şaklatıp Gözdağı",
+    "micro_oxygen_beam": "Mikro-Oksijen Işını", "micro_oxygen_burst": "Kısa Mikro-Oksijen", "micro_oxygen_sweep": "Süpüren Mikro-Oksijen",
+    "aerial_micro_oxygen": "Havadan Mikro-Oksijen", "horn_laser": "Lazer Boynuz", "horn_gore": "Boynuzla Delme", "horn_uppercut": "Boynuz Aparkatı",
+    "horn_slash": "Boynuz Savuruşu", "wing_buffet": "Kanat Fırtınası", "wing_shield": "Kanat Kalkanı", "tail_pincer_grab": "Kıskaçla Boğazlama",
+    "tail_pincer_stab": "Kıskaç Saplama", "takeoff": "Havalan", "land": "İniş", "fly_dive_claw": "Havadan Pençe Dalışı", "fly_grab_drop": "Kapıp Yükseğe Taşı ve Bırak",
 }
 CATS = {"claw": ("Claws", "Pençe"), "tail": ("Tail", "Kuyruk"), "bite": ("Head & Bite", "Kafa & Isırık"), "body": ("Body", "Gövde"),
         "leg": ("Legs", "Bacak"), "grapple": ("Grapples", "Kavrama"), "world": ("World", "Dünya"), "atomic": ("Atomic", "Atomik"),
         "mount": ("On a downed foe", "Yerdeki Düşmana"), "ground": ("From the ground", "Yerden"), "defense": ("Defense", "Savunma"),
-        "intimidate": ("Intimidate", "Gözdağı")}
+        "intimidate": ("Intimidate", "Gözdağı"), "beam": ("Beams", "Işınlar"), "horn": ("Horn", "Boynuz"), "wing": ("Wings", "Kanat"), "fly": ("Flight", "Uçuş")}
 REG = {"head": ("head", "kafa"), "neck": ("neck", "boyun"), "chest": ("chest", "göğüs"), "belly": ("belly", "karın"), "arm_l": ("left arm", "sol kol"),
        "arm_r": ("right arm", "sağ kol"), "legs": ("legs", "bacaklar"), "tail": ("tail", "kuyruk")}
 PART = {"arm_l": ("left arm", "sol kol"), "arm_r": ("right arm", "sağ kol"), "tail_tip": ("tail tip", "kuyruk ucu")}
@@ -101,6 +119,8 @@ def lang(attacks):
     keys_tr = "Sol tık hafif · Sağ tık ağır · R nefes (basılı) · G yakala/fırlat · V kuyruk · C ısırık · Boşluk ezme · Shift blok · Alt kaçış · Z tüm saldırılar · Y özel · N dalga · B kükreme · H YZ"
     base = {
         "entity.kaiju.atomic_kaiju": ("Atomic Kaiju", "Atomik Kaiju"),
+        "entity.kaiju.destoroyah": ("Destoroyah", "Destoroyah"),
+        "item.kaiju.destoroyah_egg": ("Destoroyah Egg", "Destoroyah Yumurtası"),
         "entity.kaiju.debris": ("Debris", "Enkaz"), "entity.kaiju.severed_part": ("Severed Limb", "Kopmuş Uzuv"),
         "item.kaiju.atomic_kaiju_egg": ("Atomic Kaiju Egg", "Atomik Kaiju Yumurtası"),
         "item.kaiju.egg.tip": ("Use on the ground to hatch a film-scale kaiju (about 50 blocks tall).", "Film boyutunda (yaklaşık 50 blok) bir kaiju çıkarmak için yere kullan."),
@@ -143,20 +163,28 @@ def lang(attacks):
 
 def main():
     regen_texture()
+    regen_texture("destoroyah")
     for sub in ("geo/entity", "textures/entity", "animations/entity", "models/item", "textures/item"):
         os.makedirs(os.path.join(A, sub), exist_ok=True)
     shutil.copy(os.path.join(OUT, "kaiju.geo.json"), os.path.join(A, "geo/entity"))
+    shutil.copy(os.path.join(OUT, "destoroyah.geo.json"), os.path.join(A, "geo/entity"))
+    shutil.copy(os.path.join(OUT, "destoroyah.animation.json"), os.path.join(A, "animations/entity"))
+    for t in ("destoroyah", "destoroyah_glowmask", "destoroyah_burning", "destoroyah_burning_glowmask", "destoroyah_regen"):
+        shutil.copy(os.path.join(OUT, t + ".png"), os.path.join(A, "textures/entity"))
     shutil.copy(os.path.join(OUT, "kaiju.animation.json"), os.path.join(A, "animations/entity"))
     for t in ("kaiju", "kaiju_glowmask", "kaiju_burning", "kaiju_burning_glowmask", "kaiju_regen"):
         shutil.copy(os.path.join(OUT, t + ".png"), os.path.join(A, "textures/entity"))
     data = os.path.join(RES, "data", "kaiju", "kaiju")
     os.makedirs(data, exist_ok=True)
     shutil.copy(os.path.join(OUT, "atomic_kaiju.json"), data)
+    shutil.copy(os.path.join(OUT, "destoroyah.json"), data)
     item_textures(os.path.join(A, "textures/item"))
-    for it in ("atomic_kaiju_egg", "kaiju_controller"):
+    for it in ("atomic_kaiju_egg", "destoroyah_egg", "kaiju_controller"):
         json.dump({"parent": "item/generated", "textures": {"layer0": f"kaiju:item/{it}"}}, open(os.path.join(A, "models/item", it + ".json"), "w"))
     spec = json.load(open(os.path.join(OUT, "atomic_kaiju.json")))
-    lang(spec["attacks"])
+    spec2 = json.load(open(os.path.join(OUT, "destoroyah.json")))
+    seen = {a["id"] for a in spec["attacks"]}
+    lang(spec["attacks"] + [a for a in spec2["attacks"] if a["id"] not in seen])
     print("installed;", len(spec["attacks"]), "attacks")
 
 

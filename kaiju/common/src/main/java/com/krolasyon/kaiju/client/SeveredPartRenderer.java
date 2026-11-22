@@ -45,9 +45,10 @@ public class SeveredPartRenderer extends GeoEntityRenderer<SeveredPartEntity> {
     }
 
     static class PartModel extends GeoModel<SeveredPartEntity> {
-        @Override public ResourceLocation getModelResource(SeveredPartEntity e) { return KaijuModel.GEO; }
-        @Override public ResourceLocation getTextureResource(SeveredPartEntity e) { return KaijuModel.TEX; }
-        @Override public ResourceLocation getAnimationResource(SeveredPartEntity e) { return KaijuModel.ANIM; }
+        static String base(SeveredPartEntity e) { return KaijuSpec.get(e.specId()).model; }
+        @Override public ResourceLocation getModelResource(SeveredPartEntity e) { return KaijuModel.geo(base(e)); }
+        @Override public ResourceLocation getTextureResource(SeveredPartEntity e) { return KaijuModel.tex(base(e)); }
+        @Override public ResourceLocation getAnimationResource(SeveredPartEntity e) { return KaijuModel.anim(base(e)); }
 
         @Override
         public void setCustomAnimations(SeveredPartEntity e, long id, AnimationState<SeveredPartEntity> st) {

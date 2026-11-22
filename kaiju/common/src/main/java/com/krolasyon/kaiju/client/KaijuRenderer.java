@@ -35,10 +35,9 @@ import java.util.Map;
 public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
     enum Pass { NORMAL, GLOW, BURN, BURN_GLOW, REGEN }
 
-    static final ResourceLocation GLOW_TEX = new ResourceLocation(KaijuMod.MODID, "textures/entity/kaiju_glowmask.png");
-    static final ResourceLocation BURN_TEX = new ResourceLocation(KaijuMod.MODID, "textures/entity/kaiju_burning.png");
-    static final ResourceLocation BURN_GLOW_TEX = new ResourceLocation(KaijuMod.MODID, "textures/entity/kaiju_burning_glowmask.png");
-    static final ResourceLocation REGEN_TEX = new ResourceLocation(KaijuMod.MODID, "textures/entity/kaiju_regen.png");
+    static ResourceLocation tx(KaijuEntity e, String suffix) {
+        return new ResourceLocation(KaijuMod.MODID, "textures/entity/" + e.spec.model + suffix + ".png");
+    }
 
     Pass pass = Pass.NORMAL;
     KaijuEntity current;
@@ -137,10 +136,11 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
             return Math.min(1f, ext) * flick * (e.flag(KaijuEntity.F_FIRING) ? 1f : 0.85f);
         }
         String n = bone.getName();
-        if (n.equals("head") || n.equals("jaw") || n.startsWith("tongue")) {
-            float c = e.flag(KaijuEntity.F_FIRING) ? 1f : e.flag(KaijuEntity.F_CHARGING) ? e.chargeClient() * 0.8f : 0f;
-            return c;
-        }
+        if (n.startsWith("eye_")) return 0.85f + 0.15f * Mth.sin(e.tickCount * 0.3f);
+        float c = e.flag(KaijuEntity.F_FIRING) ? 1f : e.flag(KaijuEntity.F_CHARGING) ? e.chargeClient() * 0.8f : 0f;
+        boolean horn = e.beamStyle() == 2;
+        if (horn && n.startsWith("horn")) return c;
+        if (!horn && (n.equals("head") || n.equals("jaw") || n.startsWith("tongue"))) return c;
         return 0;
     }
 
@@ -163,17 +163,17 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         @Override
         public void render(PoseStack ps, KaijuEntity e, BakedGeoModel model, RenderType rt, MultiBufferSource buf, VertexConsumer vc, float pt, int light, int overlay) {
             boolean any = switch (p) {
-                case GLOW -> e.flag(KaijuEntity.F_CHARGING) || e.flag(KaijuEntity.F_FIRING) || e.chargeClient() > 0.01f || anyPlateOut(e);
+                case GLOW -> e.flag(KaijuEntity.F_CHARGING) || e.flag(KaijuEntity.F_FIRING) || e.chargeClient() > 0.01f || anyPlateOut(e) || e.spec.plates.isEmpty();  // species without plates have glowing eyes
                 case BURN, BURN_GLOW -> anyHeat(e);
                 case REGEN -> e.severMaskClient() != 0;
                 default -> false;
             };
             if (!any) return;
             RenderType type = switch (p) {
-                case GLOW -> RenderType.eyes(GLOW_TEX);
-                case BURN -> RenderType.entityTranslucent(BURN_TEX);
-                case BURN_GLOW -> RenderType.eyes(BURN_GLOW_TEX);
-                case REGEN -> RenderType.entityTranslucent(REGEN_TEX);
+                case GLOW -> RenderType.eyes(tx(e, "_glowmask"));
+                case BURN -> RenderType.entityTranslucent(tx(e, "_burning"));
+                case BURN_GLOW -> RenderType.eyes(tx(e, "_burning_glowmask"));
+                case REGEN -> RenderType.entityTranslucent(tx(e, "_regen"));
                 default -> rt;
             };
             r.pass = p;
@@ -200,7 +200,8 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         if (idx < 0 || idx >= spec.clipNames.size()) return new Vec3(0, e.getBbHeight() * 0.9, 0);
         KaijuSpec.Clip c = spec.clip(spec.clipNames.get(idx));
         float[] p = new float[3];
-        spec.nodePx(c, e.animTick(), spec.node("mouth"), p);
+        int on = e.beamStyle() == 2 && spec.node("horn_tip") >= 0 ? spec.node("horn_tip") : spec.node("mouth");
+        spec.nodePx(c, e.animTick(), on, p);
         float yaw = Mth.rotLerp(pt, e.yRotO, e.getYRot());
         Vec3 w = KaijuSpec.toWorld(p[0], p[1], p[2], yaw, e.k());
         // the same head turn the server applies (aim yaw/pitch about the base of the neck)
@@ -234,7 +235,13 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         double segLen = len / segs;
         // layered body: haze, glow, body, white-hot core; it gathers out of the mouth over the first blocks and
         // carries bright pulses travelling away from the kaiju
-        float[][] layers = {{5.6f, 0.03f, 0.22f, 0.85f, 0.22f}, {3.4f, 0.08f, 0.5f, 1f, 0.42f}, {2.0f, 0.42f, 0.85f, 1f, 0.75f}, {0.85f, 1f, 1f, 1f, 1f}};
+        int style = e.beamStyle();
+        float[][] layers = style == 1
+                ? new float[][]{{5.8f, 0.45f, 0.04f, 0.55f, 0.24f}, {3.6f, 0.8f, 0.16f, 0.85f, 0.45f}, {2.1f, 1f, 0.55f, 1f, 0.75f}, {0.9f, 1f, 0.95f, 1f, 1f}}
+                : style == 2
+                ? new float[][]{{2.6f, 0.6f, 0.38f, 0.04f, 0.25f}, {1.6f, 1f, 0.75f, 0.25f, 0.5f}, {0.9f, 1f, 0.93f, 0.65f, 0.85f}, {0.4f, 1f, 1f, 0.95f, 1f}}
+                : new float[][]{{5.6f, 0.03f, 0.22f, 0.85f, 0.22f}, {3.4f, 0.08f, 0.5f, 1f, 0.42f}, {2.0f, 0.42f, 0.85f, 1f, 0.75f}, {0.85f, 1f, 1f, 1f, 1f}};
+        float[] tint = style == 1 ? new float[]{1f, 0.55f, 1f} : style == 2 ? new float[]{1f, 0.9f, 0.55f} : new float[]{0.6f, 0.95f, 1f};
         for (float[] L : layers) {
             for (int sI = 0; sI < segs; sI++) {
                 double s0 = sI * segLen, s1 = (sI + 1) * segLen;
@@ -258,7 +265,7 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
                 double phi = sd * 0.22 - t * 0.9 + strand * Math.PI;
                 float R = radius(2.9f, sd, t, k) * 1.15f;
                 Vec3 pnt = la.add(dir.scale(sd)).add(u.scale(Math.cos(phi) * R)).add(v.scale(Math.sin(phi) * R));
-                if (prev != null) ribbon(vc, m, prev, pnt, dir, 0.32f * k, 0.6f, 0.95f, 1f, 0.75f);
+                if (prev != null) ribbon(vc, m, prev, pnt, dir, 0.32f * k, tint[0], tint[1], tint[2], 0.75f);
                 prev = pnt;
             }
         }
@@ -267,7 +274,7 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
             double sd = ((t * 4.5 + j * len / 4) % Math.max(1, len));
             float age = (float) (sd / Math.max(1, len));
             float R = (2.5f + 4f * age) * k;
-            ring(vc, m, la.add(dir.scale(sd)), u, v, R, 0.35f * k, 0.5f, 0.9f, 1f, 0.55f * (1 - age));
+            ring(vc, m, la.add(dir.scale(sd)), u, v, R, 0.35f * k, tint[0], tint[1], tint[2], 0.55f * (1 - age));
         }
         // forked lightning crawling over the beam and lashing out at the impact
         java.util.Random rnd = new java.util.Random((e.getId() * 31L) + e.tickCount / 2);
@@ -280,9 +287,9 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         // the flare where it lands and at the mouth
         boolean clash = e.flag(KaijuEntity.F_CLASH);
         float flare = (clash ? 26f : 12f) * k * (0.85f + 0.15f * Mth.sin(t * 3));
-        star(vc, m, lb, u, v, flare, 0.35f, 0.75f, 1f, 0.55f);
-        star(vc, m, lb, u, v, flare * 0.55f, 0.85f, 0.97f, 1f, 0.9f);
-        star(vc, m, la, u, v, 5.5f * k * (0.9f + 0.1f * Mth.sin(t * 5)), 0.5f, 0.9f, 1f, 0.85f);
+        star(vc, m, lb, u, v, flare, tint[0] * 0.6f, tint[1] * 0.8f, tint[2], 0.55f);
+        star(vc, m, lb, u, v, flare * 0.55f, 0.95f, 0.97f, 1f, 0.9f);
+        star(vc, m, la, u, v, 5.5f * k * (0.9f + 0.1f * Mth.sin(t * 5)), tint[0], tint[1], tint[2], 0.85f);
         star(vc, m, la, u, v, 2.6f * k, 1f, 1f, 1f, 1f);
     }
 
@@ -341,8 +348,9 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         VertexConsumer vc = buf.getBuffer(RenderType.lightning());
         Matrix4f m = ps.last().pose();
         float R = (0.6f + 2.6f * g) * k * (0.9f + 0.1f * Mth.sin(t * 2.2f));
-        star(vc, m, mouth, u, v, R * 1.8f, 0.2f, 0.55f, 1f, 0.35f * g);
-        star(vc, m, mouth, u, v, R, 0.6f, 0.92f, 1f, 0.8f * g);
+        float[] tc = e.beamStyle() == 1 ? new float[]{1f, 0.45f, 1f} : e.beamStyle() == 2 ? new float[]{1f, 0.85f, 0.4f} : new float[]{0.6f, 0.92f, 1f};
+        star(vc, m, mouth, u, v, R * 1.8f, tc[0] * 0.4f, tc[1] * 0.6f, tc[2], 0.35f * g);
+        star(vc, m, mouth, u, v, R, tc[0], tc[1], tc[2], 0.8f * g);
         star(vc, m, mouth, u, v, R * 0.45f, 1f, 1f, 1f, g);
         java.util.Random rnd = new java.util.Random(e.getId() * 17L + e.tickCount / 2);
         for (int j = 0; j < (int) (2 + g * 4); j++)

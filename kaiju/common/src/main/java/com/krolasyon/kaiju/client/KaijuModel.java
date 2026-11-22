@@ -14,13 +14,15 @@ import software.bernie.geckolib.model.GeoModel;
  * lumpy, pulsing flesh (each sub-bone throbs out of phase) until it settles at full size; a rider's aim tilts the neck.
  */
 public class KaijuModel extends GeoModel<KaijuEntity> {
-    static final ResourceLocation GEO = new ResourceLocation(KaijuMod.MODID, "geo/entity/kaiju.geo.json");
-    static final ResourceLocation TEX = new ResourceLocation(KaijuMod.MODID, "textures/entity/kaiju.png");
-    static final ResourceLocation ANIM = new ResourceLocation(KaijuMod.MODID, "animations/entity/kaiju.animation.json");
+    static final ResourceLocation GEO = geo("kaiju"), TEX = tex("kaiju"), ANIM = anim("kaiju");
 
-    @Override public ResourceLocation getModelResource(KaijuEntity e) { return GEO; }
-    @Override public ResourceLocation getTextureResource(KaijuEntity e) { return TEX; }
-    @Override public ResourceLocation getAnimationResource(KaijuEntity e) { return ANIM; }
+    static ResourceLocation geo(String base) { return new ResourceLocation(KaijuMod.MODID, "geo/entity/" + base + ".geo.json"); }
+    static ResourceLocation tex(String base) { return new ResourceLocation(KaijuMod.MODID, "textures/entity/" + base + ".png"); }
+    static ResourceLocation anim(String base) { return new ResourceLocation(KaijuMod.MODID, "animations/entity/" + base + ".animation.json"); }
+
+    @Override public ResourceLocation getModelResource(KaijuEntity e) { return geo(e.spec.model); }
+    @Override public ResourceLocation getTextureResource(KaijuEntity e) { return tex(e.spec.model); }
+    @Override public ResourceLocation getAnimationResource(KaijuEntity e) { return anim(e.spec.model); }
 
     @Override
     public void setCustomAnimations(KaijuEntity e, long id, AnimationState<KaijuEntity> st) {

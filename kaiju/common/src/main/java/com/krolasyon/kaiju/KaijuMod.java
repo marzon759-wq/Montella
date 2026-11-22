@@ -54,6 +54,9 @@ public class KaijuMod {
     public static final RegistryObject<EntityType<AtomicKaijuEntity>> ATOMIC = ENTITIES.register("atomic_kaiju",
             () -> EntityType.Builder.<AtomicKaijuEntity>of(AtomicKaijuEntity::new, MobCategory.MONSTER).sized(20f, 48f)
                     .clientTrackingRange(40).updateInterval(1).fireImmune().build("atomic_kaiju"));
+    public static final RegistryObject<EntityType<DestoroyahEntity>> DESTOROYAH = ENTITIES.register("destoroyah",
+            () -> EntityType.Builder.<DestoroyahEntity>of(DestoroyahEntity::new, MobCategory.MONSTER).sized(22f, 48f)
+                    .clientTrackingRange(40).updateInterval(1).fireImmune().build("destoroyah"));
     public static final RegistryObject<EntityType<DebrisEntity>> DEBRIS = ENTITIES.register("debris",
             () -> EntityType.Builder.<DebrisEntity>of(DebrisEntity::new, MobCategory.MISC).sized(2f, 2f)
                     .clientTrackingRange(32).updateInterval(1).fireImmune().build("debris"));
@@ -63,6 +66,8 @@ public class KaijuMod {
 
     public static final RegistryObject<Item> EGG = ITEMS.register("atomic_kaiju_egg",
             () -> new KaijuEggItem(ATOMIC, new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
+    public static final RegistryObject<Item> DESTOROYAH_EGG = ITEMS.register("destoroyah_egg",
+            () -> new KaijuEggItem(DESTOROYAH, new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
     public static final RegistryObject<Item> CONTROLLER = ITEMS.register("kaiju_controller",
             () -> new ControllerItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
@@ -72,13 +77,17 @@ public class KaijuMod {
         ITEMS.register(bus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, KaijuConfig.SPEC);
         bus.addListener((ModConfigEvent e) -> { if (e.getConfig().getSpec() == KaijuConfig.SPEC) KaijuConfig.load(); });
-        bus.addListener((EntityAttributeCreationEvent e) -> e.put(ATOMIC.get(), KaijuEntity.attributes().build()));
+        bus.addListener((EntityAttributeCreationEvent e) -> {
+            e.put(ATOMIC.get(), KaijuEntity.attributes().build());
+            e.put(DESTOROYAH.get(), KaijuEntity.attributes().build());
+        });
         bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
             Net.init();
             com.krolasyon.kaiju.data.KaijuSpec.get("atomic_kaiju");
+            com.krolasyon.kaiju.data.KaijuSpec.get("destoroyah");
         }));
         bus.addListener((BuildCreativeModeTabContentsEvent e) -> {
-            if (e.getTabKey() == CreativeModeTabs.SPAWN_EGGS) e.accept(EGG);
+            if (e.getTabKey() == CreativeModeTabs.SPAWN_EGGS) { e.accept(EGG); e.accept(DESTOROYAH_EGG); }
             if (e.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) e.accept(CONTROLLER);
         });
         MinecraftForge.EVENT_BUS.addListener(this::commands);
@@ -101,10 +110,16 @@ public class KaijuMod {
 
     void commands(RegisterCommandsEvent ev) {
         ev.getDispatcher().register(Commands.literal("kaiju").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("versus").executes(c -> fight(c.getSource(), 150, true))
+                        .then(Commands.argument("distance", FloatArgumentType.floatArg(20, 1000)).executes(c -> fight(c.getSource(), FloatArgumentType.getFloat(c, "distance"), true))))
                 .then(Commands.literal("fight").executes(c -> fight(c.getSource(), 150))
                         .then(Commands.argument("distance", FloatArgumentType.floatArg(20, 1000)).executes(c -> fight(c.getSource(), FloatArgumentType.getFloat(c, "distance")))))
                 .then(Commands.literal("attack").then(Commands.argument("id", StringArgumentType.word())
-                        .suggests((c, b) -> SharedSuggestionProvider.suggest(com.krolasyon.kaiju.data.KaijuSpec.get("atomic_kaiju").attackById.keySet(), b))
+                        .suggests((c, b) -> {
+                            java.util.Set<String> ids = new java.util.TreeSet<>(com.krolasyon.kaiju.data.KaijuSpec.get("atomic_kaiju").attackById.keySet());
+                            ids.addAll(com.krolasyon.kaiju.data.KaijuSpec.get("destoroyah").attackById.keySet());
+                            return SharedSuggestionProvider.suggest(ids, b);
+                        })
                         .executes(c -> {
                             KaijuEntity k = nearest(c.getSource());
                             String id = StringArgumentType.getString(c, "id");
@@ -157,7 +172,9 @@ public class KaijuMod {
                 })));
     }
 
-    static int fight(CommandSourceStack s, float dist) {
+    static int fight(CommandSourceStack s, float dist) { return fight(s, dist, false); }
+
+    static int fight(CommandSourceStack s, float dist, boolean versus) {
         ServerLevel sl = s.getLevel();
         Vec3 p = s.getPosition();
         float yaw = s.getRotation().y;
@@ -166,7 +183,7 @@ public class KaijuMod {
         Vec3 side = new Vec3(-fwd.z, 0, fwd.x);
         for (int i = 0; i < 2; i++) {
             Vec3 at = mid.add(side.scale((i == 0 ? -1 : 1) * dist * 0.5));
-            AtomicKaijuEntity k = ATOMIC.get().create(sl);
+            KaijuEntity k = (versus && i == 1 ? DESTOROYAH.get() : ATOMIC.get()).create(sl);
             if (k == null) return 0;
             double y = sl.getHeight(Heightmap.Types.OCEAN_FLOOR, (int) at.x, (int) at.z);
             float face = (float) Math.toDegrees(Math.atan2(-(mid.x - at.x), mid.z - at.z));

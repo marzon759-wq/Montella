@@ -5,16 +5,17 @@ from multiprocessing import Pool
 from PIL import Image, ImageDraw
 import preview as pv
 HERE = os.path.dirname(os.path.abspath(__file__))
-GEO = json.load(open(os.path.join(HERE, "out/kaiju.geo.json")))
-AN = json.load(open(os.path.join(HERE, "out/kaiju.animation.json")))
-TEX = Image.open(os.path.join(HERE, "out/kaiju.png")).convert("RGBA")
+BASE = os.environ.get("BASE", "kaiju")
+GEO = json.load(open(os.path.join(HERE, f"out/{BASE}.geo.json")))
+AN = json.load(open(os.path.join(HERE, f"out/{BASE}.animation.json")))
+TEX = Image.open(os.path.join(HERE, f"out/{BASE}.png")).convert("RGBA")
 W, H = 400, 260
 
 def one(args):
     clip, t, yaw = args
     a = pv.Anim(AN, "animation.kaiju." + clip)
     q, _ = pv.build_quads(GEO, a, t)
-    im = pv.render(q, TEX, None, W, H, yaw, 18, 330, (0, 45, 20), 40, sky_img=pv.sky(W, H), shadows=False)
+    im = pv.render(q, TEX, None, W, H, yaw, 18, float(os.environ.get('DIST', 330)), (0, 45, 20), 40, sky_img=pv.sky(W, H), shadows=False)
     ImageDraw.Draw(im).text((6, 4), f"{clip} {t:.2f}", fill=(255, 255, 255))
     return im
 
