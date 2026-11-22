@@ -22,3 +22,11 @@ mimic/*.mp4
 mimic/tools/vanilla/
 mimic/MIMIC_Harrow_Farm.zip
 mimic/MIMIC_CurseForge.zip
+
+# kaiju mod: generator output and raw previews
+kaiju/tools/out/
+kaiju/tools/prev/
+kaiju/tools/__pycache__/
+kaiju/forge-*/build/
+kaiju/forge-*/run/
+kaiju/forge-*/.gradle/
