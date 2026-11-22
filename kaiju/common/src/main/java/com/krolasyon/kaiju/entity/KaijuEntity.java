@@ -78,6 +78,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
     public State state = State.IDLE;
     public KaijuSpec.Clip clip;
     public int clipTick;
+    float clipBaseYaw;
     public KaijuSpec.Attack attack;
     public int atkTick, phase, phaseTick, phaseLen;
     public final Map<String, Integer> cooldown = new HashMap<>();
@@ -278,6 +279,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
         }
         clip = c;
         clipTick = 0;
+        clipBaseYaw = getYRot();
         entityData.set(ANIM, c.index);
         entityData.set(ANIM_SEQ, entityData.get(ANIM_SEQ) + 1);
     }
@@ -411,6 +413,11 @@ public class KaijuEntity extends Mob implements GeoEntity {
     public void tick() {
         super.tick();
         if (level().isClientSide) {
+            // the body always faces where the entity faces (vanilla would let it lag behind fast turns)
+            yBodyRot = getYRot();
+            yBodyRotO = yRotO;
+            yHeadRot = getYRot();
+            yHeadRotO = yRotO;
             KaijuClientHooks.tick(this);
             return;
         }
@@ -496,6 +503,12 @@ public class KaijuEntity extends Mob implements GeoEntity {
         if (state == State.IDLE) locomotion();
 
         clipTick++;
+        if (clip.yaw != null && clip.yaw.length > 0) {
+            // the clip turns the whole body (a spin, turning round to slam): the entity really rotates
+            float y = clip.yaw[Math.min(clip.yaw.length - 1, clipTick)];
+            setYRot(clipBaseYaw - y);
+            faceYaw = getYRot();
+        }
         entityData.set(ANIM_TICK, clipTick);
         clipImpacts();
         physics();
@@ -775,6 +788,24 @@ public class KaijuEntity extends Mob implements GeoEntity {
             Vec3 safe = position().add(forward().scale(getBbWidth() * 1.2)).add(0, 2, 0);
             p.teleportTo(safe.x, groundAt(safe) + 1, safe.z);
         }
+    }
+
+    @Override
+    protected net.minecraft.world.InteractionResult mobInteract(Player p, net.minecraft.world.InteractionHand hand) {
+        var stack = p.getItemInHand(hand);
+        boolean ctrl = stack.is(KaijuMod.CONTROLLER.get());
+        if (!ctrl && !(stack.isEmpty() && p.isShiftKeyDown())) return net.minecraft.world.InteractionResult.PASS;
+        if (level().isClientSide) return net.minecraft.world.InteractionResult.SUCCESS;
+        if (p instanceof ServerPlayer sp) {
+            if (owner != null && !owner.equals(sp.getUUID()) && !sp.getAbilities().instabuild) {
+                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.kaiju.not_yours"), true);
+                return net.minecraft.world.InteractionResult.CONSUME;
+            }
+            if (state == State.DEAD) return net.minecraft.world.InteractionResult.CONSUME;
+            takeControl(sp);
+            sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.kaiju.controlling"), true);
+        }
+        return net.minecraft.world.InteractionResult.CONSUME;
     }
 
     @Override

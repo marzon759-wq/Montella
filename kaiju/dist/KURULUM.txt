@@ -3,11 +3,11 @@ KAIJU: Atomic - Minecraft 1.20.1 Forge modu
 Kurulum:
 1. Minecraft 1.20.1 icin Forge kur (47.x).
 2. GeckoLib'in Forge 1.20.1 surumunu (4.4 veya ustu) indir, mods klasorune at.
-3. kaiju-1.20.1-forge-0.2.0.jar dosyasini da mods klasorune at.
+3. kaiju-1.20.1-forge-0.2.1.jar dosyasini da mods klasorune at.
 
 Oyunda:
 - Atomic Kaiju Egg (Spawn Eggs sekmesi): yere kullan, kaiju cikar.
-- Kaiju Controller (Tools sekmesi): sag tik ile en yakin kaijunu kontrol et, tekrar sag tik ile birak.
+- Kaiju Controller (Tools sekmesi): havaya ya da kaijunun ustune sag tik = kontrol et; tekrar sag tik ya da K = birak.
 - Hizli test: /kaiju fight
 
 Kontroller (kaijuyu surerken):

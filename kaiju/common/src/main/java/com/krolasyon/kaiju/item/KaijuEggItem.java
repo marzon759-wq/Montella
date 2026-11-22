@@ -31,6 +31,16 @@ public class KaijuEggItem extends Item {
     }
 
     @Override
+    public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, Player p, net.minecraft.world.InteractionHand hand) {
+        ItemStack st = p.getItemInHand(hand);
+        net.minecraft.world.phys.Vec3 eye = p.getEyePosition(), end = eye.add(p.getLookAngle().scale(300));
+        var hit = level.clip(new net.minecraft.world.level.ClipContext(eye, end, net.minecraft.world.level.ClipContext.Block.OUTLINE, net.minecraft.world.level.ClipContext.Fluid.ANY, p));
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return net.minecraft.world.InteractionResultHolder.pass(st);
+        InteractionResult r = useOn(new UseOnContext(p, hand, hit));
+        return new net.minecraft.world.InteractionResultHolder<>(r, st);
+    }
+
+    @Override
     public InteractionResult useOn(UseOnContext ctx) {
         Level level = ctx.getLevel();
         if (!(level instanceof ServerLevel sl)) return InteractionResult.SUCCESS;

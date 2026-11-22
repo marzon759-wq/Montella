@@ -28,6 +28,19 @@ NECK = ["neck1", "neck2", "neck3"]
 SIDES = (("l", 1), ("r", -1))
 
 
+SUB = 20
+
+
+def spring_step(x, v, target, w, z):
+    """one DT of a damped spring, integrated in small semi-implicit substeps so stiff springs stay stable"""
+    h = DT / SUB
+    for _ in range(SUB):
+        a = w * w * (target - x) - 2 * z * w * v
+        v = v + a * h
+        x = x + v * h
+    return x, v
+
+
 def ease(kind, f):
     f = min(1.0, max(0.0, f))
     if kind == "linear":
@@ -154,12 +167,11 @@ class Clip:
             out = np.zeros_like(drive)
             for r in range(reps):  # loops: run a couple of periods so the steady state wraps around
                 for k in range(n):
-                    a = w * w * (drive[k] - x) - 2 * z * w * v
-                    v += a * DT
-                    x += v * DT
+                    x, v = spring_step(x, v, drive[k], w, z)
                     out[k] = x
-            local = out - world_prev_sim
+            local = np.clip(out - world_prev_sim, -60, 60)  # a vertebra joint bends only so far
             data[("rotation", b)][:, :2] = local
+            out = world_prev_sim + local
             world_prev_sim = out
             world_prev_key = target_world
 
@@ -177,11 +189,9 @@ class Clip:
             v = np.zeros(3)
             out = np.zeros_like(sig)
             for k in range(n):
-                a = w * w * (sig[k] - x) - 2 * zeta * w * v
-                v += a * DT
-                x += v * DT
+                x, v = spring_step(x, v, sig[k], w, zeta)
                 out[k] = x
-            lag = (out - sig) * gain
+            lag = np.clip((out - sig) * gain, -25, 25)
             data[ch] = data[ch] + lag
             acc = acc + data[ch] * 0.0
 

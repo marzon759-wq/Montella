@@ -100,6 +100,32 @@ def main():
         anims[f"animation.kaiju.{name}"] = c.to_json()
     with open(os.path.join(OUT, "kaiju.animation.json"), "w") as f:
         json.dump({"format_version": "1.8.0", "animations": anims}, f, separators=(",", ":"))
+    # big body turns (spins, turning round to slam) move the entity itself instead of the model's root:
+    # otherwise the client would unwind e.g. -360 degrees back to 0 when the next clip starts (a visible spin)
+    yaw_tracks = {}
+    for name, c in clips.items():
+        rot = anims[f"animation.kaiju.{name}"]["bones"].get("root", {}).get("rotation")
+        if not isinstance(rot, dict):
+            continue
+        keys = sorted((float(k), v) for k, v in rot.items())
+        if max(abs(v[1]) for _, v in keys) < 100:
+            continue
+        n = max(1, int(round(c.length * 20)))
+        ys = []
+        for i in range(n):
+            t = i / 20
+            y = keys[-1][1][1]
+            for (t0, v0), (t1, v1) in zip(keys, keys[1:]):
+                if t0 <= t <= t1:
+                    f = (t - t0) / (t1 - t0) if t1 > t0 else 0
+                    y = v0[1] + (v1[1] - v0[1]) * f
+                    break
+            ys.append(round(y, 2))
+        yaw_tracks[name] = ys
+        for k in rot:
+            rot[k][1] = 0.0
+    with open(os.path.join(OUT, "kaiju.animation.json"), "w") as f:
+        json.dump({"format_version": "1.8.0", "animations": anims}, f, separators=(",", ":"))
     data = {"format_version": "1.8.0", "animations": anims}
 
     tracks = {}
@@ -115,7 +141,8 @@ def main():
         "nodes": [{"name": n, "bone": b, "r": r, "region": reg, "sever": sv} for n, b, p, r, reg, sv in NODES],
         "sever_bones": SEVER, "regions": REGIONS,
         "plates": PLATES,
-        "clips": {k: {"len": c.length, "loop": c.loop, "impacts": [round(t, 3) for t, s in c.impacts if s >= 0.3]} for k, c in clips.items()},
+        "clips": {k: dict({"len": c.length, "loop": c.loop, "impacts": [round(t, 3) for t, s in c.impacts if s >= 0.3]},
+                           **({"yaw": yaw_tracks[k]} if k in yaw_tracks else {})) for k, c in clips.items()},
         "attacks": attacks,
         "tracks": tracks,
     }

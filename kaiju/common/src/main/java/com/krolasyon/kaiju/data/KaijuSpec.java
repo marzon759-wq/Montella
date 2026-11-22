@@ -47,6 +47,8 @@ public final class KaijuSpec {
         public final float len;
         public final boolean loop;
         public final float[] impacts;
+        /** per-tick body turn (degrees, model +y = to the left) for clips that turn the whole kaiju; null otherwise */
+        public float[] yaw;
         /** ticks * nodes * 3, model px */
         public final float[] pos;
 
@@ -129,6 +131,11 @@ public final class KaijuSpec {
             float[] impacts = new float[imp.size()];
             for (int i = 0; i < impacts.length; i++) impacts[i] = imp.get(i).getAsFloat();
             Clip c = new Clip(name, clipNames.size(), ci.get("len").getAsFloat(), ci.get("loop").getAsBoolean(), impacts, ticks, pos);
+            if (ci.has("yaw")) {
+                JsonArray ya = ci.getAsJsonArray("yaw");
+                c.yaw = new float[ya.size()];
+                for (int i = 0; i < c.yaw.length; i++) c.yaw[i] = ya.get(i).getAsFloat();
+            }
             clipIndex.put(name, c.index);
             clipNames.add(name);
             clips.put(name, c);

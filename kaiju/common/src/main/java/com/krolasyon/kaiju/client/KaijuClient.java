@@ -37,6 +37,7 @@ public final class KaijuClient {
     public static final KeyMapping WHEEL = key("wheel", GLFW.GLFW_KEY_Z);
     public static final KeyMapping AI = key("ai", GLFW.GLFW_KEY_H);
     public static final KeyMapping DEBUG = key("debug", GLFW.GLFW_KEY_F7);
+    public static final KeyMapping RELEASE = key("release", GLFW.GLFW_KEY_K);
 
     public static boolean debugNodes;
     static float shake, flash;
@@ -51,7 +52,7 @@ public final class KaijuClient {
             e.registerEntityRenderer(KaijuMod.SEVERED.get(), SeveredPartRenderer::new);
         });
         mod.addListener((RegisterKeyMappingsEvent e) -> {
-            for (KeyMapping k : new KeyMapping[]{BREATH, GRAB, TAIL, BITE, PULSE, ROAR, DODGE, SPECIAL, WHEEL, AI, DEBUG}) e.register(k);
+            for (KeyMapping k : new KeyMapping[]{BREATH, GRAB, TAIL, BITE, PULSE, ROAR, DODGE, SPECIAL, WHEEL, AI, DEBUG, RELEASE}) e.register(k);
         });
         mod.addListener((RegisterGuiOverlaysEvent e) -> e.registerAbove(VanillaGuiOverlay.BOSS_EVENT_PROGRESS.id(), "kaiju_hud",
                 (gui, g, pt, w, h) -> hud(g, pt, w, h)));
@@ -89,6 +90,7 @@ public final class KaijuClient {
         KaijuEntity k = riding();
         if (k == null || mc.player == null) return;
         while (WHEEL.consumeClick()) mc.setScreen(new AttackWheelScreen(k));
+        while (RELEASE.consumeClick()) Net.sendSelect("__release__", false);
         if (mc.screen != null) return;
         ControlInput in = new ControlInput();
         in.forward = mc.player.input.forwardImpulse;
@@ -97,7 +99,7 @@ public final class KaijuClient {
         in.pitch = mc.player.getXRot();
         int b = 0;
         if (mc.options.keyAttack.isDown()) b |= ControlInput.ATTACK;
-        if (mc.options.keyUse.isDown()) b |= ControlInput.HEAVY;
+        if (mc.options.keyUse.isDown() && !holdingController()) b |= ControlInput.HEAVY;
         if (BREATH.isDown()) b |= ControlInput.BREATH;
         if (GRAB.isDown()) b |= ControlInput.GRAB;
         if (TAIL.isDown()) b |= ControlInput.TAIL;
@@ -115,8 +117,14 @@ public final class KaijuClient {
     }
 
     /** riding a kaiju: mouse buttons drive the kaiju, not the player's hands */
+    static boolean holdingController() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && (mc.player.getMainHandItem().is(KaijuMod.CONTROLLER.get()) || mc.player.getOffhandItem().is(KaijuMod.CONTROLLER.get()));
+    }
+
     static void interact(InputEvent.InteractionKeyMappingTriggered e) {
-        if (riding() != null) {
+        // holding the controller, right-click still uses it: that is how you let go of the kaiju
+        if (riding() != null && !(e.isUseItem() && holdingController())) {
             e.setCanceled(true);
             e.setSwingHand(false);
         }

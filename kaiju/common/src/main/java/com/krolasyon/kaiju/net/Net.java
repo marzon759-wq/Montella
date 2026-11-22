@@ -62,7 +62,10 @@ public final class Net {
 
     static void onSelect(Select m, Supplier<NetworkEvent.Context> c) {
         ServerPlayer p = c.get().getSender();
-        if (p != null && p.getVehicle() instanceof KaijuEntity k && k.controller == p && k.spec.attackById.containsKey(m.attack())) {
+        if (p != null && p.getVehicle() instanceof KaijuEntity k0 && k0.controller == p && m.attack().equals("__release__")) {
+            k0.releaseControl();
+            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.kaiju.released"), true);
+        } else if (p != null && p.getVehicle() instanceof KaijuEntity k && k.controller == p && k.spec.attackById.containsKey(m.attack())) {
             k.special = m.attack();
             if (m.perform()) k.startAttack(m.attack());
         }

@@ -112,6 +112,48 @@ public final class AutoTest {
         cue(40, () -> Minecraft.getInstance().stop());
     }
 
+    static void rlog(String what) {
+        Minecraft mc = Minecraft.getInstance();
+        var v = mc.player == null ? null : mc.player.getVehicle();
+        int count = mc.level == null ? -1 : mc.level.getEntitiesOfClass(KaijuEntity.class, mc.player.getBoundingBox().inflate(1000)).size();
+        KaijuMod.LOG.info("[RC] {} riding={} kaiju_count={}", what, v instanceof KaijuEntity, count);
+    }
+
+    static void rightClick() {
+        net.minecraft.client.KeyMapping.click(Minecraft.getInstance().options.keyUse.getKey());
+    }
+
+    static void rc() {
+        String K = "@e[type=kaiju:atomic_kaiju,limit=1,sort=nearest]";
+        cue(30, () -> { cmd("kaiju ai false"); cmd("kill @e[type=kaiju:atomic_kaiju,limit=1,sort=furthest]"); });
+        cue(20, () -> { cmd("tp " + K + " 0 -60 120 180 0"); cmd("gamemode creative"); cmd("clear @s"); cmd("give @s kaiju:kaiju_controller"); cmd("give @s kaiju:atomic_kaiju_egg"); });
+        cue(20, () -> { Minecraft.getInstance().player.getInventory().selected = 0; cmd("tp @s 0 -58 95 facing 0 -40 120"); });
+        cue(20, () -> rlog("before"));
+        cue(2, AutoTest::rightClick);
+        cue(20, () -> rlog("after right-click ON the kaiju (expect riding)"));
+        cue(20, () -> shot("r01_riding"));
+        cue(5, AutoTest::rightClick);
+        cue(30, () -> rlog("after right-click while riding (expect released)"));
+        cue(10, () -> cmd("tp @s 0 -58 60 180 -60"));
+        cue(10, AutoTest::rightClick);
+        cue(30, () -> rlog("after right-click in the air (expect riding)"));
+        cue(5, () -> net.minecraft.client.KeyMapping.click(KaijuClient.RELEASE.getKey()));
+        cue(30, () -> rlog("after K (expect released)"));
+        cue(10, () -> { cmd("tp @s 0 -50 60 0 30"); Minecraft.getInstance().player.getInventory().selected = 1; });
+        cue(10, AutoTest::rightClick);
+        cue(40, () -> rlog("after egg right-click (expect 2 kaiju)"));
+        // frame sequences: a spin and a claw combo, looking for heads or hands whirling
+        cue(20, () -> { cmd("kill @e[type=kaiju:atomic_kaiju,limit=1,sort=nearest]"); cmd("gamemode spectator"); });
+        cue(30, () -> { cmd("tp " + K + " 0 -60 120 180 0"); cmd("tp @s 70 -35 120 facing 0 -38 120"); });
+        cue(20, () -> cmd("kaiju attack tail_spin_360"));
+        for (int i = 0; i < 20; i++) { final int k = i; cue(3, () -> shot(String.format("r1%02d_spin", k))); }
+        cue(20, () -> cmd("kaiju attack claw_combo3"));
+        for (int i = 0; i < 16; i++) { final int k = i; cue(3, () -> shot(String.format("r2%02d_claw", k))); }
+        cue(30, () -> cmd("kaiju attack roar"));
+        for (int i = 0; i < 12; i++) { final int k = i; cue(5, () -> shot(String.format("r3%02d_roar", k))); }
+        cue(40, () -> Minecraft.getInstance().stop());
+    }
+
     static void build() {
         at = 100;
         cue(0, () -> {
@@ -145,6 +187,7 @@ public final class AutoTest {
         cue(60, () -> cmd("kaiju fight 150"));
         cue(30, () -> { cmd("tp @s 0 -36 -70 0 2"); });
         if (mode.contains("demo")) { demo(); return; }
+        if (mode.contains("rc")) { rc(); return; }
         cue(60, () -> shot("k01_faceoff"));
         cue(5, () -> cmd("kaiju attack roar"));
         cue(40, () -> shot("k02_roar"));
@@ -214,7 +257,7 @@ public final class AutoTest {
         n++;
         for (Object[] c : cues) if ((int) c[0] == n) ((Runnable) c[1]).run();
         // keep the spectator camera aimed at the middle of the fight
-        if (mc.player.isSpectator() && n % 10 == 0 && n > 200 && !mode.contains("demo")) {
+        if (mc.player.isSpectator() && n % 10 == 0 && n > 200 && !mode.contains("demo") && !mode.contains("rc")) {
             var list = mc.level.getEntitiesOfClass(KaijuEntity.class, mc.player.getBoundingBox().inflate(800));
             if (list.size() >= 1) {
                 double x = 0, y = 0, z = 0;
