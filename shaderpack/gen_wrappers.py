@@ -2,8 +2,8 @@
 import os
 P = {
  'gbuffers_basic':        ('gbuffers_solid', ['BASIC']),
- 'gbuffers_textured':     ('gbuffers_solid', ['PARTICLES']),
- 'gbuffers_textured_lit': ('gbuffers_solid', ['PARTICLES']),
+ 'gbuffers_textured':     ('gbuffers_particles', []),
+ 'gbuffers_textured_lit': ('gbuffers_particles', []),
  'gbuffers_terrain':      ('gbuffers_solid', ['TERRAIN']),
  'gbuffers_block':        ('gbuffers_solid', ['BLOCK']),
  'gbuffers_beaconbeam':   ('gbuffers_solid', ['BEAM']),

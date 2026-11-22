@@ -25,7 +25,7 @@ in vec4 glcolor;
 flat in vec3 directCol;
 flat in vec3 ambientCol;
 uniform sampler2D gtexture;
-/* RENDERTARGETS: 0 */
+/* RENDERTARGETS: 5 */
 layout(location = 0) out vec4 outColor;
 void main() {
     vec4 c = texture(gtexture, texcoord) * glcolor;

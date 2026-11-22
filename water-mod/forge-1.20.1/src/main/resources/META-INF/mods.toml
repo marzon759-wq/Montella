@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All rights reserved"
+
+[[mods]]
+modId="montella_water"
+version="${file.jarVersion}"
+displayName="Montella Water Physics"
+authors="krolasyon & Claude"
+description='''
+Realistic water for Minecraft: waterfalls with spray, mist, foam and a roar that grows with their height;
+currents that really carry you, mobs, items and boats; splashes that scale with speed; wakes, ripples and
+rain rings on water; babbling streams. Works with or without shaders (pairs with the Montella Realism shader pack).
+
+Gerçekçi su: yüksekliğine göre gürleyen, köpüren ve sis saçan şelaleler; seni, canlıları, eşyaları ve tekneleri
+gerçekten sürükleyen akıntılar; hıza göre büyüyen sıçramalar; dümen suyu, halkalar ve yağmur halkaları; şırıldayan dereler.
+'''
+
+[[dependencies.montella_water]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.montella_water]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

@@ -1,0 +1,36 @@
+{
+ "waterfall": {
+  "sounds": [
+   {
+    "name": "montella_water:waterfall",
+    "stream": true
+   }
+  ],
+  "subtitle": "subtitles.montella_water.waterfall"
+ },
+ "stream": {
+  "sounds": [
+   {
+    "name": "montella_water:stream",
+    "stream": true
+   }
+  ],
+  "subtitle": "subtitles.montella_water.stream"
+ },
+ "splash_small": {
+  "sounds": [
+   "montella_water:splash_small_0",
+   "montella_water:splash_small_1",
+   "montella_water:splash_small_2"
+  ],
+  "subtitle": "subtitles.montella_water.splash"
+ },
+ "splash_big": {
+  "sounds": [
+   "montella_water:splash_big_0",
+   "montella_water:splash_big_1",
+   "montella_water:splash_big_2"
+  ],
+  "subtitle": "subtitles.montella_water.splash"
+ }
+}

@@ -23,6 +23,7 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex5;
 uniform sampler2D depthtex0;
 uniform sampler2D depthtex1;
 
@@ -353,6 +354,10 @@ void main() {
     }
 #endif
 #endif
+
+    // particles and rain, lit in their own pass, go on top of the finished water and fog
+    vec4 parts = texture(colortex5, uv);
+    col = col * (1.0 - parts.a) + parts.rgb;
 
     col = max(col, vec3(0.0));
     col *= 1.0 - blindness * 0.9;
