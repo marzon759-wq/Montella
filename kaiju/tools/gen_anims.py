@@ -1,219 +1,129 @@
 #!/usr/bin/env python3
-"""KAIJU animations (GeckoLib / bedrock animation json).
+"""Builds every clip of the atomic kaiju and the data the server plays it with.
 
-  animation.kaiju.idle           4 s loop: breathing, neck and tail sway, a blink
-  animation.kaiju.walk           2.4 s loop: heavy stomping gait
-  animation.kaiju.roar           3.5 s: rears up, jaw wide, arms out, snarl
-  animation.kaiju.atomic_breath  7 s: brace, the dorsal plates shoot out of the back one by one from the tail tip to
-                                 the head (with a little overshoot, like the film), inhale and rear back, lunge and
-                                 fire with the jaw wide open, then the plates slam back in from the head to the tail
-  pose.roar                      static pose for stills
-
-Plate sliders move along the plate's own axis (their mount bone carries the tilt), so position y = how far out.
-A renderer can derive each plate's glow from that offset (offset / travel), so the glow wave follows the plates.
-Writes out/kaiju.animation.json (reads out/plates.json).
+Writes:
+  out/kaiju.animation.json            GeckoLib animations (animation.kaiju.<clip>)
+  out/atomic_kaiju.json               server data: spec, collision nodes, attack catalogue, and for every clip a pose
+                                      track: the model-space position of each collision node at every game tick (20 Hz),
+                                      sampled from the very same animation the client plays, so hit spheres follow the
+                                      visible body exactly
 """
-import json, math, os
+import base64, json, math, os, struct, sys
+import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
+sys.path.insert(0, HERE)
+import moves
+import preview as pv
+
 PLATES = json.load(open(os.path.join(OUT, "plates.json")))
-SIDES = (("l", 1), ("r", -1))
-TAILS = [f"tail{i}" for i in range(1, 17)]
-NECK = ["neck1", "neck2", "neck3"]
+GEO = json.load(open(os.path.join(OUT, "kaiju.geo.json")))
+BONES = {b["name"]: b for b in GEO["minecraft:geometry"][0]["bones"]}
+
+# collision nodes: bone, point in model px (bedrock space), radius px, burn region, severable group
+LENS = [11, 11, 11, 11, 10.5, 10.5, 10, 10, 9.5, 9.5, 9, 9, 8.5, 8, 8, 7.5]
+RADS = [13.5, 12.6, 11.7, 10.8, 9.9, 9.1, 8.3, 7.6, 6.9, 6.2, 5.6, 5.0, 4.4, 3.8, 3.2, 2.6, 1.9]
+NODES = [
+    ("head", "head", (0, 90, -26), 7.0, "head", ""),
+    ("snout", "head", (0, 88, -34.5), 4.6, "head", ""),
+    ("jaw", "jaw", (0, 84.5, -30), 4.0, "head", ""),
+    ("neck", "neck2", (0, 82, -8), 10.5, "neck", ""),
+    ("chest", "chest", (0, 65, -3), 15.0, "chest", ""),
+    ("belly", "belly", (0, 52, -1), 15.0, "belly", ""),
+    ("hips", "body", (0, 40, 3), 17.0, "belly", ""),
+    ("shoulder_l", "shoulder_l", (17, 67, -6.5), 6.0, "arm_l", ""),
+    ("shoulder_r", "shoulder_r", (-17, 67, -6.5), 6.0, "arm_r", ""),
+    ("elbow_l", "forearm_l", (19.5, 57, -12), 4.5, "arm_l", "arm_l"),
+    ("elbow_r", "forearm_r", (-19.5, 57, -12), 4.5, "arm_r", "arm_r"),
+    ("hand_l", "hand_l", (19.5, 56, -27), 4.2, "arm_l", "arm_l"),
+    ("hand_r", "hand_r", (-19.5, 56, -27), 4.2, "arm_r", "arm_r"),
+    ("thigh_l", "thigh_l", (14.5, 31, 0), 12.0, "legs", ""),
+    ("thigh_r", "thigh_r", (-14.5, 31, 0), 12.0, "legs", ""),
+    ("knee_l", "thigh_l", (15, 22, -4), 9.0, "legs", ""),
+    ("knee_r", "thigh_r", (-15, 22, -4), 9.0, "legs", ""),
+    ("shin_l", "shin_l", (15, 12, -1.5), 8.6, "legs", ""),
+    ("shin_r", "shin_r", (-15, 12, -1.5), 8.6, "legs", ""),
+    ("foot_l", "foot_l", (15, 2.5, -3), 8.0, "legs", ""),
+    ("foot_r", "foot_r", (-15, 2.5, -3), 8.0, "legs", ""),
+]
+z = 12.0
+for i, L in enumerate(LENS):
+    NODES.append((f"tail{i + 1}", f"tail{i + 1}", (0, 40, z + L / 2), (RADS[i] + RADS[i + 1]) / 2, "tail", "tail_tip" if i >= 10 else ""))
+    z += L
+NODES.append(("mouth", "head", (0, 86.5, -38), 0.0, "head", ""))
+NODES.append(("aim", "head", (0, 86.5, -78), 0.0, "head", ""))  # mouth -> aim = where the head points
+
+SEVER = {"arm_l": "forearm_l", "arm_r": "forearm_r", "tail_tip": "tail11"}
+REGIONS = {"head": ["head"], "neck": ["neck1", "throat"], "chest": ["chest"], "belly": ["body", "belly"],
+           "arm_l": ["shoulder_l"], "arm_r": ["shoulder_r"], "legs": ["thigh_l", "thigh_r"], "tail": ["tail1"]}
 
 
-def smooth(f):
-    f = min(1.0, max(0.0, f))
-    return f * f * (3 - 2 * f)
-
-
-def keyed(keys, t):
-    """piecewise smooth interpolation through (time, value) keys; value is a 3-list"""
-    if t <= keys[0][0]:
-        return keys[0][1]
-    for (t0, v0), (t1, v1) in zip(keys, keys[1:]):
-        if t0 <= t <= t1:
-            f = smooth((t - t0) / (t1 - t0)) if t1 > t0 else 1
-            return [a + (b - a) * f for a, b in zip(v0, v1)]
-    return keys[-1][1]
-
-
-def sampled(fn, length, step=0.05):
-    out = {}
-    n = int(round(length / step))
-    for i in range(n + 1):
-        t = round(i * step, 4)
-        v = fn(t)
-        out[f"{t:g}"] = [round(x, 3) for x in v]
+def node_tracks(anim):
+    """positions of all nodes at 20 Hz for one animation (preview's GeckoLib-equivalent bone math, no cubes)"""
+    n = max(1, int(round(anim.len * 20)))
+    need = set()
+    for _, b, *_ in NODES:
+        while b:
+            need.add(b)
+            b = BONES[b].get("parent")
+    order = [b for b in BONES if b in need]
+    out = np.zeros((n, len(NODES), 3))
+    for k in range(n):
+        t = k / 20
+        world = {}
+        for name in order:
+            b = BONES[name]
+            parent = world[b["parent"]] if "parent" in b else np.eye(4)
+            r = np.array(b.get("rotation", [0, 0, 0]), float)
+            ar, ap, asc = anim.pose(name, t)
+            if ar is not None:
+                r = r + ar
+            m = parent @ (pv.M(t=ap) if ap is not None else np.eye(4)) @ pv.about(b["pivot"], pv.rot(r))
+            if asc is not None:
+                m = m @ pv.about(b["pivot"], np.diag(np.maximum(asc, 1e-4)))
+            world[name] = m
+        for j, (_, bone, p, *_rest) in enumerate(NODES):
+            out[k, j] = (world[bone] @ np.array([*p, 1.0]))[:3]
     return out
 
 
-def channel(keys, length, step=0.05):
-    return sampled(lambda t: keyed(keys, t), length, step)
-
-
-class A:
-    def __init__(self, length, loop):
-        self.length = length
-        self.loop = loop
-        self.bones = {}
-
-    def set(self, bone, kind, data):
-        self.bones.setdefault(bone, {})[kind] = data
-
-    def rot(self, bone, keys, step=0.05):
-        self.set(bone, "rotation", channel(keys, self.length, step))
-
-    def pos(self, bone, keys, step=0.05):
-        self.set(bone, "position", channel(keys, self.length, step))
-
-    def scale(self, bone, keys, step=0.05):
-        self.set(bone, "scale", channel(keys, self.length, step))
-
-    def fn(self, bone, kind, f, step=0.05):
-        self.set(bone, kind, sampled(f, self.length, step))
-
-    def json(self):
-        return {"loop": self.loop, "animation_length": self.length, "bones": self.bones}
-
-
-def idle():
-    a = A(4.0, True)
-    w = 2 * math.pi / 4.0
-    a.fn("chest", "scale", lambda t: [1 + 0.015 * math.sin(w * t), 1 + 0.02 * math.sin(w * t), 1 + 0.02 * math.sin(w * t)])
-    a.fn("belly", "scale", lambda t: [1 + 0.012 * math.sin(w * t - 0.4), 1, 1 + 0.015 * math.sin(w * t - 0.4)])
-    for i, b in enumerate(NECK):
-        a.fn(b, "rotation", lambda t, i=i: [1.5 * math.sin(w * t + i * 0.3), 2.5 * math.sin(w * t * 0.5 + i * 0.4), 0])
-    a.fn("head", "rotation", lambda t: [-1.5 * math.sin(w * t + 1), 4 * math.sin(w * t * 0.5 + 1.4), 0])
-    a.fn("jaw", "rotation", lambda t: [1.5 + 1.5 * math.sin(w * t), 0, 0])
-    for i, b in enumerate(TAILS):
-        a.fn(b, "rotation", lambda t, i=i: [0.8 * math.sin(w * t - i * 0.35), 2.2 * math.sin(w * 0.5 * t - i * 0.3), 0])
-    for side, sg in SIDES:
-        a.fn(f"arm_{side}", "rotation", lambda t, sg=sg: [-2 * math.sin(w * t), 0, sg * 1.5 * math.sin(w * t)])
-        a.fn(f"eyelid_{side}", "position", lambda t: [0, -0.9 if 2.5 <= t <= 2.65 else 0, 0], step=0.05)
-    return a
-
-
-def walk():
-    L = 2.4
-    a = A(L, True)
-    w = 2 * math.pi / L
-    a.fn("body", "position", lambda t: [0, -1.2 * abs(math.sin(w * t)) + 0.4, 0])
-    a.fn("body", "rotation", lambda t: [0, 4 * math.sin(w * t), 3 * math.sin(w * t)])
-    a.fn("torso", "rotation", lambda t: [2 + 1.5 * abs(math.sin(w * t)), -3 * math.sin(w * t), -2 * math.sin(w * t)])
-    a.fn("neck1", "rotation", lambda t: [-1.5 * abs(math.sin(w * t)), 2 * math.sin(w * t), 0])
-    a.fn("head", "rotation", lambda t: [2 * abs(math.sin(w * t)) - 1, -2 * math.sin(w * t), 0])
-    for side, sg in SIDES:
-        ph = 0 if sg > 0 else math.pi
-        a.fn(f"thigh_{side}", "rotation", lambda t, ph=ph: [16 * math.sin(w * t + ph), 0, 0])
-        a.fn(f"shin_{side}", "rotation", lambda t, ph=ph: [-14 * max(0, math.sin(w * t + ph + 1.2)), 0, 0])
-        a.fn(f"foot_{side}", "rotation", lambda t, ph=ph: [-10 * math.sin(w * t + ph) + 8 * max(0, math.sin(w * t + ph + 1.2)), 0, 0])
-        a.fn(f"arm_{side}", "rotation", lambda t, ph=ph: [-6 * math.sin(w * t + ph), 0, 0])
-    for i, b in enumerate(TAILS):
-        a.fn(b, "rotation", lambda t, i=i: [1.2 * math.sin(2 * w * t - i * 0.3), -4 * math.sin(w * t - i * 0.32), 0])
-    return a
-
-
-def roar():
-    L = 3.5
-    a = A(L, False)
-    k = lambda *pts: [(t, list(v)) for t, v in pts]
-    a.rot("torso", k((0, [0, 0, 0]), (0.5, [5, 0, 0]), (1.0, [-8, 0, 0]), (2.8, [-8, 0, 0]), (3.5, [0, 0, 0])))
-    for i, b in enumerate(NECK):
-        a.rot(b, k((0, [0, 0, 0]), (0.5, [6, 0, 0]), (1.0, [-10, 0, 0]), (2.8, [-12, 0, 0]), (3.5, [0, 0, 0])))
-    a.rot("head", k((0, [0, 0, 0]), (0.5, [8, 0, 0]), (1.05, [-24, 0, 0]), (2.8, [-26, 0, 0]), (3.5, [0, 0, 0])))
-    a.fn("head", "position", lambda t: [0.15 * math.sin(t * 90) if 1.1 < t < 2.8 else 0, 0, 0], step=0.05)
-    a.rot("jaw", k((0, [0, 0, 0]), (0.5, [4, 0, 0]), (1.05, [40, 0, 0]), (2.8, [42, 0, 0]), (3.3, [0, 0, 0])))
-    a.pos("lip_upper", k((0, [0, 0, 0]), (1.0, [0, 0.8, 0]), (2.8, [0, 0.8, 0]), (3.3, [0, 0, 0])))
-    a.rot("tongue1", k((0, [0, 0, 0]), (1.05, [-10, 0, 0]), (2.8, [-14, 0, 0]), (3.3, [0, 0, 0])))
-    a.rot("throat", k((0, [0, 0, 0]), (1.05, [10, 0, 0]), (2.8, [10, 0, 0]), (3.3, [0, 0, 0])))
-    a.scale("chest", k((0, [1, 1, 1]), (0.5, [1.05, 1.04, 1.05]), (1.1, [1, 1, 1]), (3.5, [1, 1, 1])))
-    for side, sg in SIDES:
-        a.rot(f"brow_{side}", k((0, [0, 0, 0]), (0.8, [0, 0, sg * 6]), (2.8, [0, 0, sg * 6]), (3.5, [0, 0, 0])))
-        a.rot(f"arm_{side}", k((0, [0, 0, 0]), (1.0, [-34, 0, -sg * 22]), (2.8, [-36, 0, -sg * 24]), (3.5, [0, 0, 0])))
-        a.rot(f"forearm_{side}", k((0, [0, 0, 0]), (1.0, [-22, 0, 0]), (2.8, [-24, 0, 0]), (3.5, [0, 0, 0])))
-        for f in range(4):
-            for j in (1, 2):
-                a.rot(f"finger{f}_{j}_{side}", k((0, [0, 0, 0]), (1.0, [-18, 0, 0]), (2.8, [-18, 0, 0]), (3.5, [0, 0, 0])))
-    for i, b in enumerate(TAILS):
-        a.rot(b, k((0, [0, 0, 0]), (1.0, [3 + i * 0.3, 0, 0]), (2.8, [3, 0, 0]), (3.5, [0, 0, 0])))
-    return a
-
-
-def atomic_breath():
-    L = 7.0
-    a = A(L, False)
-    k = lambda *pts: [(t, list(v)) for t, v in pts]
-    # body language: brace -> charge -> rear back (inhale) -> lunge and fire -> recover
-    a.pos("body", k((0, [0, 0, 0]), (0.6, [0, -1.5, 0]), (5.4, [0, -1.5, 0]), (6.4, [0, 0, 0])))
-    for side, sg in SIDES:
-        a.rot(f"thigh_{side}", k((0, [0, 0, 0]), (0.6, [-7, 0, -sg * 2]), (3.3, [-7, 0, -sg * 2]), (3.6, [-4, 0, -sg * 2]), (5.4, [-4, 0, 0]), (6.4, [0, 0, 0])))
-        a.rot(f"shin_{side}", k((0, [0, 0, 0]), (0.6, [9, 0, 0]), (5.4, [9, 0, 0]), (6.4, [0, 0, 0])))
-        a.rot(f"foot_{side}", k((0, [0, 0, 0]), (0.6, [-2, 0, 0]), (5.4, [-2, 0, 0]), (6.4, [0, 0, 0])))
-        a.rot(f"arm_{side}", k((0, [0, 0, 0]), (0.6, [-14, 0, -sg * 10]), (2.9, [-20, 0, -sg * 18]), (3.3, [-8, 0, -sg * 8]), (5.4, [-10, 0, -sg * 8]), (6.4, [0, 0, 0])))
-        a.rot(f"forearm_{side}", k((0, [0, 0, 0]), (0.6, [-12, 0, 0]), (5.4, [-14, 0, 0]), (6.4, [0, 0, 0])))
-        for f in range(4):
-            for j in (1, 2, 3):
-                a.rot(f"finger{f}_{j}_{side}", k((0, [0, 0, 0]), (0.6, [-14, 0, 0]), (2.9, [-20, 0, 0]), (3.3, [6, 0, 0]), (5.4, [6, 0, 0]), (6.4, [0, 0, 0])))
-        a.rot(f"brow_{side}", k((0, [0, 0, 0]), (0.6, [0, 0, sg * 5]), (5.4, [0, 0, sg * 7]), (6.4, [0, 0, 0])))
-    a.rot("torso", k((0, [0, 0, 0]), (0.6, [5, 0, 0]), (2.4, [6, 0, 0]), (2.95, [-7, 0, 0]), (3.35, [9, 0, 0]), (5.3, [7, 0, 0]), (6.4, [0, 0, 0])))
-    a.scale("chest", k((0, [1, 1, 1]), (2.4, [1, 1, 1]), (2.95, [1.06, 1.05, 1.07]), (3.35, [1, 1, 1])))
-    a.scale("belly", k((0, [1, 1, 1]), (2.4, [1, 1, 1]), (2.95, [1.04, 1, 1.06]), (3.35, [1, 1, 1])))
-    for i, b in enumerate(NECK):
-        a.rot(b, k((0, [0, 0, 0]), (0.6, [5, 0, 0]), (2.4, [7, 0, 0]), (2.95, [-14, 0, 0]), (3.35, [9, 0, 0]), (5.3, [9, 0, 0]), (6.4, [0, 0, 0])))
-    a.rot("head", k((0, [0, 0, 0]), (0.6, [5, 0, 0]), (2.4, [6, 0, 0]), (2.95, [-20, 0, 0]), (3.35, [3, 0, 0]), (5.3, [3, 0, 0]), (6.4, [0, 0, 0])))
-    # the head shudders while it fires
-    a.fn("head", "position", lambda t: [0.12 * math.sin(t * 110), 0.1 * math.sin(t * 87), 0] if 3.35 < t < 5.3 else [0, 0, 0])
-    a.rot("jaw", k((0, [0, 0, 0]), (2.4, [3, 0, 0]), (2.95, [18, 0, 0]), (3.35, [40, 0, 0]), (5.3, [40, 0, 0]), (5.8, [8, 0, 0]), (6.4, [0, 0, 0])))
-    a.pos("lip_upper", k((0, [0, 0, 0]), (2.95, [0, 0.4, 0]), (3.35, [0, 0.9, 0]), (5.3, [0, 0.9, 0]), (5.8, [0, 0, 0])))
-    a.rot("tongue1", k((0, [0, 0, 0]), (3.35, [-8, 0, 0]), (5.3, [-8, 0, 0]), (5.8, [0, 0, 0])))
-    a.rot("throat", k((0, [0, 0, 0]), (2.95, [-6, 0, 0]), (3.35, [10, 0, 0]), (5.3, [10, 0, 0]), (6.0, [0, 0, 0])))
-    for i, b in enumerate(TAILS):
-        f = i / 15
-        a.rot(b, k((0, [0, 0, 0]), (0.6, [2 + 2 * f, 0, 0]), (2.4, [3 + 3 * f, 0, 0]), (2.95, [-2, 0, 0]), (3.35, [5 + 5 * f, 0, 0]),
-                   (5.3, [4 + 4 * f, 0, 0]), (6.4, [0, 0, 0])), step=0.1)
-    # the plates: out one by one from the tail tip (s=0) to the head (s=1), then back in from the head to the tail
-    for p in PLATES:
-        s, T = p["s"], p["travel"]
-        t_out = 0.5 + 1.8 * s
-        t_in = 5.3 + 0.75 * (1 - s)
-        keys = {
-            "0": [0, 0, 0],
-            f"{t_out:.3f}": [0, 0, 0],
-            f"{t_out + 0.09:.3f}": [0, round(T * 1.18, 3), 0],
-            f"{t_out + 0.17:.3f}": [0, round(T * 0.94, 3), 0],
-            f"{t_out + 0.24:.3f}": [0, round(T, 3), 0],
-            f"{t_in:.3f}": [0, round(T, 3), 0],
-            f"{t_in + 0.07:.3f}": [0, round(-T * 0.1, 3), 0],
-            f"{t_in + 0.14:.3f}": [0, 0, 0],
-        }
-        a.set(p["bone"], "position", keys)
-    return a
-
-
-def pose_roar():
-    return {"loop": True, "animation_length": 1, "bones": {
-        "neck1": {"rotation": [-5, 0, 0]}, "neck2": {"rotation": [-4, 0, 0]}, "neck3": {"rotation": [-4, 0, 0]},
-        "head": {"rotation": [-20, 0, 0]}, "jaw": {"rotation": [38, 0, 0]}, "lip_upper": {"position": [0, 0.8, 0]},
-        "torso": {"rotation": [-4, 0, 0]}, "throat": {"rotation": [10, 0, 0]},
-        "arm_l": {"rotation": [-30, 0, -14]}, "arm_r": {"rotation": [-30, 0, 14]},
-        "forearm_l": {"rotation": [-20, 0, 0]}, "forearm_r": {"rotation": [-20, 0, 0]},
-        "brow_l": {"rotation": [0, 0, 6]}, "brow_r": {"rotation": [0, 0, -6]},
-    }}
+def pack(arr):
+    q = np.clip(np.round(arr * 10), -32767, 32767).astype("<i2")
+    return base64.b64encode(q.tobytes()).decode()
 
 
 def main():
-    data = {"format_version": "1.8.0", "animations": {
-        "animation.kaiju.idle": idle().json(),
-        "animation.kaiju.walk": walk().json(),
-        "animation.kaiju.roar": roar().json(),
-        "animation.kaiju.atomic_breath": atomic_breath().json(),
-        "pose.roar": pose_roar(),
-    }}
+    clips, attacks = moves.build(PLATES)
+    anims = {}
+    for name, c in clips.items():
+        anims[f"animation.kaiju.{name}"] = c.to_json()
     with open(os.path.join(OUT, "kaiju.animation.json"), "w") as f:
-        json.dump(data, f, separators=(",", ":"))
-    print("animations:", ", ".join(data["animations"]))
+        json.dump({"format_version": "1.8.0", "animations": anims}, f, separators=(",", ":"))
+    data = {"format_version": "1.8.0", "animations": anims}
+
+    tracks = {}
+    for name in clips:
+        a = pv.Anim(data, f"animation.kaiju.{name}")
+        a.len = clips[name].length
+        tr = node_tracks(a)
+        tracks[name] = {"ticks": int(tr.shape[0]), "loop": clips[name].loop, "data": pack(tr)}
+    spec = {
+        "id": "atomic_kaiju",
+        "model_height_px": 96, "scale": 8.0, "mass": 20000.0, "max_hp": 6000.0,
+        "walk_speed_px": 18.0, "fast_speed_px": 30.0, "turn_deg": 2.4,
+        "nodes": [{"name": n, "bone": b, "r": r, "region": reg, "sever": sv} for n, b, p, r, reg, sv in NODES],
+        "sever_bones": SEVER, "regions": REGIONS,
+        "plates": PLATES,
+        "clips": {k: {"len": c.length, "loop": c.loop, "impacts": [round(t, 3) for t, s in c.impacts if s >= 0.3]} for k, c in clips.items()},
+        "attacks": attacks,
+        "tracks": tracks,
+    }
+    with open(os.path.join(OUT, "atomic_kaiju.json"), "w") as f:
+        json.dump(spec, f, separators=(",", ":"))
+    sz = os.path.getsize(os.path.join(OUT, "kaiju.animation.json")) / 1e6
+    sz2 = os.path.getsize(os.path.join(OUT, "atomic_kaiju.json")) / 1e6
+    print(f"clips {len(clips)} attacks {len(attacks)} anim.json {sz:.1f} MB data {sz2:.1f} MB")
 
 
 if __name__ == "__main__":

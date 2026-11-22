@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="kaiju"
+version="${mod_version}"
+displayName="Kaiju: Atomic"
+authors="krolasyon"
+description='''
+A film-scale atomic kaiju with physics-driven combat: 80+ attacks, knockdowns, grapples, severed and regrowing limbs,
+burns, an atomic breath whose dorsal plates light up one by one, beam clashes, and a world it can tear apart.
+Spawn it from its egg; right-click with the Kaiju Controller to take control.
+'''
+
+[[dependencies.kaiju]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.kaiju]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.kaiju]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"

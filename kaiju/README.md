@@ -1,49 +1,112 @@
-# KAIJU (Minecraft Forge 1.20.1): model and animation stage
+# KAIJU: Atomic (Minecraft Forge 1.20.1, GeckoLib 4)
 
-The model, its textures and its animations. There is no entity or gameplay code yet.
+A film-scale atomic kaiju (about 50 blocks tall) with physics-driven combat, 87 attacks, a world it can tear apart, and
+an atomic breath whose dorsal plates slide out one by one from the tail to the head.
 
-## Files (`common/src/main/resources/assets/kaiju/`)
+## Play
 
-| File | What it is |
+- **Atomic Kaiju Egg** (Spawn Eggs tab): use it on the ground to hatch a kaiju. You own it.
+- **Kaiju Controller** (Tools tab): right-click to take control of the nearest kaiju you own; right-click again to let go.
+  In creative mode you can take any kaiju.
+- Kaiju fight each other by themselves. Hatch two, or use `/kaiju fight`.
+
+### Controls while riding
+
+| Key | Action |
 |---|---|
-| `geo/entity/kaiju.geo.json` | GeckoLib model: 307 bones, ~4300 cubes, 1024×1024 texture |
-| `textures/entity/kaiju.png` | charcoal-black embossed keloid skin (4 texels per model pixel) |
-| `textures/entity/kaiju_glowmask.png` | atomic charge: dorsal plates and mouth glow cyan |
-| `textures/entity/kaiju_burning.png` + `_glowmask` | variant with orange magma cracks |
-| `animations/entity/kaiju.animation.json` | `idle`, `walk`, `roar`, `atomic_breath`, `pose.roar` |
+| WASD, mouse | walk relative to the camera; Ctrl = walk faster |
+| Left mouse | light attack (picks the best claw / bite / kick for the range and side) |
+| Right mouse | heavy attack (tail, body, grapple) |
+| R (hold) | atomic breath. Hold to keep firing; aim with the crosshair. Ctrl+R sweeps, Shift+R full charge, looking up fires into the sky, an enemy on the ground gets a downward breath |
+| G | grab: an enemy close by (grab and throw, Shift = lift and slam), otherwise a tree; Ctrl+G tears up the ground. Holding something: throw it (swing it if the enemy is close) |
+| V | tail attack, by the enemy's side (left/right whip, behind: slam or stab, in front: 360 spin) |
+| C | bite / grapple bite |
+| Space | stomp (Ctrl+Space: ground pound) |
+| Shift | guard |
+| Left Alt | dodge (A/D sidestep, otherwise step back) |
+| N | nuclear pulse · B roar |
+| Z | menu of all attacks; clicking one performs it and assigns it to Y |
+| H | AI assist (it fights by itself, you ride along) |
+| F7 | show the server's collision spheres |
 
-## Moving parts
+On the ground: left mouse kicks, right mouse sweeps the tail, R fires the breath from the ground, Alt rolls away, Space or W gets up.
 
-- **Body:** `body` (hips), `torso`, `belly` and `chest` (these two scale for breathing)
-- **Neck:** `neck1`, `neck2`, `neck3`, `throat`
-- **Head:** `head`, `brow_l/r`, `eyelid_l/r` (blinking), `lip_upper` (snarling), `jaw`, `lip_lower`, `tongue1`, `tongue2`
-- **Arms:** `shoulder_*`, `arm_*`, `forearm_*`, `hand_*`; four fingers with 3 joints each (`finger{0-3}_{1-3}_*`); a two-joint thumb (`thumb_{1,2}_*`)
-- **Legs:** `thigh_*`, `shin_*`, `foot_*`; three toes with 2 joints each (`toe{0-2}_{1,2}_*`); `dewclaw_*`
-- **Tail:** `tail1` to `tail16`
-- **Dorsal plates:** 108 plates in three rows. Each plate has two bones:
-  - `plate_mount_N` holds the fixed tilt.
-  - `plate_N` is a slider that moves along the plate's own axis. In the animation, its `position.y` is how far the plate is pushed out.
+## Commands (`/kaiju`, op)
 
-## Atomic breath (`animation.kaiju.atomic_breath`, 7 s)
+`fight [distance]`, `attack <id>` (tab completion lists every attack), `list`, `control`, `release`, `scale <v>`,
+`ai <true|false>`, `griefing <true|false>`, `sever <arm_l|arm_r|tail_tip>`, `burn`, `clear`.
 
-1. **0–0.6 s:** the creature braces and lowers itself.
-2. **0.5–2.5 s:** the plates come out one by one, from the tail tip to the head, each with a small overshoot.
-3. **2.4–3.3 s:** it inhales (the chest swells), rears back, and the mouth starts to glow.
-4. **3.35–5.3 s:** it lunges forward and fires with its jaw wide open. The head shudders the whole time.
-5. **5.3–6.2 s:** the plates slam back in, from the head to the tail.
-6. **6.2–7.0 s:** it returns to rest.
+Config: `config/kaiju-common.toml` sets griefing, flying debris, the block budget per tick, the default size, and
+whether kaiju hatched by the same player fight each other.
 
-The mod code can work out each plate's glow from that plate's slider offset (`offset / travel`), so the light follows the plates out and dies down as they go back in. The travel of every plate is listed in `tools/out/plates.json`.
+## How it works
 
-## Rebuilding
+**The server plays the same animation as the client.** `tools/gen_anims.py` writes the GeckoLib animations and,
+alongside them, a *pose track* for every clip: the position of 39 collision spheres (head, jaw, neck, chest, arms,
+legs, 16 tail segments...) at every game tick. The server reads the track for the clip being played, so the hit
+spheres follow the visible body exactly.
+
+**Hits are momentum.** The weapon sphere's path during the tick is checked against the victim's spheres as a swept
+sphere, so even a tail tip moving 10 blocks a tick cannot pass through a body.
+- Impulse: `J = (1+e) * μ * v_closing`.
+- Change in the victim's velocity: `Δv = η J / M`.
+- Δv decides flinch, stagger or knockdown, together with poise.
+- Damage grows with the momentum delivered and the type of weapon (blunt, cut, bite, crush, stomp).
+- Both bodies freeze for a few frames (hit-stop).
+
+Bodies push each other out with mass-weighted corrections and lose their closing speed, so tails and arms never pass
+through each other.
+
+**Animation physics.** The tail is simulated as a chain of damped springs: when the body spins, the tail lags,
+whips and overshoots. The neck and arms have their own follow-through. Impacts jiggle the belly and throat.
+
+**Atomic breath.** In the charge clip, every plate's slider bone comes out in order from the tail to the head, and the
+client lights each plate in proportion to how far it is out. The beam starts from the mouth sphere and aims where the
+head points, within a cone the neck can reach.
+- It digs slowly through terrain, vaporises it, and leaves magma and fire behind.
+- At the point of impact it leaves a nuclear explosion and a mushroom cloud.
+- Where it hits a kaiju, that body region's heat rises and the skin cracks orange.
+
+Two beams that touch lock into a *clash*. The meeting point slides toward the weaker beam, and the overpowered
+kaiju's own face takes the blast.
+
+**Severed limbs.** The arms and the tail tip have their own health. When it runs out from cut, bite or beam damage
+the part comes off: a severed-part entity falls and twitches. After 7 seconds the stump grows back like the film:
+lumpy, raw and pulsing flesh, over 30 seconds. Attacks that need that part are disabled until then.
+
+**The world.**
+- Moving body spheres plough through what they touch, and feet leave footprints.
+- Falls crush houses.
+- Shockwaves throw rubble.
+- Trees are pulled out by the roots, and chunks of houses or slabs of ground are torn off. Each becomes one entity
+  that can be carried, swung or thrown; on impact it scatters into real falling blocks.
+- Everything respects mobGriefing and the per-tick block budget.
+
+**AI.** It scores every legal attack by distance, which side the enemy is on, and whether either kaiju is down,
+staggered, grabbed, charging or firing. It also weighs its own health and its success so far, then picks with some
+randomness. It knows how to:
+- answer a charging breath with its own (clash),
+- stand over a fallen enemy and stomp or fire,
+- fight back from the ground,
+- throw a tree from a distance,
+- break free of a grapple with the nuclear pulse.
+
+## Adding another kaiju
+
+1. Add its model, textures and animations to `assets/kaiju/...`. Keep the bone names used by the nodes (or write your own node list).
+2. In `tools/`, write a moves file and a NODES list like the existing ones. Running `gen_anims.py` generates
+   `data/kaiju/kaiju/<id>.json` (spec, attacks, pose tracks).
+3. Java: a three-line subclass, like `AtomicKaijuEntity`, which calls `super(type, level, "<id>")`. Register its
+   entity type and renderer (`KaijuMod`, `KaijuClient`).
+
+The combat, physics, AI, beam clash, severing and world damage are shared, so the two kaiju fight each other
+automatically.
+
+## Building
 
 ```bash
-cd kaiju/tools
-python3 gen_kaiju.py      # model + textures + plates.json  -> out/
-python3 gen_anims.py      # animations                       -> out/
-python3 shots.py stills   # still images                     -> prev/
-python3 shots.py strip    # atomic breath, key moments       -> prev/atomic_strip.png
-python3 shots.py atomic   # atomic breath video              -> prev/atomic_breath.mp4
+cd kaiju/tools && python3 gen_kaiju.py && python3 gen_anims.py && python3 gen_assets.py
+cd ../forge-1.20.1 && gradle build      # JDK 17 -> build/libs/kaiju-1.20.1-forge-*.jar
 ```
 
-`preview.py` is an offline renderer that follows GeckoLib's rotation and bone order. It draws shadows, per-bone glow and bloom, and the beam.
+Requires GeckoLib 4.4+ (Forge 1.20.1).
