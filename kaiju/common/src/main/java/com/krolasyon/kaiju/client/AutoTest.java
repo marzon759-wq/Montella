@@ -155,6 +155,31 @@ public final class AutoTest {
         cue(40, () -> Minecraft.getInstance().stop());
     }
 
+    static void beamTest() {
+        // two kaiju 140 blocks apart; one breathes at the other: charge, fire and impact photographed up close
+        cue(30, () -> { cmd("kaiju ai false"); });
+        cue(20, () -> { cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=nearest] 0 -60 120 -90 0"); cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=furthest] 140 -60 120 90 0"); });
+        cue(20, () -> cmd("tp @s -30 -30 75 facing 30 -36 120"));
+        cue(20, () -> { var s = Minecraft.getInstance().getSingleplayerServer(); s.execute(() -> {
+            for (KaijuEntity k : s.overworld().getEntitiesOfClass(KaijuEntity.class, new net.minecraft.world.phys.AABB(-2000, -100, -2000, 2000, 400, 2000))) {
+                if (k.getX() < 50) { k.brain.enabled = true; k.brain.nextBreath = 0; k.cooldown.clear(); k.state = KaijuEntity.State.IDLE; k.attack = null; k.brain.target = null; }
+            }
+            var all = s.overworld().getEntitiesOfClass(KaijuEntity.class, new net.minecraft.world.phys.AABB(-2000, -100, -2000, 2000, 400, 2000));
+            for (KaijuEntity k : all) if (k.getX() < 50) {
+                for (KaijuEntity o : all) if (o != k) k.brain.target = o;
+                k.startAttack("atomic_breath");
+                k.brain.enabled = false;
+            }
+        }); });
+        for (int i = 0; i < 6; i++) { final int k = i; cue(9, () -> shot(String.format("b0%d_charge", k))); }
+        for (int i = 0; i < 6; i++) { final int k = i; cue(6, () -> shot(String.format("b1%d_fire", k))); }
+        cue(4, () -> cmd("tp @s 20 -38 95 facing 8 -32 120"));
+        cue(6, () -> shot("b20_mouth"));
+        cue(4, () -> cmd("tp @s 110 -40 90 facing 135 -45 120"));
+        cue(6, () -> shot("b21_impact"));
+        cue(40, () -> Minecraft.getInstance().stop());
+    }
+
     static void build() {
         at = 100;
         cue(0, () -> {
@@ -189,6 +214,7 @@ public final class AutoTest {
         cue(30, () -> { cmd("tp @s 0 -36 -70 0 2"); });
         if (mode.contains("demo")) { demo(); return; }
         if (mode.contains("rc")) { rc(); return; }
+        if (mode.contains("beam")) { beamTest(); return; }
         cue(60, () -> shot("k01_faceoff"));
         cue(5, () -> cmd("kaiju attack roar"));
         cue(40, () -> shot("k02_roar"));
@@ -258,7 +284,7 @@ public final class AutoTest {
         n++;
         for (Object[] c : cues) if ((int) c[0] == n) ((Runnable) c[1]).run();
         // keep the spectator camera aimed at the middle of the fight
-        if (mc.player.isSpectator() && n % 10 == 0 && n > 200 && !mode.contains("demo") && !mode.contains("rc")) {
+        if (mc.player.isSpectator() && n % 10 == 0 && n > 200 && !mode.contains("demo") && !mode.contains("rc") && !mode.contains("beam")) {
             var list = mc.level.getEntitiesOfClass(KaijuEntity.class, mc.player.getBoundingBox().inflate(800));
             if (list.size() >= 1) {
                 double x = 0, y = 0, z = 0;

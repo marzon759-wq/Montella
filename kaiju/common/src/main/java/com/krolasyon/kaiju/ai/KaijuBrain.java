@@ -318,7 +318,9 @@ public final class KaijuBrain {
         } else if (e.beam.firing() || in.down(ControlInput.GUARD)) {
             e.faceYaw = in.yaw;
         }
-        if (!e.canAct()) { in.consume(); return; }
+        // busy (a hit-stop frame): keep the press buffered for a moment instead of dropping it
+        if (!e.canAct()) { if (e.tickCount - in.latchedAt > 12) in.consume(); return; }
+        if (e.tickCount - in.latchedAt > 12) in.consume();  // a press from long ago is stale
         String id = null;
         if (in.pressed(ControlInput.ATTACK)) id = bestOf(t, "claw,bite,leg,body,mount", t != null && t.isDown() ? "stomp_downed" : (rnd.nextBoolean() ? "claw_swipe_l" : "claw_swipe_r"));
         else if (in.pressed(ControlInput.HEAVY)) id = bestOf(t, "tail,body,grapple,mount", "tail_spin_360");

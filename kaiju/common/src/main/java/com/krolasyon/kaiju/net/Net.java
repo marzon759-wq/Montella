@@ -55,7 +55,7 @@ public final class Net {
                 k.setAiAssist(on);
                 p.displayClientMessage(net.minecraft.network.chat.Component.translatable(on ? "msg.kaiju.ai_on" : "msg.kaiju.ai_off"), true);
             }
-            k.input.update(m.in());
+            k.input.update(m.in(), k.tickCount);
         }
         c.get().setPacketHandled(true);
     }

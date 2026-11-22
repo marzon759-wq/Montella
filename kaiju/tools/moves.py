@@ -121,7 +121,7 @@ def locomotion():
 
     #     name          L    stride knee bob  sway yaw lean neck  arms(raise, elbow, out) tail
     gait("walk",       2.8, 17,    34,  1.6, 2.0, 6,  12,  5,    (14, 32, 7))
-    gait("walk_fast",  1.5, 26,    58,  3.0, 1.2, 4,  26,  12,   (30, 55, 4), tail_lift=10)
+    gait("walk_fast",  1.3, 30,    64,  3.4, 1.1, 4,  28,  13,   (32, 58, 4), tail_lift=12)
     gait("walk_back",  3.2, 11,    26,  1.2, 1.6, 4,  6,   2,    (18, 30, 8), back=True)
     gait("turn",       2.0, 7,     22,  0.9, 1.6, 3,  10,  4,    (14, 32, 7))
 
@@ -542,9 +542,14 @@ def plates_hold(c, plates, jitter=True):
 
 def atomic(plates):
     """breath = charge -> fire (loop, length decided by the server) -> release. Variants change the fire loop."""
-    brace = merge(crouch(0.8), torso(6), arm("l", 14, 10, elbow=12, fingers=-14), arm("r", 14, 10, elbow=12, fingers=-14), leg("l", 0, 0, 0, 6), leg("r", 0, 0, 0, 6))
-    rear = merge(brace, torso(-8), neck(-16, head_pitch=-20), jaw(18, 0.4), {"throat": [-6, 0, 0]})
-    fire = merge(brace, torso(8), neck(8, head_pitch=3), jaw(40, 1), {"throat": [10, 0, 0]}, arm("l", 20, 16, elbow=12, fingers=10), arm("r", 20, 16, elbow=12, fingers=10))
+    # film: hunch and plant the feet while the plates light up, stiffen the tail as a counterweight, then a deep
+    # inhale that throws the head back; firing, the neck straightens and the head reaches forward, the jaw gapes,
+    # the body is shoved back in pulses by the beam's recoil
+    brace = merge(crouch(0.9), torso(10), neck(10, head_pitch=6), arm("l", 18, 14, elbow=20, fingers=-18), arm("r", 18, 14, elbow=20, fingers=-18),
+                  stance_wide(1.3), tail_curve(0, 18, 0), {"throat": [4, 0, 0]})
+    rear = merge(brace, torso(-14), neck(-26, head_pitch=-24), jaw(22, 0.6), {"throat": [-10, 0, 0]}, tail_curve(0, 10, 0))
+    fire = merge(crouch(0.9), stance_wide(1.4), torso(14), neck(16, head_pitch=-6), jaw(50, 1), {"throat": [14, 0, 0]},
+                 arm("l", 26, 26, elbow=22, fingers=24), arm("r", 26, 26, elbow=22, fingers=24), tail_curve(0, 26, 0))
 
     def charge(name, L, pose_end=rear, base=None):
         c = clip(name, L)
@@ -557,7 +562,9 @@ def atomic(plates):
     def fire_loop(name, L, pose, fn=None):
         c = clip(name, L, True)
         c.key(0, pose).key(L, pose)
-        c.add_fn("head", lambda t: [0.5 * math.sin(t * 110), 0.5 * math.sin(t * 87), 0])
+        c.add_fn("head", lambda t: [0.6 * math.sin(t * 110) - 2.5 * max(0, math.sin(t * 9)), 0.6 * math.sin(t * 87), 0])
+        c.add_fn("torso", lambda t: [-2.2 * max(0, math.sin(t * 9)) ** 2, 0, 0])
+        c.add_fn("body", lambda t: [0, 0, 0.6 * math.sin(t * 9 + 1)], kind="position")
         if fn:
             for b, f in fn.items():
                 c.add_fn(b, f)

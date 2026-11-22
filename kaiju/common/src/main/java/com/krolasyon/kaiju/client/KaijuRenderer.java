@@ -150,6 +150,7 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         super.render(e, yaw, pt, ps, buf, light);
         pass = Pass.NORMAL;
         if (e.flag(KaijuEntity.F_FIRING)) renderBeam(e, pt, ps, buf);
+        else if (e.flag(KaijuEntity.F_CHARGING)) renderCharge(e, pt, ps, buf);
         if (KaijuClient.debugNodes) DebugNodes.render(e, pt, ps, buf);
     }
 
@@ -192,33 +193,156 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
     }
 
     // ------------------------------------------------------------------ the beam
+    /** mouth position relative to the render origin, from the same pose track the server uses */
+    Vec3 mouthLocal(KaijuEntity e, float pt) {
+        KaijuSpec spec = e.spec;
+        int idx = e.animIndex();
+        if (idx < 0 || idx >= spec.clipNames.size()) return new Vec3(0, e.getBbHeight() * 0.9, 0);
+        KaijuSpec.Clip c = spec.clip(spec.clipNames.get(idx));
+        float[] p = new float[3];
+        spec.nodePx(c, e.animTick(), spec.node("mouth"), p);
+        return KaijuSpec.toWorld(p[0], p[1], p[2], Mth.rotLerp(pt, e.yRotO, e.getYRot()), e.k());
+    }
+
     void renderBeam(KaijuEntity e, float pt, PoseStack ps, MultiBufferSource buf) {
         Vec3 a = e.beamA(), b = e.beamB();
         if (a.distanceToSqr(b) < 1) return;
         double ex = Mth.lerp(pt, e.xo, e.getX()), ey = Mth.lerp(pt, e.yo, e.getY()), ez = Mth.lerp(pt, e.zo, e.getZ());
         Vec3 o = new Vec3(ex, ey, ez);
         Vec3 la = a.subtract(o), lb = b.subtract(o);
-        Vec3 dir = lb.subtract(la).normalize();
+        Vec3 ax = lb.subtract(la);
+        double len = ax.length();
+        Vec3 dir = ax.scale(1 / len);
         Vec3 up = Math.abs(dir.y) > 0.9 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0);
         Vec3 u = dir.cross(up).normalize(), v = dir.cross(u).normalize();
-        float t = (e.tickCount + pt);
+        float t = e.tickCount + pt;
         float k = e.k() / 0.5f;
         VertexConsumer vc = buf.getBuffer(RenderType.lightning());
         Matrix4f m = ps.last().pose();
-        // outer haze, body, hot core (additive)
-        float[][] layers = {{4.6f, 0.05f, 0.25f, 0.9f, 0.35f}, {2.9f, 0.15f, 0.55f, 1f, 0.6f}, {1.6f, 0.55f, 0.9f, 1f, 0.8f}, {0.7f, 1f, 1f, 1f, 1f}};
+        int segs = (int) Mth.clamp(len / 3.5, 4, 160);
+        double segLen = len / segs;
+        // layered body: haze, glow, body, white-hot core; it gathers out of the mouth over the first blocks and
+        // carries bright pulses travelling away from the kaiju
+        float[][] layers = {{5.6f, 0.03f, 0.22f, 0.85f, 0.22f}, {3.4f, 0.08f, 0.5f, 1f, 0.42f}, {2.0f, 0.42f, 0.85f, 1f, 0.75f}, {0.85f, 1f, 1f, 1f, 1f}};
         for (float[] L : layers) {
-            float w = L[0] * k * (0.92f + 0.08f * Mth.sin(t * 2.3f + L[0]));
-            for (int i = 0; i < 4; i++) {
-                double ang = i * Math.PI / 4 + t * 0.05;
-                Vec3 off = u.scale(Math.cos(ang) * w).add(v.scale(Math.sin(ang) * w));
-                quad(vc, m, la.subtract(off), la.add(off), lb.add(off.scale(1.25)), lb.subtract(off.scale(1.25)), L[1], L[2], L[3], L[4]);
+            for (int sI = 0; sI < segs; sI++) {
+                double s0 = sI * segLen, s1 = (sI + 1) * segLen;
+                float r0 = radius(L[0], s0, t, k), r1 = radius(L[0], s1, t, k);
+                float p0 = pulse(s0, t), p1 = pulse(s1, t);
+                Vec3 c0 = la.add(dir.scale(s0)).add(jitter(u, v, s0, t, L[0] * 0.05f * k));
+                Vec3 c1 = la.add(dir.scale(s1)).add(jitter(u, v, s1, t, L[0] * 0.05f * k));
+                for (int pI = 0; pI < 4; pI++) {
+                    double ang = pI * Math.PI / 4 + t * 0.04;
+                    Vec3 off = u.scale(Math.cos(ang)).add(v.scale(Math.sin(ang)));
+                    quad2(vc, m, c0.subtract(off.scale(r0)), c0.add(off.scale(r0)), c1.add(off.scale(r1)), c1.subtract(off.scale(r1)),
+                            L[1], L[2], L[3], L[4] * p0, L[4] * p1);
+                }
             }
         }
-        // the clash / impact flare and the mouth glow
-        float flare = (e.flag(KaijuEntity.F_CLASH) ? 22f : 10f) * k * (0.85f + 0.15f * Mth.sin(t * 3));
-        star(vc, m, lb, u, v, flare, 0.6f, 0.9f, 1f, 0.8f);
-        star(vc, m, la, u, v, 3.5f * k, 0.6f, 0.95f, 1f, 0.9f);
+        // a double helix of energy spiralling around the beam
+        for (int strand = 0; strand < 2; strand++) {
+            Vec3 prev = null;
+            for (int sI = 0; sI <= segs; sI++) {
+                double sd = sI * segLen;
+                double phi = sd * 0.22 - t * 0.9 + strand * Math.PI;
+                float R = radius(2.9f, sd, t, k) * 1.15f;
+                Vec3 pnt = la.add(dir.scale(sd)).add(u.scale(Math.cos(phi) * R)).add(v.scale(Math.sin(phi) * R));
+                if (prev != null) ribbon(vc, m, prev, pnt, dir, 0.32f * k, 0.6f, 0.95f, 1f, 0.75f);
+                prev = pnt;
+            }
+        }
+        // shock rings rolling out from the mouth along the beam
+        for (int j = 0; j < 4; j++) {
+            double sd = ((t * 4.5 + j * len / 4) % Math.max(1, len));
+            float age = (float) (sd / Math.max(1, len));
+            float R = (2.5f + 4f * age) * k;
+            ring(vc, m, la.add(dir.scale(sd)), u, v, R, 0.35f * k, 0.5f, 0.9f, 1f, 0.55f * (1 - age));
+        }
+        // forked lightning crawling over the beam and lashing out at the impact
+        java.util.Random rnd = new java.util.Random((e.getId() * 31L) + e.tickCount / 2);
+        for (int j = 0; j < 7; j++) {
+            double sd = j < 4 ? len * (0.85 + rnd.nextDouble() * 0.15) : rnd.nextDouble() * len;
+            Vec3 pnt = la.add(dir.scale(sd));
+            Vec3 d0 = u.scale(rnd.nextGaussian()).add(v.scale(rnd.nextGaussian())).add(dir.scale(rnd.nextGaussian() * 0.5)).normalize();
+            bolt(vc, m, pnt, d0, (j < 4 ? 9f : 5f) * k, rnd);
+        }
+        // the flare where it lands and at the mouth
+        boolean clash = e.flag(KaijuEntity.F_CLASH);
+        float flare = (clash ? 26f : 12f) * k * (0.85f + 0.15f * Mth.sin(t * 3));
+        star(vc, m, lb, u, v, flare, 0.35f, 0.75f, 1f, 0.55f);
+        star(vc, m, lb, u, v, flare * 0.55f, 0.85f, 0.97f, 1f, 0.9f);
+        star(vc, m, la, u, v, 5.5f * k * (0.9f + 0.1f * Mth.sin(t * 5)), 0.5f, 0.9f, 1f, 0.85f);
+        star(vc, m, la, u, v, 2.6f * k, 1f, 1f, 1f, 1f);
+    }
+
+    static float radius(float base, double s, float t, float k) {
+        float gather = (float) Math.min(1, 0.25 + s / 10.0);         // narrow at the lips, full width a few blocks out
+        float pulse = 1 + 0.13f * Mth.sin((float) (s * 0.3 - t * 1.7)); // bulges travelling outward
+        return base * k * gather * pulse;
+    }
+
+    static float pulse(double s, float t) { return 0.72f + 0.28f * Mth.sin((float) (s * 0.3 - t * 1.7)); }
+
+    static Vec3 jitter(Vec3 u, Vec3 v, double s, float t, float amp) {
+        return u.scale(Mth.sin((float) (s * 0.9 + t * 2.3)) * amp).add(v.scale(Mth.cos((float) (s * 0.7 + t * 1.9)) * amp));
+    }
+
+    static void ribbon(VertexConsumer vc, Matrix4f m, Vec3 a, Vec3 b, Vec3 dir, float w, float r, float g, float bl, float al) {
+        Vec3 side = b.subtract(a).cross(dir.cross(new Vec3(0.3, 1, 0.2))).normalize().scale(w);
+        if (!Double.isFinite(side.x)) return;
+        quad2(vc, m, a.subtract(side), a.add(side), b.add(side), b.subtract(side), r, g, bl, al, al);
+        Vec3 side2 = side.cross(b.subtract(a)).normalize().scale(w);
+        quad2(vc, m, a.subtract(side2), a.add(side2), b.add(side2), b.subtract(side2), r, g, bl, al, al);
+    }
+
+    static void ring(VertexConsumer vc, Matrix4f m, Vec3 c, Vec3 u, Vec3 v, float R, float w, float r, float g, float bl, float al) {
+        int n = 18;
+        for (int i = 0; i < n; i++) {
+            double a0 = i * Math.PI * 2 / n, a1 = (i + 1) * Math.PI * 2 / n;
+            Vec3 d0 = u.scale(Math.cos(a0)).add(v.scale(Math.sin(a0))), d1 = u.scale(Math.cos(a1)).add(v.scale(Math.sin(a1)));
+            quad2(vc, m, c.add(d0.scale(R - w)), c.add(d0.scale(R + w)), c.add(d1.scale(R + w)), c.add(d1.scale(R - w)), r, g, bl, al, al);
+        }
+    }
+
+    static void bolt(VertexConsumer vc, Matrix4f m, Vec3 from, Vec3 d, float len, java.util.Random rnd) {
+        Vec3 p = from;
+        int n = 5;
+        for (int i = 0; i < n; i++) {
+            Vec3 step = d.scale(len / n).add(new Vec3(rnd.nextGaussian(), rnd.nextGaussian(), rnd.nextGaussian()).scale(len / n * 0.45));
+            Vec3 q = p.add(step);
+            ribbon(vc, m, p, q, d, 0.18f, 0.75f, 0.95f, 1f, 0.95f - i * 0.12f);
+            if (i == 2 && rnd.nextBoolean()) bolt(vc, m, q, d.add(new Vec3(rnd.nextGaussian(), rnd.nextGaussian(), rnd.nextGaussian()).scale(0.8)).normalize(), len * 0.45f, rnd);
+            p = q;
+        }
+    }
+
+    /** the charge: a ball of blue light swelling in the mouth, spitting sparks */
+    void renderCharge(KaijuEntity e, float pt, PoseStack ps, MultiBufferSource buf) {
+        float c = e.chargeClient();
+        if (c < 0.35f) return;
+        float k = e.k() / 0.5f;
+        float g = (c - 0.35f) / 0.65f;
+        float t = e.tickCount + pt;
+        Vec3 mouth = mouthLocal(e, pt);
+        float yr = Mth.rotLerp(pt, e.yRotO, e.getYRot()) * Mth.DEG_TO_RAD;
+        Vec3 fwd = new Vec3(-Mth.sin(yr), 0, Mth.cos(yr));
+        Vec3 u = fwd.cross(new Vec3(0, 1, 0)).normalize(), v = fwd.cross(u).normalize();
+        VertexConsumer vc = buf.getBuffer(RenderType.lightning());
+        Matrix4f m = ps.last().pose();
+        float R = (0.6f + 2.6f * g) * k * (0.9f + 0.1f * Mth.sin(t * 2.2f));
+        star(vc, m, mouth, u, v, R * 1.8f, 0.2f, 0.55f, 1f, 0.35f * g);
+        star(vc, m, mouth, u, v, R, 0.6f, 0.92f, 1f, 0.8f * g);
+        star(vc, m, mouth, u, v, R * 0.45f, 1f, 1f, 1f, g);
+        java.util.Random rnd = new java.util.Random(e.getId() * 17L + e.tickCount / 2);
+        for (int j = 0; j < (int) (2 + g * 4); j++)
+            bolt(vc, m, mouth, new Vec3(rnd.nextGaussian(), rnd.nextGaussian(), rnd.nextGaussian()).normalize(), R * 2.2f, rnd);
+    }
+
+    static void quad2(VertexConsumer vc, Matrix4f m, Vec3 a, Vec3 b, Vec3 c, Vec3 d, float r, float g, float bl, float a0, float a1) {
+        vc.vertex(m, (float) a.x, (float) a.y, (float) a.z).color(r, g, bl, a0).endVertex();
+        vc.vertex(m, (float) b.x, (float) b.y, (float) b.z).color(r, g, bl, a0).endVertex();
+        vc.vertex(m, (float) c.x, (float) c.y, (float) c.z).color(r, g, bl, a1).endVertex();
+        vc.vertex(m, (float) d.x, (float) d.y, (float) d.z).color(r, g, bl, a1).endVertex();
     }
 
     static void star(VertexConsumer vc, Matrix4f m, Vec3 c, Vec3 u, Vec3 v, float r, float cr, float cg, float cb, float ca) {

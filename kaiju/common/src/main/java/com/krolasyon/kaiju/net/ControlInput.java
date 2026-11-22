@@ -8,7 +8,7 @@ public final class ControlInput {
             GUARD = 256, DODGE = 512, SPECIAL = 1024, JUMP = 2048, SPRINT = 4096, AI = 8192;
 
     public float forward, strafe, yaw, pitch;
-    public int buttons, latched;
+    public int buttons, latched, latchedAt;
     public boolean aiToggle;
 
     public boolean down(int b) { return (buttons & b) != 0; }
@@ -37,8 +37,10 @@ public final class ControlInput {
     }
 
     /** merge a fresh packet into the server-side state, latching new presses */
-    public void update(ControlInput n) {
-        latched |= n.buttons & ~buttons;
+    public void update(ControlInput n, int now) {
+        int fresh = n.buttons & ~buttons;
+        if (fresh != 0) latchedAt = now;
+        latched |= fresh;
         forward = n.forward;
         strafe = n.strafe;
         yaw = n.yaw;

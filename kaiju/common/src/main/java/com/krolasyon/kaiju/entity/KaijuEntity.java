@@ -531,7 +531,8 @@ public class KaijuEntity extends Mob implements GeoEntity {
     private void locomotion() {
         float speed = wantSpeed;
         float diff = Mth.wrapDegrees(faceYaw - getYRot());
-        float turn = Mth.clamp(diff, -spec.turnDeg, spec.turnDeg) * (speed > 0 ? 1.4f : 1f);
+        float rate = controller != null && !flag(F_AI_ASSIST) ? 9f : spec.turnDeg * (speed > 0 ? 1.4f : 1f);  // a rider turns at once
+        float turn = Mth.clamp(diff, -rate, rate);
         setYRot(getYRot() + turn);
         boolean hold = heldDebris != null;
         if (Math.abs(speed) > 0.01f) {
@@ -542,7 +543,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
             Vec3 dir = forward().scale(moveFwd).add(left().scale(moveSide));
             if (dir.lengthSqr() < 1e-4) dir = forward();
             dir = dir.normalize().scale(Math.abs(v) * Math.signum(speed == 0 ? 1 : 1));
-            knock = knock.add(dir.subtract(knock.multiply(1, 0, 1)).scale(0.25));
+            knock = knock.add(dir.subtract(knock.multiply(1, 0, 1)).scale(controller != null ? 0.45 : 0.25));
         } else if (Math.abs(diff) > 6) {
             loopClip(hold ? "hold_walk" : "turn");
         } else {
@@ -598,7 +599,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
             Vec3 p = position().add(knock.x, 0, knock.z);
             setPos(p.x, y, p.z);
         }
-        double fric = state == State.THROWN ? 0.99 : (state == State.DOWN || state == State.REACT ? 0.86 : 0.8);
+        double fric = state == State.THROWN ? 0.99 : (state == State.DOWN || state == State.REACT ? 0.86 : controller != null && state == State.IDLE && wantSpeed == 0 ? 0.6 : 0.8);
         knock = knock.multiply(fric, 1, fric);
         if (knock.lengthSqr() < 1e-5) knock = Vec3.ZERO;
         if (y < level().getMinBuildHeight() - 20) discard();
