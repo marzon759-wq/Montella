@@ -201,7 +201,18 @@ public class KaijuRenderer extends GeoEntityRenderer<KaijuEntity> {
         KaijuSpec.Clip c = spec.clip(spec.clipNames.get(idx));
         float[] p = new float[3];
         spec.nodePx(c, e.animTick(), spec.node("mouth"), p);
-        return KaijuSpec.toWorld(p[0], p[1], p[2], Mth.rotLerp(pt, e.yRotO, e.getYRot()), e.k());
+        float yaw = Mth.rotLerp(pt, e.yRotO, e.getYRot());
+        Vec3 w = KaijuSpec.toWorld(p[0], p[1], p[2], yaw, e.k());
+        // the same head turn the server applies (aim yaw/pitch about the base of the neck)
+        Vec3 pivot = KaijuSpec.toWorld(0, 74, -2, yaw, e.k());
+        float yr = yaw * Mth.DEG_TO_RAD;
+        Vec3 f = new Vec3(-Mth.sin(yr), 0, Mth.cos(yr)), l = new Vec3(Mth.cos(yr), 0, Mth.sin(yr));
+        double A = Math.toRadians(e.aimYaw()), P = Math.toRadians(e.aimPitch());
+        Vec3 r = w.subtract(pivot);
+        double a0 = r.dot(f), b0 = r.dot(l), c0 = r.y;
+        double a1 = a0 * Math.cos(P) + c0 * Math.sin(P), c1 = -a0 * Math.sin(P) + c0 * Math.cos(P);
+        double a2 = a1 * Math.cos(A) - b0 * Math.sin(A), b2 = a1 * Math.sin(A) + b0 * Math.cos(A);
+        return pivot.add(f.scale(a2)).add(l.scale(b2)).add(0, c1, 0);
     }
 
     void renderBeam(KaijuEntity e, float pt, PoseStack ps, MultiBufferSource buf) {

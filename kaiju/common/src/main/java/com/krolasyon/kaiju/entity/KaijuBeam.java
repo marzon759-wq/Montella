@@ -124,7 +124,28 @@ public final class KaijuBeam {
         atk = null;
     }
 
+    /** while charging and firing the head turns toward where the breath has to go (neck limits), then relaxes */
+    void aimTick() {
+        boolean active = atk != null && (e.flag(KaijuEntity.F_CHARGING) || firing);
+        float ty = 0, tp = 0;
+        if (active && !e.isDown()) {
+            Vec3 mouth = e.nodePos(e.spec.node("mouth"));
+            Vec3 base = new Vec3(e.forward().x, 0, e.forward().z);
+            Vec3 want = e.brain.beamDirection(base, pitchExtra);
+            float phi = (float) Math.toDegrees(Math.atan2(-want.x, want.z));
+            ty = -Mth.wrapDegrees(phi - e.getYRot());
+            tp = (float) -Math.toDegrees(Math.asin(Mth.clamp(want.y, -1, 1)));
+            ty = Mth.clamp(ty, -65, 65);
+            tp = Mth.clamp(tp, -40, 45);
+        }
+        float rate = active ? 5f : 3f;
+        e.aimY += Mth.clamp(ty - e.aimY, -rate, rate);
+        e.aimP += Mth.clamp(tp - e.aimP, -rate, rate);
+        e.setAim(e.aimY, e.aimP);
+    }
+
     void tick() {
+        aimTick();
         if (!firing) return;
         fireTicks++;
         if (e.controller == null && fireTicks > 6) {
@@ -138,7 +159,8 @@ public final class KaijuBeam {
         Vec3 headDir = aim.subtract(mouth).normalize();
         Vec3 want = e.brain.beamDirection(headDir, pitchExtra);
         // the neck limits the beam to a cone around where the head is pointing; turn smoothly
-        Vec3 d = e.isDown() ? want : limitCone(headDir, want, 55);  // lying down the head lifts to aim; the neck cone does not apply
+        // the beam leaves along the (turned) head; only a small correction toward the exact target
+        Vec3 d = e.isDown() ? want : limitCone(headDir, want, 8);
         dir = dir.lengthSqr() < 0.5 ? d : dir.add(d.subtract(dir).scale(0.35)).normalize();
         start = mouth;
         float maxLen = 360 * (k / 0.5f) * (0.6f + 0.4f * power);

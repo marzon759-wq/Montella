@@ -201,7 +201,6 @@ public final class KaijuBrain {
         float d = distPx(t);
         float bear = bearing(t.position());
         e.faceYaw = yawTo(e.position(), t.position());
-        e.setAim(0, 0);
         // tired or badly hurt: back off for a while, catch breath, then come again
         float hpr = e.hp / e.spec.maxHp;
         if (retreatCd > 0) retreatCd--;
@@ -286,7 +285,6 @@ public final class KaijuBrain {
         acquire();
         KaijuEntity t = crosshairTarget();
         if (t != null) target = t;
-        e.setAim(0, Mth.clamp(in.pitch, -60, 60));
         if (e.state == KaijuEntity.State.DOWN) {
             if (in.pressed(ControlInput.ATTACK)) e.startAttack("ground_kick");
             else if (in.pressed(ControlInput.HEAVY)) e.startAttack("ground_tail_sweep");

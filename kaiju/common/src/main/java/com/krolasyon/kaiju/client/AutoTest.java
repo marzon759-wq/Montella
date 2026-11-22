@@ -158,8 +158,8 @@ public final class AutoTest {
     static void beamTest() {
         // two kaiju 140 blocks apart; one breathes at the other: charge, fire and impact photographed up close
         cue(30, () -> { cmd("kaiju ai false"); });
-        cue(20, () -> { cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=nearest] 0 -60 120 -90 0"); cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=furthest] 140 -60 120 90 0"); });
-        cue(20, () -> cmd("tp @s -30 -30 75 facing 30 -36 120"));
+        cue(20, () -> { cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=nearest] 0 -60 120 -90 0"); cmd("tp @e[type=kaiju:atomic_kaiju,limit=1,sort=furthest] 110 -60 200 90 0"); });
+        cue(20, () -> cmd("tp @s -70 -25 150 facing 20 -30 125"));
         cue(20, () -> { var s = Minecraft.getInstance().getSingleplayerServer(); s.execute(() -> {
             for (KaijuEntity k : s.overworld().getEntitiesOfClass(KaijuEntity.class, new net.minecraft.world.phys.AABB(-2000, -100, -2000, 2000, 400, 2000))) {
                 if (k.getX() < 50) { k.brain.enabled = true; k.brain.nextBreath = 0; k.cooldown.clear(); k.state = KaijuEntity.State.IDLE; k.attack = null; k.brain.target = null; }
@@ -173,7 +173,7 @@ public final class AutoTest {
         }); });
         for (int i = 0; i < 6; i++) { final int k = i; cue(9, () -> shot(String.format("b0%d_charge", k))); }
         for (int i = 0; i < 6; i++) { final int k = i; cue(6, () -> shot(String.format("b1%d_fire", k))); }
-        cue(4, () -> cmd("tp @s 20 -38 95 facing 8 -32 120"));
+        cue(4, () -> cmd("tp @s -40 -20 90 facing 10 -20 125"));
         cue(6, () -> shot("b20_mouth"));
         cue(4, () -> cmd("tp @s 110 -40 90 facing 135 -45 120"));
         cue(6, () -> shot("b21_impact"));

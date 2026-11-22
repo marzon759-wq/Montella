@@ -210,6 +210,27 @@ public class KaijuEntity extends Mob implements GeoEntity {
             nodes[i] = position().add(KaijuSpec.toWorld(tmp[0], tmp[1], tmp[2], yaw, k));
             if (prevNodes[i] == null) prevNodes[i] = nodes[i];
         }
+        if (Math.abs(aimY) > 0.3f || Math.abs(aimP) > 0.3f) aimHead(k, yaw);
+    }
+
+    /** head turned toward the breath's target: the head-end nodes swing about the base of the neck by the aim angles */
+    public float aimY, aimP;  // degrees: yaw + = to the kaiju's left, pitch + = down
+    private int[] headNodes;
+
+    private void aimHead(float k, float yaw) {
+        if (headNodes == null) headNodes = new int[]{spec.node("head"), spec.node("snout"), spec.node("jaw"), spec.node("mouth"), spec.node("aim")};
+        Vec3 pivot = position().add(KaijuSpec.toWorld(0, 74, -2, yaw, k));
+        Vec3 f = forward(), l = left(), up = new Vec3(0, 1, 0);
+        double A = Math.toRadians(aimY), P = Math.toRadians(aimP);
+        double cA = Math.cos(A), sA = Math.sin(A), cP = Math.cos(P), sP = Math.sin(P);
+        for (int i : headNodes) {
+            if (i < 0 || nodes[i] == null) continue;
+            Vec3 w = nodes[i].subtract(pivot);
+            double a = w.dot(f), b = w.dot(l), c = w.y;
+            double a1 = a * cP + c * sP, c1 = -a * sP + c * cP;      // pitch down about the left axis
+            double a2 = a1 * cA - b * sA, b2 = a1 * sA + b * cA;     // yaw toward the left about the vertical
+            nodes[i] = pivot.add(f.scale(a2)).add(l.scale(b2)).add(up.scale(c1));
+        }
     }
 
     public Vec3 forward() {

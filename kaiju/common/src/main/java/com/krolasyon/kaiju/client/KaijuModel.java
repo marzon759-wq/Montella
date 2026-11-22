@@ -64,12 +64,15 @@ public class KaijuModel extends GeoModel<KaijuEntity> {
                 c.setScaleZ(cs);
             }
         }
-        // rider aim: lift or lower the neck toward the crosshair while breathing or guarding
-        if (e.flag(KaijuEntity.F_CONTROLLED) && (e.flag(KaijuEntity.F_FIRING) || e.flag(KaijuEntity.F_CHARGING))) {
-            float pitch = Mth.clamp(e.aimPitch(), -45, 45) * Mth.DEG_TO_RAD * 0.33f;
-            for (String n : new String[]{"neck1", "neck2", "neck3"}) {
+        // the head turns toward where the breath goes (synced aim): spread over the neck and the head
+        float ay = e.aimYaw(), ap = e.aimPitch();
+        if (Math.abs(ay) > 0.3f || Math.abs(ap) > 0.3f) {
+            float yr = ay * Mth.DEG_TO_RAD / 3f, pr = ap * Mth.DEG_TO_RAD / 3f;
+            for (String n : new String[]{"neck1", "neck2", "head"}) {
                 GeoBone b = getBone(n).orElse(null);
-                if (b != null) b.setRotX(b.getRotX() - pitch);
+                if (b == null) continue;
+                b.setRotY(b.getRotY() + yr);  // GeckoLib mirrors x, which flips the sense of yaw (not of pitch)
+                b.setRotX(b.getRotX() - pr);
             }
         }
     }
