@@ -35,3 +35,7 @@ uniform int biome_precipitation;
 uniform ivec2 eyeBrightnessSmooth;
 uniform vec3 fogColor;
 uniform vec3 skyColor;
+
+#ifdef DEBUG_FIXED_TIME
+#define frameTimeCounter (float(frameCounter) / 30.0)
+#endif

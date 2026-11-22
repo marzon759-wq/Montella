@@ -21,7 +21,7 @@ Minecraft **1.20.1 Forge** için gerçekçi shader paketi. **Oculus** (Forge iç
 | **Bulutlar** | Işın izlemeli hacimsel kümülüs bulutları (güneşle aydınlanan kenarlar, koyu alt yüzler), yüksek sirrus bulutları, rüzgarla hareket, bulut gölgeleri |
 | **Işık** | Yumuşak gölgeler (PCF), renkli gölgeler (vitray), gökyüzü ortam ışığı, SSAO, yaprak ve çimlerde ışık geçirgenliği, sıcak meşale ışığı |
 | **Su** | Dalgalı yüzey, ekran-uzayı yansımalar + gökyüzü/bulut yansıması, kırılma, derinliğe göre turkuaz → koyu mavi emilim, güneş parıltısı, su altı ışık desenleri (kostik), su altı sisi |
-| **Şelale** | Düşen su beyaz köpük ve hızla akan çizgilerle |
+| **Şelale** | Akış yönünü blok durumundan anlar (durgun / akan / düşen su). Düşen su farklı hızlarda aşağı akan katmanlı çizgiler, yarı saydam ince bir perde ve kopan beyaz su kümeleri olarak görünür; havuzda çarpma noktasında köpüren halkalar ve su sisi oluşur; kenardan akan su da akış yönünde köpürür ([video](screenshots/waterfall.mp4)) |
 | **Yağmur / kar** | İnce yarı saydam yağmur, ıslanan zemin, su birikintileri ve damla halkaları, kapalı gri gökyüzü, kar yağışı |
 | **Bitkiler** | Rüzgarda dalgalanan çim, çiçek, ekin ve yapraklar (rüzgar hamleleriyle) |
 | **Atmosfer** | Yükseklik sisi, uzak mesafede gökyüzüne karışma, ışık huzmeleri (god rays), gün batımı pusu |

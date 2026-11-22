@@ -82,6 +82,28 @@ vec3 reflectedSky(vec3 Rw, vec3 Rv, float skyLm) {
 
 vec3 waterAbsorption() { return vec3(0.42, 0.075, 0.055); }
 
+// how much water of the other kind is close by in the world: falling sheets above a pool surface (impact zone),
+// or the pool surface below a falling sheet. Screen-space search, verified with reconstructed world positions.
+float nearWater(vec2 p, vec3 ppos, float dist, bool wantFalling, float dither) {
+    float rUv = min(4.0 * gbufferProjection[1][1] * 0.5 / max(dist, 0.5), 0.3);
+    float acc = 0.0;
+    for (int i = 0; i < 16; i++) {
+        float fi = float(i) + dither;
+        float a = fi * 2.39996;
+        float r = sqrt(fi / 16.0);
+        vec2 su = p + vec2(cos(a) / aspectRatio, sin(a)) * r * rUv;
+        if (su.x < 0.0 || su.x > 1.0 || su.y < 0.0 || su.y > 1.0) continue;
+        float b = texture(colortex3, su).b;
+        if (b < 1.0 || (b >= 3.0) != wantFalling) continue;
+        vec3 sp = mat3(gbufferModelViewInverse) * viewFromDepth(su, texture(depthtex0, su).r) + gbufferModelViewInverse[3].xyz;
+        vec3 d = sp - ppos;
+        float dh = length(d.xz);
+        bool ok = wantFalling ? (d.y > -0.7 && d.y < 10.0) : (d.y < 0.7 && d.y > -3.5);
+        if (ok && dh < 4.0) acc += 1.0 - dh / 4.0;
+    }
+    return sat(acc / 2.5);
+}
+
 void main() {
     vec3 col = texture(colortex0, uv).rgb;
     float d0 = texture(depthtex0, uv).r;
@@ -103,14 +125,34 @@ void main() {
 
 #if WORLD == 0
     if (water) {
-        vec3 tint = vec3(wdata.r, wdata.g, wdata.b - 1.0);
+        bool sheet = wdata.b >= 3.0;
+        vec3 tint = vec3(wdata.r, wdata.g, wdata.b - (sheet ? 3.0 : 1.0));
+        vec3 wp = ppos0 + cameraPosition;
+        float t = frameTimeCounter;
+        float foam = wdata.a;
+        float impact = 0.0;
+#ifdef WATERFALL_FOAM
+        if (isEyeInWater == 0) {
+            impact = nearWater(uv, ppos0, length(ppos0), !sheet, dither);
+            if (!sheet && impact > 0.0) {
+                // churning pool at the foot of the fall: bubbling foam rings pushed outwards
+                float b1 = noise2s(wp.xz * 2.3 + vec2(t * 0.9, -t * 0.6));
+                float b2 = noise2s(wp.xz * 5.5 - vec2(t * 1.4, t * 1.1));
+                float b3 = noise2s(wp.xz * 11.0 + vec2(-t * 2.0, t * 1.7));
+                float pattern = b1 * 0.5 + b2 * 0.3 + b3 * 0.2;
+                foam = max(foam, sat((pattern - (1.0 - impact) * 0.85 + 0.05) * 3.0) * 0.95);
+                n = normalize(n + vec3(b1 - 0.5, 0.0, b2 - 0.5) * impact * 1.4);
+            }
+            if (sheet) foam = max(foam, impact * 0.85);
+        }
+#endif
         vec3 nv = mat3(gbufferModelView) * n;
         // refraction
         vec2 ruv = uv;
         float wdist = length(vpos1 - vpos0);
 #ifdef WATER_REFRACTION
         if (isEyeInWater == 0) {
-            vec2 off = (nv.xy - (mat3(gbufferModelView) * vec3(0.0, 1.0, 0.0)).xy * 0.0) * 0.06 * sat(wdist * 0.4) / max(-vpos0.z * 0.12, 1.0);
+            vec2 off = nv.xy * (sheet ? 0.05 : 0.06 * sat(wdist * 0.4)) / max(-vpos0.z * 0.12, 1.0);
             vec2 tuv = uv + off;
             float td1 = texture(depthtex1, tuv).r;
             if (td1 > d0) { ruv = tuv; vpos1 = viewFromDepth(tuv, td1); wdist = length(vpos1 - vpos0); }
@@ -118,6 +160,7 @@ void main() {
 #endif
         vec3 behind = texture(colortex0, ruv).rgb;
         if (texture(depthtex1, ruv).r >= 1.0) wdist = 200.0;
+        if (sheet) wdist = 0.6; // a falling sheet is thin
         // absorption + in-scattering of the water body
         vec3 absorb = waterAbsorption() * mix(vec3(1.0), vec3(1.4, 0.9, 1.0) - tint * 0.4, 0.35);
         vec3 transm = exp(-absorb * wdist);
@@ -147,11 +190,16 @@ void main() {
         vec3 spec = directCol * sh * D * F * 0.25 * sat(dot(n, L) * 4.0);
         vec3 wcol = mix(refr, refl, F) + spec;
         // foam / white water
-        float foam = wdata.a;
         if (foam > 0.0) {
-            vec3 foamLight = directCol * sat(dot(n, L) * 0.5 + 0.5) * (sh.r * 0.7 + 0.3) + ambientCol * (skyLm * skyLm * 0.8 + 0.2);
-            wcol = mix(wcol, vec3(0.85, 0.9, 0.92) * foamLight, foam);
+            // foam is a volume of bubbles: lit from all sides, light leaks through it
+            vec3 foamLight = directCol * (sh * 0.75 + 0.25) * (0.55 + 0.45 * sat(dot(n, L) * 0.5 + 0.5))
+                           + ambientCol * (skyLm * skyLm * 0.95 + 0.15);
+            vec3 foamCol = vec3(0.88, 0.92, 0.94) * foamLight;
+            foamCol += spec * 0.3;
+            wcol = mix(wcol, foamCol, foam);
         }
+        // spray / mist hanging around the impact zone
+        wcol += (ambientCol * 0.6 + directCol * cloudSh * 0.3) * impact * impact * (sheet ? 0.55 : 0.4);
         col = wcol;
     }
 #ifdef RAIN_PUDDLES

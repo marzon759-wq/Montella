@@ -52,40 +52,65 @@ void main() {
 #ifdef ENTITY_TRANSLUCENT
     bool isWater = false;
 #else
-    bool isWater = id == 10004;
+    bool isWater = id == 10004 || id == 10014 || id == 10024;
 #endif
     if (isWater) {
         float foam = 0.0;
-        vec4 tex = texture(gtexture, texcoord);
-        if (abs(n.y) > 0.5) {
+        float t = frameTimeCounter;
+        bool falling = abs(n.y) < 0.5;
+        if (!falling) {
+            vec3 wn = vec3(0.0, 1.0, 0.0);
 #ifdef WATER_WAVES
-            vec3 wn = waterNormal(worldPos.xz, 1.0);
+            wn = waterNormal(worldPos.xz, 1.0);
+#endif
+            if (id != 10004) {
+                // flowing water: the vanilla flow sprite scrolls along +v, so the texture frame gives the flow direction
+                vec3 dpx = dFdx(worldPos), dpy = dFdy(worldPos);
+                vec2 dtx = dFdx(texcoord), dty = dFdy(texcoord);
+                vec3 B = cross(n, dpx) * dty.y + cross(dpy, n) * dtx.y;
+                vec2 flow = length(B.xz) > 1e-6 ? normalize(B.xz) : vec2(0.0, 1.0);
+                vec2 side = vec2(-flow.y, flow.x);
+                float speed = id == 10024 ? 3.5 : 1.6;
+                vec2 q = vec2(dot(worldPos.xz, side), dot(worldPos.xz, flow));
+                float a1 = noise2s(vec2(q.x * 2.2, q.y * 0.55 - t * speed * 0.55));
+                float a2 = noise2s(vec2(q.x * 4.7 + 9.0, q.y * 1.3 - t * speed * 1.3));
+                float a3 = noise2s(vec2(q.x * 9.0 + 3.0, q.y * 2.6 - t * speed * 2.6));
+                vec2 g = side * (a1 - 0.5) * 0.5 + flow * (a2 - 0.5) * 0.35 + side * (a3 - 0.5) * 0.25;
+                wn = normalize(wn + vec3(g.x, 0.0, g.y));
+#ifdef WATERFALL_FOAM
+                // churned white water where the stream is fast (lip of the fall, slopes)
+                float churn = id == 10024 ? 0.9 : 0.35;
+                foam = sat((a1 * 0.5 + a2 * 0.35 + a3 * 0.25 - 0.62 + churn * 0.35) * 3.0) * churn;
+#endif
+            }
             if (rainStrength > 0.01 && biome_precipitation == 1) {
                 vec2 r = rainRipples(worldPos.xz) * rainStrength * sat(lmcoord.y * 4.0 - 3.0);
                 wn = normalize(wn + vec3(r.x, 0.0, r.y));
             }
             n = n.y > 0.0 ? wn : vec3(wn.x, -wn.y, wn.z);
-#endif
-            // flowing water on a slope shows streaks in the vanilla texture: let them foam a little
-            foam = sat((luma(tex.rgb) - 0.62) * 3.0) * 0.25;
         } else {
-            // falling water (waterfalls): fast streaks and white water
+            // falling sheet: layers of streaks racing down at different speeds, never one texture sliding
             vec3 side = abs(n.x) > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
             float u = dot(worldPos, side);
-            float v = worldPos.y + frameTimeCounter * 4.5;
-            float s1 = noise2s(vec2(u * 3.0, v * 0.35));
-            float s2 = noise2s(vec2(u * 7.0 + 11.0, v * 0.9 + 3.0));
-            vec3 bump = side * (s1 - 0.5) * 0.6 + vec3(0.0, (s2 - 0.5) * 0.3, 0.0);
+            float y = worldPos.y;
+            float l1 = noise2s(vec2(u * 3.1, (y + t * 7.0) * 0.16));
+            float l2 = noise2s(vec2(u * 6.3 + 17.0, (y + t * 9.5) * 0.32));
+            float l3 = noise2s(vec2(u * 13.0 + 41.0, (y + t * 12.0) * 0.7));
+            float l4 = noise2s(vec2(u * 26.0 + 7.0, (y + t * 14.0) * 1.6));
+            float streak = l1 * 0.42 + l2 * 0.28 + l3 * 0.18 + l4 * 0.12;
+            // clumps: falling water breaks into fast white packets
+            float clump = noise2s(vec2(u * 1.3 + 5.0, (y + t * 8.0) * 0.45));
+            vec3 bump = side * ((l2 - 0.5) * 0.9 + (l4 - 0.5) * 0.5) + vec3(0.0, (l3 - 0.5) * 0.25, 0.0);
             n = normalize(n + bump);
 #ifdef WATERFALL_FOAM
-            foam = sat(s1 * 0.7 + s2 * 0.6 - 0.15);
-            foam = 0.55 + foam * 0.45;
+            foam = smoothstep(0.36, 0.70, streak + (clump - 0.5) * 0.5);
+            foam = foam * 0.9 + l4 * 0.1;
 #endif
         }
         outColor = vec4(0.0);
         outNormal = vec4(octEncode(n), lmcoord);
-        // rg + (b - 1) = biome water tint, b >= 1 flags water, a = foam
-        outWater = vec4(glcolor.rg, 1.0 + glcolor.b, foam);
+        // rg = biome tint, b = type (1 + tint.b on surfaces, 3 + tint.b on falling sheets), a = foam
+        outWater = vec4(glcolor.rg, (falling ? 3.0 : 1.0) + glcolor.b, foam);
         return;
     }
     vec4 albedo = texture(gtexture, texcoord) * glcolor;

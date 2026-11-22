@@ -43,7 +43,7 @@ uniform sampler2D gtexture;
 layout(location = 0) out vec4 outColor;
 void main() {
     vec4 c = texture(gtexture, texcoord) * glcolor;
-    if (id == 10004) { outColor = vec4(0.0); return; }
+    if (id == 10004 || id == 10014 || id == 10024) { outColor = vec4(0.0); return; }
     if (c.a < 0.1) discard;
     outColor = c;
 }
