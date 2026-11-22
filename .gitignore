@@ -22,3 +22,10 @@ mimic/*.mp4
 mimic/tools/vanilla/
 mimic/MIMIC_Harrow_Farm.zip
 mimic/MIMIC_CurseForge.zip
+
+# kaiju mod
+kaiju/forge-*/build/
+kaiju/forge-*/run/
+kaiju/forge-*/.gradle/
+kaiju/tools/out/
+kaiju/tools/__pycache__/

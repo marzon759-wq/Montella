@@ -1,0 +1,38 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+version = "${mc_version}-forge-${mod_version}"
+group = 'com.krolasyon.kaiju'
+base { archivesName = 'kaiju' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods { kaiju { source sourceSets.main } }
+        }
+        client {
+            if (System.getenv('KAIJU_SHOTS') != null) property 'kaiju.shots', System.getenv('KAIJU_SHOTS')
+            if (System.getenv('KAIJU_SIZE') != null) args '--width', System.getenv('KAIJU_SIZE').split('x')[0], '--height', System.getenv('KAIJU_SIZE').split('x')[1]
+        }
+    }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+}
+tasks.named('processResources', ProcessResources).configure {
+    def props = [mod_version: mod_version]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml']) { expand props }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['Specification-Title': 'kaiju', 'Implementation-Title': 'kaiju', 'Implementation-Version': project.version]) }
+    finalizedBy 'reobfJar'
+}
