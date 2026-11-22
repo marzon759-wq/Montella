@@ -13,6 +13,7 @@ out vec3 playerPos;
 flat out int id;
 flat out vec3 directCol;
 flat out vec3 ambientCol;
+#include "/lib/water.glsl"
 void main() {
     texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     lmcoord = sat(((gl_TextureMatrix[1] * gl_MultiTexCoord1).xy - 1.0 / 32.0) * (32.0 / 30.0));
@@ -22,6 +23,21 @@ void main() {
     playerPos = mat3(gbufferModelViewInverse) * viewPos + gbufferModelViewInverse[3].xyz;
     normalW = normalize(mat3(gbufferModelViewInverse) * (gl_NormalMatrix * gl_Normal));
     lightColors(directCol, ambientCol);
+#if defined WATER_WAVES && !defined ENTITY_TRANSLUCENT
+    if (id == 10004 || id == 10014) {
+        // only vertices on the water line move (bottoms of blocks sit on whole numbers and stay put),
+        // so the top face and the upper edge of side faces move together and never crack
+        vec3 wp = playerPos + cameraPosition;
+        float fy = fract(wp.y + 0.002);
+        if (fy > 0.02 && fy < 0.985) {
+            vec3 wn;
+            vec2 flow = id == 10014 ? flowFromNormal(normalW) : vec2(0.0);
+            vec3 d = gerstner(wp.xz, flow, waveAmplitude(id == 10014), wn);
+            playerPos += d * sat(lmcoord.y * 3.0 - 0.5 + 0.6);
+            viewPos = (gbufferModelView * vec4(playerPos, 1.0)).xyz;
+        }
+    }
+#endif
     gl_Position = gl_ProjectionMatrix * vec4(viewPos, 1.0);
 }
 #endif
@@ -60,17 +76,25 @@ void main() {
         bool falling = abs(n.y) < 0.5;
         if (!falling) {
             vec3 wn = vec3(0.0, 1.0, 0.0);
-#ifdef WATER_WAVES
-            wn = waterNormal(worldPos.xz, 1.0);
-#endif
-            if (id != 10004) {
-                // flowing water: the vanilla flow sprite scrolls along +v, so the texture frame gives the flow direction
+            vec3 geoN = n;
+            vec2 flowV = id == 10014 ? flowFromNormal(geoN) : vec2(0.0);
+            if (id == 10014 && dot(flowV, flowV) < 1e-4) {
+                // level stream: fall back to the scroll direction of the vanilla flow sprite (+v)
                 vec3 dpx = dFdx(worldPos), dpy = dFdy(worldPos);
                 vec2 dtx = dFdx(texcoord), dty = dFdy(texcoord);
                 vec3 B = cross(n, dpx) * dty.y + cross(dpy, n) * dtx.y;
-                vec2 flow = length(B.xz) > 1e-6 ? normalize(B.xz) : vec2(0.0, 1.0);
+                flowV = length(B.xz) > 1e-6 ? normalize(B.xz) * 1.2 : vec2(0.0);
+            }
+#ifdef WATER_WAVES
+            vec3 gn;
+            gerstner(worldPos.xz, flowV, waveAmplitude(id == 10014), gn);
+            vec3 dn = waterNormal(worldPos.xz - flowV * t, 0.45);
+            wn = normalize(gn + vec3(dn.x, 0.0, dn.z));
+#endif
+            if (id != 10004) {
+                vec2 flow = dot(flowV, flowV) > 1e-4 ? normalize(flowV) : vec2(0.0, 1.0);
                 vec2 side = vec2(-flow.y, flow.x);
-                float speed = id == 10024 ? 3.5 : 1.6;
+                float speed = id == 10024 ? 4.0 : max(length(flowV), 1.2);
                 vec2 q = vec2(dot(worldPos.xz, side), dot(worldPos.xz, flow));
                 float a1 = noise2s(vec2(q.x * 2.2, q.y * 0.55 - t * speed * 0.55));
                 float a2 = noise2s(vec2(q.x * 4.7 + 9.0, q.y * 1.3 - t * speed * 1.3));
@@ -79,7 +103,7 @@ void main() {
                 wn = normalize(wn + vec3(g.x, 0.0, g.y));
 #ifdef WATERFALL_FOAM
                 // churned white water where the stream is fast (lip of the fall, slopes)
-                float churn = id == 10024 ? 0.9 : 0.35;
+                float churn = id == 10024 ? 0.9 : sat((speed - 1.5) * 0.12) + 0.12;
                 foam = sat((a1 * 0.5 + a2 * 0.35 + a3 * 0.25 - 0.62 + churn * 0.35) * 3.0) * churn;
 #endif
             }
@@ -109,8 +133,8 @@ void main() {
         }
         outColor = vec4(0.0);
         outNormal = vec4(octEncode(n), lmcoord);
-        // rg = biome tint, b = type (1 + tint.b on surfaces, 3 + tint.b on falling sheets), a = foam
-        outWater = vec4(glcolor.rg, (falling ? 3.0 : 1.0) + glcolor.b, foam);
+        // rg = biome tint, b = type + tint.b (1 still, 3 falling sheet, 5 flowing surface), a = foam
+        outWater = vec4(glcolor.rg, (falling ? 3.0 : (id == 10004 ? 1.0 : 5.0)) + glcolor.b, foam);
         return;
     }
     vec4 albedo = texture(gtexture, texcoord) * glcolor;

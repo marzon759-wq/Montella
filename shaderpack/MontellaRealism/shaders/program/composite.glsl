@@ -94,7 +94,7 @@ float nearWater(vec2 p, vec3 ppos, float dist, bool wantFalling, float dither) {
         vec2 su = p + vec2(cos(a) / aspectRatio, sin(a)) * r * rUv;
         if (su.x < 0.0 || su.x > 1.0 || su.y < 0.0 || su.y > 1.0) continue;
         float b = texture(colortex3, su).b;
-        if (b < 1.0 || (b >= 3.0) != wantFalling) continue;
+        if (b < 1.0 || (b >= 3.0 && b < 5.0) != wantFalling) continue;
         vec3 sp = mat3(gbufferModelViewInverse) * viewFromDepth(su, texture(depthtex0, su).r) + gbufferModelViewInverse[3].xyz;
         vec3 d = sp - ppos;
         float dh = length(d.xz);
@@ -125,8 +125,9 @@ void main() {
 
 #if WORLD == 0
     if (water) {
-        bool sheet = wdata.b >= 3.0;
-        vec3 tint = vec3(wdata.r, wdata.g, wdata.b - (sheet ? 3.0 : 1.0));
+        bool sheet = wdata.b >= 3.0 && wdata.b < 5.0;
+        bool stream = wdata.b >= 5.0;
+        vec3 tint = vec3(wdata.r, wdata.g, wdata.b - (sheet ? 3.0 : (stream ? 5.0 : 1.0)));
         vec3 wp = ppos0 + cameraPosition;
         float t = frameTimeCounter;
         float foam = wdata.a;
@@ -146,6 +147,51 @@ void main() {
             if (sheet) foam = max(foam, impact * 0.85);
         }
 #endif
+        if (!sheet && isEyeInWater == 0) {
+            // ---- shoreline: water depth straight down to whatever it touches (ground, blocks, mobs, the player)
+            vec3 wb = mat3(gbufferModelViewInverse) * vpos1 + gbufferModelViewInverse[3].xyz + cameraPosition;
+            float vdepth = d1 >= 1.0 ? 100.0 : max(wp.y - wb.y, 0.0) * mix(1.0, sat(abs(V.y) * 3.0 + 0.3), 0.5);
+            float br1 = noise2s(wp.xz * 3.7 + vec2(t * 0.45, -t * 0.3));
+            float br2 = noise2s(wp.xz * 9.0 - vec2(t * 0.8, t * 0.6));
+            float broken = br1 * 0.65 + br2 * 0.35;
+            // contact foam: a thin lacy line where the surface meets something
+            float contact = 1.0 - smoothstep(0.0, stream ? 0.05 : 0.28, vdepth);
+            contact *= smoothstep(0.25, 0.6, broken + contact * 0.35);
+            // swells slowing down in the shallows, steepening and breaking as lines that roll towards the shore
+            float shallow = (1.0 - smoothstep(0.25, 2.4, vdepth)) * (stream ? 0.0 : 1.0);
+            float ph = vdepth * 3.0 + t * 1.25 + noise2s(wp.xz * 0.45) * 4.0;
+            float crest = pow(sat(sin(ph) * 0.5 + 0.5), 10.0) * shallow;
+            float band = crest * smoothstep(0.3, 0.62, broken + 0.1);
+            // the foam a breaker leaves behind lingers and fades
+            float trail = pow(sat(sin(ph - 0.9) * 0.5 + 0.5), 3.0) * shallow * smoothstep(0.45, 0.75, broken) * 0.45;
+            foam = max(foam, sat(contact * 0.95 + band * 0.9 + trail * 0.5));
+            // steeper water at the crest catches more light
+            n = normalize(n + vec3(br1 - 0.5, 0.0, br2 - 0.5) * (crest + contact) * 0.6);
+
+            // ---- the player touching the water: rings around the body and a wake behind when moving
+            vec3 feet = cameraPosition - vec3(0.0, 1.62, 0.0);
+            if (feet.y < wp.y + 0.35 && cameraPosition.y > wp.y - 0.6) {
+                vec2 rel = wp.xz - cameraPosition.xz;
+                float r = length(rel);
+                vec2 vel = (cameraPosition.xz - previousCameraPosition.xz) / max(frameTime, 1e-3);
+                float spd = min(length(vel), 6.0);
+                float act = 0.35 + spd * 0.3;
+                float ring = sin(r * 10.0 - t * 8.0) * exp(-r * (1.2 - min(spd, 4.0) * 0.15)) * smoothstep(0.25, 0.45, r);
+                n = normalize(n + vec3(rel.x, 0.0, rel.y) / max(r, 1e-3) * ring * 0.35 * act);
+                float body = (1.0 - smoothstep(0.3, 0.75, r)) * smoothstep(0.3, 0.7, broken + 0.2);
+                foam = max(foam, body * sat(0.25 + spd * 0.18));
+                if (spd > 0.4) {
+                    vec2 v = vel / max(length(vel), 1e-3);
+                    float along = dot(rel, -v);
+                    float lat = abs(dot(rel, vec2(-v.y, v.x)));
+                    // Kelvin wake: a 19.5 degree wedge of foam and ripples trailing behind
+                    float wedge = smoothstep(0.42, 0.25, lat / max(along, 0.01)) * step(0.0, along) * exp(-along * 0.35);
+                    float arms = smoothstep(0.08, 0.0, abs(lat - along * 0.354)) * step(0.0, along) * exp(-along * 0.3);
+                    foam = max(foam, sat((wedge * 0.5 + arms) * smoothstep(0.35, 0.7, broken) * spd * 0.3));
+                    n = normalize(n + vec3(-v.y, 0.0, v.x) * sin(along * 8.0 - t * 6.0) * wedge * 0.3);
+                }
+            }
+        }
         vec3 nv = mat3(gbufferModelView) * n;
         // refraction
         vec2 ruv = uv;
@@ -173,8 +219,11 @@ void main() {
         vec3 Rv = reflect(Vv, nv);
         vec3 refl = reflectedSky(R, Rv, skyLm);
 #ifdef WATER_REFLECTIONS
-        vec4 s = ssr(vpos0, Rv, dither);
-        refl = mix(refl, s.rgb, s.a);
+        // rays bouncing back towards the camera cannot hit anything visible on screen
+        if (Rv.z < -0.05) {
+            vec4 s = ssr(vpos0, Rv, dither);
+            refl = mix(refl, s.rgb, s.a * smoothstep(-0.05, -0.25, Rv.z));
+        }
 #endif
         float NdotV = sat(dot(-V, n));
         float F = 0.02 + 0.98 * pow(1.0 - NdotV, 5.0);
