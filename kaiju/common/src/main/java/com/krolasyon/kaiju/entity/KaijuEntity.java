@@ -83,7 +83,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
     public int atkTick, phase, phaseTick, phaseLen;
     public final Map<String, Integer> cooldown = new HashMap<>();
     public final Set<Long> hitOnce = new HashSet<>();
-    public float hp, poise = 100;
+    public float hp, poise = 100, stamina = 100;
     public int hitstop;
     public Vec3 knock = Vec3.ZERO;  // momentum-driven sliding, blocks/tick
     public double vy;
@@ -294,6 +294,12 @@ public class KaijuEntity extends Mob implements GeoEntity {
         return cd == null || cd <= tickCount;
     }
 
+    /** how much a move tires: longer and heavier moves cost more; guarding, dodging and roaring cost nothing */
+    public float cost(KaijuSpec.Attack a) {
+        if (a.cat.equals("defense") || a.cat.equals("intimidate")) return 0;
+        return 4 + a.len * 5 + (a.isBreath() ? 18 : 0) + (a.tags.contains("heavy") ? 6 : 0);
+    }
+
     public boolean canAct() {
         return state == State.IDLE && hitstop == 0;
     }
@@ -331,7 +337,8 @@ public class KaijuEntity extends Mob implements GeoEntity {
         state = State.ACTION;
         cooldown.put(a.id, tickCount + (int) (a.cooldown * 20));
         stats.computeIfAbsent(a.id, k -> new float[2])[0] += 1;
-        KaijuMod.LOG.info("[KAIJU] #{} starts {}", getId(), a.id);
+        stamina = Math.max(0, stamina - cost(a));
+        KaijuMod.LOG.info("[KAIJU] #{} starts {} dist={} stamina={}", getId(), a.id, brain.target == null ? -1 : (int) brain.target.distanceTo(this), (int) stamina);
         if (a.phases != null) {
             phaseLen = (int) (a.phases.get(0).secs() * 20);
             play(a.phases.get(0).clip());
@@ -539,7 +546,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
         } else if (Math.abs(diff) > 6) {
             loopClip(hold ? "hold_walk" : "turn");
         } else {
-            loopClip(hold ? "hold_idle" : "idle");
+            loopClip(hold ? "hold_idle" : (stamina < 40 || hp < spec.maxHp * 0.3f) ? "tired" : "idle");
         }
     }
 
@@ -605,6 +612,7 @@ public class KaijuEntity extends Mob implements GeoEntity {
 
     private void regenAndDecay() {
         poise = Math.min(100, poise + (state == State.DOWN ? 1.2f : 0.45f));
+        stamina = Math.min(100, stamina + (state == State.IDLE ? (Math.abs(wantSpeed) < 0.01f ? 0.32f : 0.16f) : state == State.DOWN ? 0.2f : 0f));
         for (int i = 0; i < heat.length; i++) heat[i] = Math.max(0, heat[i] - 0.0015f);
         for (int g = 0; g < regen.length && g < spec.severGroups.size(); g++) {
             if ((severMask & (1 << g)) == 0) continue;
@@ -628,6 +636,8 @@ public class KaijuEntity extends Mob implements GeoEntity {
     }
 
     int lastHurt;
+
+    public int lastHurtTick() { return lastHurt; }
 
     private void sync() {
         entityData.set(HP, Math.max(0, hp / spec.maxHp));

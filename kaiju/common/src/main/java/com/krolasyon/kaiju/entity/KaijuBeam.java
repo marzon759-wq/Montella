@@ -127,6 +127,10 @@ public final class KaijuBeam {
     void tick() {
         if (!firing) return;
         fireTicks++;
+        if (e.controller == null && fireTicks > 6) {
+            KaijuEntity t = e.brain.target;
+            if (t == null || t.isRemoved() || t.state == KaijuEntity.State.DEAD) { if (e.attack != null) e.endAttack(); return; }
+        }
         ServerLevel sl = (ServerLevel) e.level();
         float k = e.k();
         Vec3 mouth = e.nodePos(e.spec.node("mouth"));

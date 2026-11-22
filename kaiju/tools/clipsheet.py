@@ -24,7 +24,7 @@ if __name__ == "__main__":
     for c in clips:
         L = AN["animations"]["animation.kaiju." + c]["animation_length"]
         for k in range(6):
-            jobs.append((c, L * k / 5 * 0.999, 40))
+            jobs.append((c, L * k / 5 * 0.999, float(os.environ.get("YAW", 40))))
     with Pool(4) as p:
         ims = p.map(one, jobs)
     sheet = Image.new("RGB", (W * 6, H * len(clips)))

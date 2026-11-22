@@ -73,8 +73,9 @@ public final class AutoTest {
         s.execute(() -> {
             for (var lvl : s.getAllLevels())
                 for (KaijuEntity k : lvl.getEntitiesOfClass(KaijuEntity.class, new net.minecraft.world.phys.AABB(-2000, -100, -2000, 2000, 400, 2000)))
-                    KaijuMod.LOG.info("[STATUS] #{} {} hp={} poise={} clip={} pos={},{},{} sever={} heat0={}", k.getId(), k.state, (int) k.hp, (int) k.poise,
-                            k.clip.name, (int) k.getX(), (int) k.getY(), (int) k.getZ(), k.severMask, String.format("%.2f", k.heat[0]));
+                    KaijuMod.LOG.info("[STATUS] #{} t={} {} hp={} st={} clip={} pos={},{},{} want={} knock={} ground={} retreat={} tgt={}", k.getId(), k.tickCount, k.state, (int) k.hp, (int) k.stamina,
+                            k.clip.name, (int) k.getX(), String.format("%.1f", k.getY()), (int) k.getZ(), k.wantSpeed, String.format("%.2f", k.knock.horizontalDistance()),
+                            k.groundAt(k.position()), k.brain.retreatTicks, k.brain.target == null ? -1 : k.brain.target.getId());
         });
     }
 

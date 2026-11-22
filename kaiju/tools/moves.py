@@ -38,51 +38,94 @@ def attack(id_, cat, clip_name=None, length=None, rng=(0, 60), arc="front", hits
 
 # ====================================================================== locomotion
 def locomotion():
-    c = clip("idle", 4.0, True)
-    w = 2 * math.pi / 4.0
-    c.add_fn("chest", lambda t: [0, 0, 0])
-    c.add_fn("torso", lambda t: [0.8 * math.sin(w * t), 0, 0])
-    for i, b in enumerate(NECK):
-        c.add_fn(b, lambda t, i=i: [1.2 * math.sin(w * t + i * 0.3), 2.5 * math.sin(w * t * 0.5 + i * 0.4), 0])
-    c.add_fn("head", lambda t: [-1.5 * math.sin(w * t + 1), 4 * math.sin(w * t * 0.5 + 1.4), 0])
-    c.add_fn("jaw", lambda t: [1.5 + 1.5 * math.sin(w * t), 0, 0])
-    for i, b in enumerate(TAILS):
-        c.add_fn(b, lambda t, i=i: [0.6 * math.sin(w * t - i * 0.35), 2.0 * math.sin(w * 0.5 * t - i * 0.3), 0])
+    # ---------------------------------------------------------------- idle: heavy breathing, weight shifts, a slow look around
+    c = clip("idle", 6.0, True)
+    w = 2 * math.pi / 6.0
+    br = lambda t: math.sin(w * 1.5 * t)  # breath cycle: 4 s
+    c.add_fn("torso", lambda t: [10 + 1.2 * br(t), 1.5 * math.sin(w * t), 0])
+    c.add_fn("body", lambda t: [0, 2 * math.sin(w * t), 1.5 * math.sin(w * t)])
+    c.add_fn("body", lambda t: [1.2 * math.sin(w * t), -0.4 + 0.3 * br(t), 0], kind="position")
+    c.add_fn("neck1", lambda t: [3 + 1.0 * br(t - 0.3), 4 * math.sin(w * t + 0.8), 0])
+    c.add_fn("neck2", lambda t: [3, 3 * math.sin(w * t + 1.0), 0])
+    c.add_fn("head", lambda t: [2 - 1.5 * br(t - 0.4), 8 * math.sin(w * t + 1.3), 0])
+    c.add_fn("jaw", lambda t: [2 + 2 * max(0, br(t - 0.2)), 0, 0])
+    c.add_fn("throat", lambda t: [2 * br(t), 0, 0])
     for side, sg in SIDES:
-        c.add_fn(f"arm_{side}", lambda t, sg=sg: [-2 * math.sin(w * t), 0, sg * 1.5 * math.sin(w * t)])
-        c.add_fn(f"eyelid_{side}", lambda t: [0, -0.9 if 2.5 <= t <= 2.65 else 0, 0], kind="position")
-    c.add_fn("chest", lambda t: [0, 0, 0])
+        c.add_fn(f"arm_{side}", lambda t, sg=sg: [-18 - 2 * br(t), 0, sg * (6 + 1.5 * br(t))])
+        c.add_fn(f"forearm_{side}", lambda t: [-30, 0, 0])
+        c.add_fn(f"thigh_{side}", lambda t, sg=sg: [-4, 0, sg * 3 + 1.2 * math.sin(w * t)])
+        c.add_fn(f"shin_{side}", lambda t: [6, 0, 0])
+        c.add_fn(f"foot_{side}", lambda t: [-2, 0, 0])
+        c.add_fn(f"eyelid_{side}", lambda t: [0, -0.9 if 3.6 <= t <= 3.75 else 0, 0], kind="position")
+    for i, b in enumerate(TAILS):
+        c.add_fn(b, lambda t, i=i: [0.5 * math.sin(w * t - i * 0.3), 2.2 * math.sin(w * t - i * 0.32), 0])
+    c.extra[("scale", "chest")] = {f"{t:.1f}": [round(1 + 0.022 * math.sin(w * 1.5 * t), 3), round(1 + 0.03 * math.sin(w * 1.5 * t), 3), round(1 + 0.03 * math.sin(w * 1.5 * t), 3)] for t in [k * 0.2 for k in range(31)]}
+    c.extra[("scale", "belly")] = {f"{t:.1f}": [round(1 + 0.015 * math.sin(w * 1.5 * t - 0.5), 3), 1, round(1 + 0.02 * math.sin(w * 1.5 * t - 0.5), 3)] for t in [k * 0.2 for k in range(31)]}
     c.springs = False
-    c.extra[("scale", "chest")] = {f"{t:.1f}": [round(1 + 0.015 * math.sin(w * t), 3), round(1 + 0.02 * math.sin(w * t), 3), round(1 + 0.02 * math.sin(w * t), 3)] for t in [i * 0.2 for i in range(21)]}
 
-    def gait(name, L, stride, bob, sway, back=False):
+    # ---------------------------------------------------------------- tired: shoulders slumped, panting, head low
+    c = clip("tired", 2.0, True)
+    w2 = 2 * math.pi / 2.0
+    c.add_fn("torso", lambda t: [18 + 3 * math.sin(w2 * t), 0, 0])
+    c.add_fn("body", lambda t: [0, -2.2 + 0.6 * math.sin(w2 * t), 0], kind="position")
+    c.add_fn("neck1", lambda t: [10 + 2 * math.sin(w2 * t - 0.4), 0, 0])
+    c.add_fn("head", lambda t: [6 - 4 * math.sin(w2 * t - 0.6), 0, 0])
+    c.add_fn("jaw", lambda t: [16 + 10 * math.sin(w2 * t - 0.3), 0, 0])
+    c.add_fn("throat", lambda t: [6 * math.sin(w2 * t), 0, 0])
+    for side, sg in SIDES:
+        c.add_fn(f"arm_{side}", lambda t, sg=sg: [-6, 0, sg * 4])
+        c.add_fn(f"forearm_{side}", lambda t: [-14, 0, 0])
+        c.add_fn(f"thigh_{side}", lambda t, sg=sg: [-12, 0, sg * 5])
+        c.add_fn(f"shin_{side}", lambda t: [16, 0, 0])
+        c.add_fn(f"foot_{side}", lambda t: [-4, 0, 0])
+    for i, b in enumerate(TAILS):
+        c.add_fn(b, lambda t, i=i: [-0.6 + 0.4 * math.sin(w2 * t - i * 0.3), 0.8 * math.sin(w2 * 0.5 * t - i * 0.3), 0])
+    c.extra[("scale", "chest")] = {f"{t:.1f}": [round(1 + 0.05 * math.sin(w2 * t), 3), round(1 + 0.06 * math.sin(w2 * t), 3), round(1 + 0.06 * math.sin(w2 * t), 3)] for t in [k * 0.1 for k in range(21)]}
+    c.springs = False
+
+    def gait(name, L, stride, knee, bob, sway, yaw, lean, neckp, arms, tail_lift=0.0, back=False):
+        """heavy biped gait. Left leg phase th = w t (right = th + pi); a foot strikes when its thigh is furthest
+        forward (t = 0.75 L left, 0.25 L right), stays flat on the ground through stance and lifts with a bent knee
+        while it swings. The body is lowest at each strike and rides over the stance leg; hips and shoulders twist
+        against each other, the head is held steady, the tail swings against the hips and lags (spring physics)."""
         c = clip(name, L, True)
         w = 2 * math.pi / L
         s = -1 if back else 1
-        c.add_fn("body", lambda t: [0, 5 * math.sin(w * t), 3.5 * math.sin(w * t)])
-        c.add_fn("body", lambda t: [sway * math.sin(w * t), -bob * abs(math.sin(w * t)) + bob * 0.4, 0], kind="position")
-        c.add_fn("torso", lambda t: [3 + 1.5 * abs(math.sin(w * t)), -4 * math.sin(w * t), -2.5 * math.sin(w * t)])
-        c.add_fn("neck1", lambda t: [-2 * abs(math.sin(w * t)), 2.5 * math.sin(w * t), 0])
-        c.add_fn("head", lambda t: [2.5 * abs(math.sin(w * t)) - 1, -3 * math.sin(w * t), 0])
-        for side, sg in SIDES:
-            ph = 0 if sg > 0 else math.pi
-            c.add_fn(f"thigh_{side}", lambda t, ph=ph: [s * stride * math.sin(w * t + ph), 0, 0])
-            c.add_fn(f"shin_{side}", lambda t, ph=ph: [16 * max(0, math.sin(w * t + ph + s * 1.3)), 0, 0])
-            c.add_fn(f"foot_{side}", lambda t, ph=ph: [-s * 0.6 * stride * math.sin(w * t + ph) - 9 * max(0, math.sin(w * t + ph + s * 1.3)), 0, 0])
-            c.add_fn(f"arm_{side}", lambda t, ph=ph: [-6 * math.sin(w * t + ph), 0, 0])
+
+        def leg_angles(th):
+            hip = s * stride * math.sin(th)
+            swing = max(0.0, -math.cos(th))
+            kn = knee * swing ** 0.8 + 5 * max(0.0, math.cos(th))
+            stance = max(0.0, math.cos(th))
+            ank = -(hip + kn) * (0.95 if stance > 0 else 0.55) + 8 * swing * math.sin(th * 2)
+            return hip, kn, ank
+
+        for side, ph in (("l", 0.0), ("r", math.pi)):
+            c.add_fn(f"thigh_{side}", lambda t, ph=ph: [leg_angles(w * t + ph)[0], 0, 0])
+            c.add_fn(f"shin_{side}", lambda t, ph=ph: [leg_angles(w * t + ph)[1], 0, 0])
+            c.add_fn(f"foot_{side}", lambda t, ph=ph: [leg_angles(w * t + ph)[2], 0, 0])
+            sgn = 1 if side == "l" else -1
+            c.add_fn(f"arm_{side}", lambda t, sgn=sgn: [-arms[0] - 5 * sgn * math.sin(w * t) * s, 0, sgn * arms[2]])
+            c.add_fn(f"forearm_{side}", lambda t: [-arms[1], 0, 0])
+        c.add_fn("body", lambda t: [0, yaw * math.sin(w * t) * s, -sway * 1.1 * math.cos(w * t)])
+        c.add_fn("body", lambda t: [sway * math.cos(w * t), bob * math.cos(2 * w * t), 0], kind="position")
+        c.add_fn("torso", lambda t: [lean + 1.5 * math.cos(2 * w * t), -1.3 * yaw * math.sin(w * t) * s, sway * 0.6 * math.cos(w * t)])
+        c.add_fn("neck1", lambda t: [neckp - 1.5 * math.cos(2 * w * t), 0.6 * yaw * math.sin(w * t) * s, 0])
+        c.add_fn("neck2", lambda t: [neckp * 0.5, 0.3 * yaw * math.sin(w * t) * s, 0])
+        c.add_fn("head", lambda t: [-lean * 0.6 - neckp * 1.2 + 1.0 * math.cos(2 * w * t), 0.2 * yaw * math.sin(w * t) * s, -0.5 * sway * math.cos(w * t)])
         for i, b in enumerate(TAILS):
-            c.add_fn(b, lambda t, i=i: [1.0 * math.sin(2 * w * t - i * 0.3), -5 * math.sin(w * t - i * 0.32), 0])
-        # footfalls jolt the belly
-        c.impact(L * 0.25, 0.35).impact(L * 0.75, 0.35)
-        c.springs = False
+            c.add_fn(b, lambda t, i=i: [tail_lift / 16 + 0.8 * math.cos(2 * w * t - i * 0.35), -1.6 * yaw / 4 * math.sin(w * t - i * 0.28) * s, 0])
+        c.impact(L * 0.25, 0.45).impact(L * 0.75, 0.45)
+        c.springs = True
         return c
 
-    gait("walk", 2.4, 16, 1.4, 1.2)
-    gait("walk_fast", 1.6, 21, 2.0, 1.5)
-    gait("walk_back", 2.8, 12, 1.0, 1.0, back=True)
-    gait("turn", 1.8, 7, 0.8, 1.4)
+    #     name          L    stride knee bob  sway yaw lean neck  arms(raise, elbow, out) tail
+    gait("walk",       2.8, 17,    34,  1.6, 2.0, 6,  12,  5,    (14, 32, 7))
+    gait("walk_fast",  1.5, 26,    58,  3.0, 1.2, 4,  26,  12,   (30, 55, 4), tail_lift=10)
+    gait("walk_back",  3.2, 11,    26,  1.2, 1.6, 4,  6,   2,    (18, 30, 8), back=True)
+    gait("turn",       2.0, 7,     22,  0.9, 1.6, 3,  10,  4,    (14, 32, 7))
 
-    for name, L in (("hold_idle", 3.0), ("hold_walk", 2.4)):
+    for name, L in (("hold_idle", 3.0), ("hold_walk", 2.8)):
         c = clip(name, L, True)
         w = 2 * math.pi / L
         for side, sg in SIDES:
@@ -92,7 +135,8 @@ def locomotion():
             c.add_fn(f"forearm_{side}", lambda t, b=base[f"forearm_{side}"]: b)
             if name == "hold_walk":
                 c.add_fn(f"thigh_{side}", lambda t, ph=ph: [14 * math.sin(w * t + ph), 0, 0])
-                c.add_fn(f"shin_{side}", lambda t, ph=ph: [14 * max(0, math.sin(w * t + ph + 1.3)), 0, 0])
+                c.add_fn(f"shin_{side}", lambda t, ph=ph: [28 * max(0, -math.cos(w * t + ph)) ** 0.8, 0, 0])
+                c.add_fn(f"foot_{side}", lambda t, ph=ph: [-14 * math.sin(w * t + ph) * 0.9, 0, 0])
         c.add_fn("torso", lambda t: [-6, 0, 0])
         c.add_fn("head", lambda t: [6, 0, 0])
         for i, b in enumerate(TAILS):
@@ -122,15 +166,48 @@ def reactions():
         step1 = merge(rock, leg("l", -16 * fz, 24, 0), body(-6 * fz, 10 * fx, 6 * fx, z=9 * fz, x=-7 * fx))
         step2 = merge(scale_pose(rock, 0.5), leg("r", -14 * fz, 20, 0))
         c.key(0, {}).key(0.12, rock, "out").key(0.5, step1).key(0.9, step2).key(1.5, {}).impact(0.06, 1.0)
-    # knockdowns: lose balance, fall with gravity (ease in), slam, bounce, settle
-    for name, end, tip in (("knockdown_b", LIE_BACK, merge(root(-30), neck(30), arm("l", 70, 40), arm("r", 70, 40))),
-                           ("knockdown_f", LIE_FRONT, merge(root(30), neck(-20), arm("l", 80, 30), arm("r", 80, 30))),
-                           ("knockdown_l", LIE_BACK, merge(root(-18, 0, -28), neck(20, 20), arm("l", 60, 50))),
-                           ("knockdown_r", LIE_BACK, merge(root(-18, 0, 28), neck(20, -20), arm("r", 60, 50)))):
-        c = clip(name, 2.2)
-        bounce = merge(end, root(-3 if end is LIE_BACK else 3, y=3))
-        c.key(0, {}).key(0.35, merge(tip, jaw(30)), "out").key(0.95, merge(end, jaw(25)), "in") \
-         .key(1.15, merge(bounce, jaw(10)), "out").key(1.45, end, "in").key(2.2, end).impact(0.95, 1.0).impact(1.45, 0.4)
+    # knockdowns: the blow rocks it, it staggers trying to stay up, loses balance and topples like a felled tower:
+    # the fall starts slowly and accelerates (gravity), the body pivots on its heels and comes down along an arc
+    # (keyed densely so the lift follows sin(angle) and nothing floats), slams, settles with a tiny rebound
+    def topple(name, end, lean_pitch, lean_roll, react_pose, step_pose, reach_pose):
+        c = clip(name, 3.4)
+        c.key(0, {}).key(0.2, react_pose, "out").key(0.75, step_pose).key(1.15, merge(reach_pose, root(lean_pitch * 0.12, 0, lean_roll * 0.12)))
+        er = end[("pos", "root")][1] if ("pos", "root") in end else 0
+        endp, endr = end["root"][0], end["root"][2]
+        t0, t1 = 1.15, 2.25
+        n = 8
+        for k in range(1, n + 1):
+            f = k / n
+            g = f ** 2.2  # angle grows like a falling rigid body
+            ang_p = lean_pitch * 0.12 + (endp - lean_pitch * 0.12) * g
+            ang_r = lean_roll * 0.12 + (endr - lean_roll * 0.12) * g
+            tilt = max(abs(ang_p), abs(ang_r))
+            lift = er * math.sin(math.radians(min(90, tilt))) ** 1.3
+            pose = merge(scale_pose(reach_pose, 1 - g), scale_pose({kk: v for kk, v in end.items() if kk not in ("root", ("pos", "root"))}, g),
+                         {"root": [ang_p, 0, ang_r], ("pos", "root"): [0, lift, 0]}, jaw(30 * (1 - g) + 20 * g))
+            c.key(t0 + (t1 - t0) * f, pose, "linear")
+        rebound = merge(end, root(-1.5 if endp < 0 else 1.5, y=0.8))
+        c.key(2.42, rebound, "out").key(2.6, end, "in").key(3.4, end)
+        c.impact(2.25, 1.0).impact(2.6, 0.35)
+        return c
+
+    flail = lambda a, b: merge(arm("l", a, 40, elbow=30, fingers=40), arm("r", b, 40, elbow=30, fingers=40))
+    topple("knockdown_b", LIE_BACK, -86, 0,
+           merge(torso(-14), neck(-22, head_pitch=-14), jaw(36), flail(40, 50), body(z=4)),
+           merge(torso(-12), neck(-16), jaw(30), flail(70, 60), leg("r", 20, 30), leg("l", -8, 20), body(-4, z=6)),
+           merge(torso(-10), neck(10, head_pitch=14), jaw(34), flail(100, 90), leg("l", -30, 20), leg("r", -10, 10)))
+    topple("knockdown_f", LIE_FRONT, 84, 0,
+           merge(torso(16), neck(14), jaw(30), flail(30, 30), body(z=-4)),
+           merge(torso(20), neck(10), jaw(26), flail(50, 40), leg("l", -24, 34), body(4, z=-6)),
+           merge(torso(22), neck(-14, head_pitch=-12), jaw(32), arm("l", 100, 20, elbow=10, fingers=-20), arm("r", 100, 20, elbow=10, fingers=-20), leg("r", 20, 10)))
+    topple("knockdown_l", merge(LIE_BACK, root(0, 0, -6)), -86, -6,
+           merge(torso(-6, -14, 8), neck(-10, -18), jaw(34), flail(50, 30), body(x=4)),
+           merge(torso(-8, -16, 12), neck(-6, -20), jaw(30), flail(60, 70), leg("r", 10, 30, 0, 14), body(roll=8, x=6)),
+           merge(torso(-10, -10, 10), neck(10, -14), jaw(34), flail(90, 100), leg("l", -20, 20)))
+    topple("knockdown_r", merge(LIE_BACK, root(0, 0, 6)), -86, 6,
+           merge(torso(-6, 14, -8), neck(-10, 18), jaw(34), flail(30, 50), body(x=-4)),
+           merge(torso(-8, 16, -12), neck(-6, 20), jaw(30), flail(70, 60), leg("l", 10, 30, 0, 14), body(roll=-8, x=-6)),
+           merge(torso(-10, 10, -10), neck(10, 14), jaw(34), flail(100, 90), leg("r", -20, 20)))
     c = clip("lying_back", 3.0, True)
     c.key(0, LIE_BACK).key(1.5, merge(LIE_BACK, torso(3), jaw(8))).key(3.0, LIE_BACK)
     c = clip("lying_front", 3.0, True)
@@ -139,11 +216,11 @@ def reactions():
     side = merge(root(-10, 0, 80, y=13), neck(10, 30), arm("r", 60, 60, elbow=40), leg("l", -50, 50), leg("r", -30, 40))
     kneel = merge(root(25, y=-6), body(y=-6), leg("l", -80, 90, 0), leg("r", 20, 100, -30), arm("l", 30, 10, elbow=60), arm("r", 30, 10, elbow=60), neck(-10))
     rise = merge(crouch(1.2), neck(-4), torso(10))
-    c = clip("getup_back", 3.2)
-    c.key(0, LIE_BACK).key(0.8, side).key(1.5, LIE_FRONT).key(2.3, kneel).key(2.8, rise).key(3.2, {}).impact(1.5, 0.5)
-    c = clip("getup_front", 2.6)
+    c = clip("getup_back", 4.2)
+    c.key(0, LIE_BACK).key(1.0, side).key(1.9, LIE_FRONT, "in").key(2.9, kneel).key(3.6, rise).key(4.2, {}).impact(1.9, 0.5)
+    c = clip("getup_front", 3.4)
     push = merge(root(60, y=12), arm("l", 70, 20, elbow=10), arm("r", 70, 20, elbow=10), neck(-10))
-    c.key(0, LIE_FRONT).key(0.8, push).key(1.6, kneel).key(2.2, rise).key(2.6, {})
+    c.key(0, LIE_FRONT).key(1.1, push).key(2.1, kneel).key(2.8, rise).key(3.4, {})
     # held in a grapple: flailing; thrown: airborne tumbling
     c = clip("held", 1.2, True)
     c.key(0, merge(arm("l", 60, 40, elbow=30, fingers=40), arm("r", 70, 50, elbow=20, fingers=40), jaw(30), neck(-10, 15), tail_curve(0, 30, 20)))
@@ -162,11 +239,15 @@ def reactions():
     c = clip("death", 4.0)
     c.key(0, {}).key(0.6, merge(neck(-40, 0, 0, head_pitch=-30), jaw(45), torso(-14), arm("l", 60, 40), arm("r", 60, 40))) \
      .key(1.6, merge(crouch(1.4), neck(20), jaw(20))).key(2.6, merge(LIE_BACK, neck(30, 20), jaw(30)), "in").key(4.0, merge(LIE_BACK, neck(34, 26), jaw(34))).impact(2.6, 1.0)
-    c = clip("roar", 3.5)
-    c.key(0, {}).key(0.5, merge(neck(10), torso(6), crouch(0.5))).key(1.05, merge(neck(-40, head_pitch=-26), torso(-10), jaw(42, 1), arm("l", 40, 30, elbow=30, fingers=-20), arm("r", 40, 30, elbow=30, fingers=-20), {"throat": [12, 0, 0]}), "out") \
-     .key(2.8, merge(neck(-44, head_pitch=-28), torso(-10), jaw(44, 1), arm("l", 44, 32, elbow=30, fingers=-20), arm("r", 44, 32, elbow=30, fingers=-20), {"throat": [12, 0, 0]})).key(3.5, {})
-    c.add_fn("head", lambda t: [0.6 * math.sin(t * 70), 0.6 * math.sin(t * 53), 0] if 1.1 < t < 2.8 else [0, 0, 0])
-
+    c = clip("roar", 4.6)
+    inhale = merge(crouch(0.6), torso(16), neck(14, head_pitch=10), jaw(6), arm("l", 10, 6, elbow=40), arm("r", 10, 6, elbow=40), tail_curve(0, -6))
+    peak = merge(torso(-14), neck(-46, head_pitch=-30), jaw(46, 1), {"throat": [16, 0, 0]}, arm("l", 46, 34, elbow=26, fingers=-24),
+                 arm("r", 46, 34, elbow=26, fingers=-24), tail_curve(0, 34, 12), stance_wide(0.8))
+    hold = merge(peak, neck(-4, head_pitch=-4), {"throat": [4, 0, 0]})
+    c.key(0, {}).key(0.9, inhale).key(1.35, peak, "out").key(3.4, hold).key(3.9, merge(scale_pose(peak, 0.4), jaw(-18)), "in").key(4.6, {})
+    c.add_fn("head", lambda t: [0.9 * math.sin(t * 70), 0.9 * math.sin(t * 53), 0] if 1.35 < t < 3.4 else [0, 0, 0])
+    c.add_fn("jaw", lambda t: [2.5 * math.sin(t * 41), 0, 0] if 1.35 < t < 3.4 else [0, 0, 0])
+    c.extra[("scale", "chest")] = {"0": [1, 1, 1], "0.9": [1.07, 1.06, 1.08], "1.35": [1.02, 1.01, 1.02], "3.4": [0.97, 0.98, 0.97], "4.6": [1, 1, 1]}
 
 # ====================================================================== attacks
 def swing(name, L, keys, impacts=()):
@@ -332,7 +413,7 @@ def body_attacks():
         (0, {}), (0.7, merge(crouch(1.6), torso(10), arm("l", 40, 30), arm("r", 40, 30))),
         (1.2, merge(root(-10, y=14), leg("l", -30, 50), leg("r", -20, 40), arm("l", 120, 40), arm("r", 120, 40), neck(-14), jaw(40, 1)), "out"),
         (1.7, merge(root(10, y=0), crouch(1.6), torso(30), arm("l", 40, 10), arm("r", 40, 10)), "in"), (2.2, merge(crouch(1.2), torso(18))), (3.0, {})], [(1.7, 1.0)])
-    attack("leaping_slam", "body", rng=(60, 160), hits=[[1.45, 1.75, ["chest", "belly", "hips", "foot_l", "foot_r"], "crush", 2.4]], events=[[1.7, "shockwave", {"node": "hips", "radius": 45, "power": 1.4}]], move=[[0.8, 1.7, 0, 110]], cd=8.0, tags=["heavy", "gap_close"])
+    attack("leaping_slam", "body", rng=(70, 160), hits=[[1.45, 1.75, ["chest", "belly", "hips", "foot_l", "foot_r"], "crush", 2.4]], events=[[1.7, "shockwave", {"node": "hips", "radius": 45, "power": 1.4}]], move=[[0.8, 1.7, 0, 110]], cd=8.0, tags=["heavy", "gap_close"])
     swing("bulldoze", 2.8, [
         (0, {}), (0.6, merge(crouch(0.9), torso(26), neck(10), arm("l", 70, 10, elbow=20, fingers=40), arm("r", 70, 10, elbow=20, fingers=40))),
         (1.4, merge(crouch(1.0), torso(28), neck(10), arm("l", 80, 10, elbow=10, fingers=40), arm("r", 80, 10, elbow=10, fingers=40), leg("l", -24, 24))),
@@ -361,7 +442,7 @@ def leg_attacks():
         (0, {}), (0.8, merge(crouch(1.5), torso(16), arm("l", 50, 30), arm("r", 50, 30))),
         (1.2, merge(root(0, y=12), leg("l", -20, 30), leg("r", -20, 30), torso(-6), neck(-16), jaw(30, 1)), "out"),
         (1.5, merge(crouch(1.6), torso(20)), "in"), (2.4, {})], [(1.5, 1.0)])
-    attack("ground_pound", "leg", rng=(0, 80), arc="any", hits=[[1.4, 1.55, FEET["l"] + FEET["r"], "stomp", 1.8]], events=[[1.5, "shockwave", {"node": "hips", "radius": 60, "power": 1.5}]], cd=7.0, tags=["surround", "trip"])
+    attack("ground_pound", "leg", rng=(0, 50), arc="any", hits=[[1.4, 1.55, FEET["l"] + FEET["r"], "stomp", 1.8]], events=[[1.5, "shockwave", {"node": "hips", "radius": 60, "power": 1.5}]], cd=7.0, tags=["surround", "trip"])
     swing("knee_strike", 1.2, [(0, {}), (0.4, merge(leg("l", 10, 40), torso(-6))), (0.58, merge(leg("l", -90, 110), torso(14), body(z=-3)), "in"), (1.2, {})], [(0.58, 0.5)])
     attack("knee_strike", "leg", rng=(15, 45), hits=[[0.45, 0.62, ["knee_l", "thigh_l"], "blunt", 1.4]], cd=1.6)
 
@@ -583,7 +664,7 @@ def defense():
                                  (0.7, merge(arm("l", 80, 20, elbow=60, fingers=40), arm("r", 60, 20, elbow=40), crouch(0.5))),
                                  (0.9, merge(torso(10, -30), arm("r", 80, -10, -30, elbow=10, fingers=50), neck(10, -14), body(z=-3)), "in"), (1.8, {})])
     attack("parry_counter", "defense", rng=(0, 70), arc="front", hits=[[0.75, 0.95, HANDS["r"], "cut", 1.4]], events=[[0.1, "parry", {"secs": 0.6}]], cd=4.0, need=["arm_r"], tags=["defense"])
-    attack("roar", "intimidate", rng=(0, 9999), arc="any", events=[[1.05, "roar", {"radius": 300}]], cd=15.0, tags=["intimidate"])
+    attack("roar", "intimidate", rng=(0, 9999), arc="any", events=[[1.35, "roar", {"radius": 300}]], cd=15.0, tags=["intimidate"])
     swing("tail_lash_intimidate", 2.0, [(0, {}), (0.5, merge(tail_curve(60, 40, 30), neck(-10), jaw(30, 1))), (1.0, merge(tail_curve(-60, 40, -30), neck(-10), jaw(30, 1)), "in"), (1.5, merge(tail_curve(40, 20, 20))), (2.0, {})])
     attack("tail_lash_intimidate", "intimidate", rng=(0, 9999), arc="any", events=[[1.0, "roar", {"radius": 120}]], cd=12.0, tags=["intimidate"])
 

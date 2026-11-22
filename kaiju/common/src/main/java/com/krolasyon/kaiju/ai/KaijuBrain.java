@@ -29,6 +29,8 @@ public final class KaijuBrain {
     float wanderYaw;
     final Random rnd = new Random();
     public boolean enabled = true;
+    public int nextBreath = 400, retreatTicks, retreatCd;
+    final java.util.Map<String, Integer> lastUse = new java.util.HashMap<>();
 
     public KaijuBrain(KaijuEntity e) { this.e = e; }
 
@@ -84,10 +86,13 @@ public final class KaijuBrain {
     // ------------------------------------------------------------------ scoring
     float score(KaijuSpec.Attack a, @Nullable KaijuEntity t, String only) {
         if (!e.ready(a) || !e.meets(a, t)) return 0;
+        if (e.controller == null && e.stamina < e.cost(a) * 0.8f) return 0;  // too tired for this one
+        Integer used = lastUse.get(a.id);
         if (only != null && !only.contains(a.cat)) return 0;
         float s = a.weight;
         float[] st = e.stats.get(a.id);
         if (st != null && st[0] >= 2) s *= 0.55f + Math.min(1f, st[1] / st[0]);  // learning
+        if (used != null && e.tickCount - used < 300) s *= 0.25f;  // vary: not the same move again so soon
         if (t == null) {
             return a.tags.contains("world") || a.cat.equals("intimidate") ? s * 0.2f : 0;
         }
@@ -114,18 +119,23 @@ public final class KaijuBrain {
         if (a.tags.contains("grapple")) s *= tStag ? 3.5f : (t.guardTicks > 0 ? 2.5f : 0.6f);
         if (a.tags.contains("heavy")) s *= tStag ? 2.2f : 1f;
         if (a.isBreath()) {
-            s *= 1.3f + (d > 200 ? 2.5f : 0);
-            if (tCharging && d > 60) s *= 5f;   // answer a charging breath with our own: the clash
-            if (tFiring && d > 60) s *= 6f;
-            if (hp < 0.4f) s *= 1.6f;
-            if (a.id.equals("atomic_charged_max")) s *= hp < 0.35f || d > 600 ? 1.5f : 0.4f;
-            if (a.id.equals("atomic_burst") && d < 160) s *= 1.8f;
+            // like the film: the breath is a rare, deliberate act at range, never sprayed into the sky
+            if (e.controller == null && (a.id.equals("atomic_aerial") || a.id.equals("atomic_point_blank") || a.id.equals("atomic_sweep"))) return 0;
+            boolean clash = (tCharging || tFiring) && d > 140;
+            if (e.tickCount < nextBreath && !clash) return 0;
+            if (a.id.equals("atomic_ground_pin")) { if (!(tDown && d < 90)) return 0; s *= 0.6f; }
+            else if (a.id.equals("atomic_ground")) { if (d < 130) return 0; }
+            else if (d < 140) return 0;
+            s *= d > 320 ? 3f : 1.2f;
+            if (clash) s *= 6f;
+            if (a.id.equals("atomic_charged_max")) s *= hp < 0.4f && d > 300 ? 1.5f : 0f;
+            if (a.id.equals("atomic_burst")) s *= 0.5f;
         }
         if (a.id.equals("nuclear_pulse")) {
             s *= (e.state == KaijuEntity.State.HELD || e.heldBy != null) ? 30f : (hp < 0.35f && d < 90 ? 5f : 0.08f);
         }
         if (a.cat.equals("defense")) {
-            boolean threat = (t.attack != null && t.attack.hits.size() > 0 && d < 180) || tFiring || tCharging && d < 120;
+            boolean threat = (t.attack != null && t.attack.hits.size() > 0 && d <= t.attack.maxRange + 12) || tFiring;
             if (!threat) return 0;
             s *= tFiring ? 3f : 1.6f;
             if (a.id.equals("parry_counter")) s *= t.attack != null && t.attack.cat.equals("claw") ? 1.8f : 0.4f;
@@ -143,6 +153,9 @@ public final class KaijuBrain {
         if (a.cat.equals("body")) s *= d < 70 ? 1.6f : 1f;
         if (a.tags.contains("gap_close")) s *= d > 110 ? 2.2f : 0.4f;
         if (a.tags.contains("surround") && e.level().getEntitiesOfClass(KaijuEntity.class, e.getBoundingBox().inflate(120 * e.k()), x -> x != e).size() > 1) s *= 3f;
+        // out of reach: close the distance first (walk in, or a gap-closing charge) instead of fighting the air
+        if (d > 60 && !a.tags.contains("gap_close") && !a.isBreath() && !a.cat.equals("world") && !a.cat.equals("defense")
+                && !a.tags.contains("mount") && !(a.cat.equals("tail") && !side(bear).equals("front"))) s *= 0.3f;
         // combos: after landing a hit, keep pressing with fast follow-ups
         if (e.tickCount - e.lastLanded < 30 && a.len < 2.0f) s *= 1.8f;
         return s;
@@ -164,11 +177,13 @@ public final class KaijuBrain {
         float tot = 0;
         for (float x : w) tot += x;
         float r = rnd.nextFloat() * tot;
+        KaijuSpec.Attack chosen = list.get(list.size() - 1);
         for (int i = 0; i < list.size(); i++) {
             r -= w.get(i);
-            if (r <= 0) return list.get(i);
+            if (r <= 0) { chosen = list.get(i); break; }
         }
-        return list.get(list.size() - 1);
+        lastUse.put(chosen.id, e.tickCount);
+        return chosen;
     }
 
     // ------------------------------------------------------------------ AI
@@ -186,10 +201,37 @@ public final class KaijuBrain {
         float bear = bearing(t.position());
         e.faceYaw = yawTo(e.position(), t.position());
         e.setAim(0, 0);
+        // tired or badly hurt: back off for a while, catch breath, then come again
+        float hpr = e.hp / e.spec.maxHp;
+        if (retreatCd > 0) retreatCd--;
+        if (retreatTicks <= 0 && retreatCd <= 0 && (e.stamina < 22 || hpr < 0.35f && e.tickCount - e.lastHurtTick() < 40 && rnd.nextFloat() < 0.08f)) {
+            retreatTicks = 70 + rnd.nextInt(90);
+            retreatCd = 420;
+            com.krolasyon.kaiju.KaijuMod.LOG.info("[KAIJU] #{} backs off (stamina={} hp={})", e.getId(), (int) e.stamina, (int) e.hp);
+        }
+        if (retreatTicks > 0) {
+            retreatTicks--;
+            if (d < 45 && --thinkTimer <= 0) {  // cornered: a quick defensive move
+                thinkTimer = 10;
+                KaijuSpec.Attack a = pick(t, "defense,tail,claw", 0.2f);
+                if (a != null && e.startAttack(a.id)) return;
+            }
+            if (d > 140 && --thinkTimer <= 0) {  // at range again: maybe the breath
+                thinkTimer = 20;
+                KaijuSpec.Attack a = pick(t, "atomic", 0.5f);
+                if (a != null && e.startAttack(a.id)) { nextBreath = e.tickCount + 500 + rnd.nextInt(300); retreatTicks = 0; return; }
+            }
+            e.wantSpeed = d < 240 ? -e.spec.walkPx * 0.85f : 0;
+            if (retreatTicks == 0 && rnd.nextFloat() < 0.35f) e.startAttack("roar");
+            return;
+        }
         if (--thinkTimer <= 0) {
-            thinkTimer = d > 90 ? 12 + rnd.nextInt(14) : 3 + rnd.nextInt(5);
-            KaijuSpec.Attack a = pick(t, null, d > 90 ? 0.9f : 0.25f);
-            if (a != null && e.startAttack(a.id)) return;
+            thinkTimer = d > 60 ? 12 + rnd.nextInt(14) : 3 + rnd.nextInt(5);
+            KaijuSpec.Attack a = pick(t, null, d > 60 ? 0.9f : 0.25f);
+            if (a != null && e.startAttack(a.id)) {
+                if (a.isBreath()) nextBreath = e.tickCount + 500 + rnd.nextInt(300);
+                return;
+            }
         }
         // footwork
         float want = e.heldDebris != null ? 160 : (e.beam.firing() ? d : 38);
@@ -217,7 +259,7 @@ public final class KaijuBrain {
         if (--wanderTicks <= 0) {
             wanderTicks = 160 + rnd.nextInt(240);
             wanderYaw = e.getYRot() + rnd.nextFloat() * 160 - 80;
-            if (rnd.nextInt(5) == 0) e.startAttack("roar");
+            if (rnd.nextInt(8) == 0) e.startAttack("roar");
         }
         e.faceYaw = wanderYaw;
         e.wantSpeed = wanderTicks % 200 < 120 ? e.spec.walkPx * 0.8f : 0;
@@ -232,7 +274,7 @@ public final class KaijuBrain {
         float d = t == null ? 9999 : distPx(t);
         if (t != null && d < 160 && rnd.nextFloat() < 0.12f) {
             KaijuSpec.Attack a = pick(t, "ground,atomic", 0.2f);
-            if (a != null && e.startAttack(a.id)) return;
+            if (a != null && e.startAttack(a.id)) { if (a.isBreath()) nextBreath = e.tickCount + 500 + rnd.nextInt(300); return; }
         }
         if (e.downTicks > 30 + rnd.nextInt(30)) e.getUp();
     }
@@ -360,12 +402,17 @@ public final class KaijuBrain {
             Vec3 p = aimPoint();
             return p.subtract(mouth).normalize();
         }
-        if (target != null && pitchExtra > -30) {
-            int node = target.isDown() ? target.spec.node("chest") : target.spec.node("chest");
-            Vec3 c = target.nodePos(node).add(target.knock.scale(6));
-            return c.subtract(mouth).normalize();
+        Vec3 d;
+        if (target != null) {
+            Vec3 c = target.nodePos(target.spec.node("chest")).add(target.knock.scale(6));
+            d = c.subtract(mouth).normalize();
+        } else {
+            d = new Vec3(headDir.x, 0, headDir.z).normalize();
         }
-        double p = Math.toRadians(-pitchExtra);
-        return headDir.add(0, Math.sin(p), 0).normalize();
+        // never into the sky: at most 15 degrees above the horizon, at most 50 below
+        double horiz = Math.sqrt(d.x * d.x + d.z * d.z);
+        double pitch = Math.atan2(d.y, horiz);
+        pitch = Mth.clamp(pitch, Math.toRadians(-50), Math.toRadians(15));
+        return new Vec3(d.x / Math.max(1e-6, horiz) * Math.cos(pitch), Math.sin(pitch), d.z / Math.max(1e-6, horiz) * Math.cos(pitch));
     }
 }

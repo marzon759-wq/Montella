@@ -129,7 +129,7 @@ public final class KaijuCombat {
         if (dir.lengthSqr() < 1e-6) dir = v.position().subtract(a.position()).multiply(1, 0, 1);
         dir = dir.normalize();
         if (v.guardTicks > 0) dv *= 0.4;
-        double up = atk.tags.contains("launch") ? dv * 0.6 : 0;
+        double up = 0; // a 20 000 t body is not lifted by a blow, only rocked
         v.knock = v.knock.add(dir.scale(dv));
         if (up > 0) v.vy += up;
         // the attacker feels it too (Newton's third law), much less because it is braced
@@ -172,6 +172,12 @@ public final class KaijuCombat {
         a.level().playSound(null, p.x, p.y, p.z, s, SoundSource.HOSTILE, vol, pitch);
     }
 
+    /** the parts that carry the body's mass and shove: the head, jaw and arms slide past each other (they hit, but do not hold bodies apart) */
+    static boolean massive(KaijuEntity e, int node) {
+        String n = e.spec.nodes.get(node).name();
+        return !(n.equals("head") || n.equals("snout") || n.equals("jaw") || n.startsWith("hand") || n.startsWith("elbow") || n.startsWith("shoulder"));
+    }
+
     // ------------------------------------------------------------------ continuous body contact (no interpenetration)
     public static void bodyContacts(KaijuEntity a) {
         for (KaijuEntity b : others(a, 160 * a.k())) {
@@ -181,10 +187,10 @@ public final class KaijuCombat {
             int contacts = 0;
             for (int i = 0; i < a.nodes.length; i++) {
                 float ra = a.nodeR(i);
-                if (ra <= 0 || a.nodes[i] == null || !a.partOk(a.spec.nodes.get(i).sever())) continue;
+                if (ra <= 0 || a.nodes[i] == null || !a.partOk(a.spec.nodes.get(i).sever()) || !massive(a, i)) continue;
                 for (int j = 0; j < b.nodes.length; j++) {
                     float rb = b.nodeR(j);
-                    if (rb <= 0 || b.nodes[j] == null || !b.partOk(b.spec.nodes.get(j).sever())) continue;
+                    if (rb <= 0 || b.nodes[j] == null || !b.partOk(b.spec.nodes.get(j).sever()) || !massive(b, j)) continue;
                     Vec3 d = b.nodes[j].subtract(a.nodes[i]);
                     double dist = d.length();
                     double pen = ra + rb - dist;
@@ -441,10 +447,11 @@ public final class KaijuCombat {
         if (v == null || v.state != KaijuEntity.State.HELD) return;
         v.heldBy = null;
         if (vel.lengthSqr() > 0.04) {
-            v.state = KaijuEntity.State.THROWN;
-            v.knock = new Vec3(vel.x, 0, vel.z);
-            v.vy = Math.max(0.3, vel.y);
-            v.play("thrown");
+            // hurled: it stumbles away along the throw and crashes down heavily, it does not fly
+            v.state = KaijuEntity.State.IDLE;
+            Vec3 h = new Vec3(vel.x, 0, vel.z).scale(0.45);
+            v.knockdown(h, dirFrom(v, a.position()));
+            v.damage(60 * (a.k() / 0.5f), v.spec.node("hips"), "crush");
         } else {
             v.state = KaijuEntity.State.IDLE;
             v.knockdown(Vec3.ZERO, "f");

@@ -137,7 +137,7 @@ def main():
     spec = {
         "id": "atomic_kaiju",
         "model_height_px": 96, "scale": 8.0, "mass": 20000.0, "max_hp": 6000.0,
-        "walk_speed_px": 18.0, "fast_speed_px": 30.0, "turn_deg": 2.4,
+        "walk_speed_px": 16.0, "fast_speed_px": 40.0, "turn_deg": 2.4,
         "nodes": [{"name": n, "bone": b, "r": r, "region": reg, "sever": sv} for n, b, p, r, reg, sv in NODES],
         "sever_bones": SEVER, "regions": REGIONS,
         "plates": PLATES,
