@@ -138,7 +138,7 @@ public final class KaijuBeam {
         Vec3 headDir = aim.subtract(mouth).normalize();
         Vec3 want = e.brain.beamDirection(headDir, pitchExtra);
         // the neck limits the beam to a cone around where the head is pointing; turn smoothly
-        Vec3 d = limitCone(headDir, want, 55);
+        Vec3 d = e.isDown() ? want : limitCone(headDir, want, 55);  // lying down the head lifts to aim; the neck cone does not apply
         dir = dir.lengthSqr() < 0.5 ? d : dir.add(d.subtract(dir).scale(0.35)).normalize();
         start = mouth;
         float maxLen = 360 * (k / 0.5f) * (0.6f + 0.4f * power);

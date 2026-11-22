@@ -120,7 +120,8 @@ public final class KaijuBrain {
         if (a.tags.contains("heavy")) s *= tStag ? 2.2f : 1f;
         if (a.isBreath()) {
             // like the film: the breath is a rare, deliberate act at range, never sprayed into the sky
-            if (e.controller == null && (a.id.equals("atomic_aerial") || a.id.equals("atomic_point_blank") || a.id.equals("atomic_sweep"))) return 0;
+            if (e.controller == null && (a.id.equals("atomic_aerial") || a.id.equals("atomic_point_blank") || a.id.equals("atomic_sweep")
+                    || a.id.equals("atomic_ground"))) return 0;  // lying on its back the head points at the sky: get up first
             boolean clash = (tCharging || tFiring) && d > 140;
             if (e.tickCount < nextBreath && !clash) return 0;
             if (a.id.equals("atomic_ground_pin")) { if (!(tDown && d < 90)) return 0; s *= 0.6f; }

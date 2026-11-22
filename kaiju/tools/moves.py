@@ -638,8 +638,10 @@ def mounted_and_ground():
     # self on the ground: kick, sweep, roll, kip-up strike, grab an ankle
     swing("ground_kick", 1.4, [(0, LIE_BACK), (0.45, merge(LIE_BACK, leg("r", -90, 100))), (0.65, merge(LIE_BACK, leg("r", -110, 0, -20)), "in"), (1.4, LIE_BACK)])
     attack("ground_kick", "ground", clip_name="ground_kick", rng=(0, 60), arc="any", hits=[[0.5, 0.7, FEET["r"], "blunt", 1.4]], cd=1.5, need=["self_down"], tags=["defense"])
-    swing("ground_tail_sweep", 1.8, [(0, LIE_BACK), (0.5, merge(LIE_BACK, {"tail1": [-62, 60, 0]}, tail_curve(30, 0, 0, start=1))),
-                                     (0.95, merge(LIE_BACK, {"tail1": [-62, -70, 0]}, tail_curve(-40, 0, 0, start=1)), "in"), (1.8, LIE_BACK)])
+    # lying on the back the body's long axis is vertical-ish, so a sweep along the ground is a roll of the tail joints
+    sweep = lambda deg: {f"tail{i}": [0, 0, deg * (0.45 if i == 1 else 0.55 / 7)] for i in range(1, 9)}
+    swing("ground_tail_sweep", 1.8, [(0, LIE_BACK), (0.5, merge(LIE_BACK, sweep(55))),
+                                     (0.95, merge(LIE_BACK, sweep(-65)), "in"), (1.8, LIE_BACK)])
     attack("ground_tail_sweep", "ground", rng=(0, 160), arc="any", hits=[[0.6, 1.0, TAIL_TIP + TAIL_MID, "blunt", 1.2]], cd=2.0, need=["self_down", "tail"], tags=["defense", "trip"])
     swing("roll_away", 1.6, [(0, LIE_BACK), (0.6, merge(root(-10, 0, 80, y=13, x=-20), leg("l", -50, 50))), (1.1, merge(LIE_FRONT, root(0, 0, 0, x=-40))), (1.6, merge(LIE_BACK, root(0, 0, 0, x=-50)))])
     attack("roll_away", "ground", rng=(0, 9999), arc="any", events=[[0.1, "dodge", {"secs": 1.0}]], move=[[0.1, 1.5, -30, 0]], cd=3.0, need=["self_down"], tags=["defense"])
