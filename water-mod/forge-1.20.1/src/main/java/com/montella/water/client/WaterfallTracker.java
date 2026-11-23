@@ -96,7 +96,7 @@ public final class WaterfallTracker {
             }
             // mist rising from the plunge
             if (f.height >= 2) {
-                for (int i = Fx.count(d * lod * e * 0.03); i > 0; i--) {
+                for (int i = Fx.count(d * lod * e * 0.018); i > 0; i--) {
                     double a = Fx.R.nextDouble() * Math.PI * 2;
                     double sp = 0.01 + Fx.R.nextDouble() * 0.03;
                     Fx.add(ModParticles.MIST.get(), sx + Fx.sym(1.0), sy + 0.2 + Fx.R.nextDouble() * Math.min(2.0, e * 0.15), sz + Fx.sym(1.0),
@@ -112,14 +112,14 @@ public final class WaterfallTracker {
             }
             if (f.pool) {
                 // foam pushed out across the pool and rings spreading from the impact
-                for (int i = Fx.count(d * lod * (0.15 + e * 0.035)); i > 0; i--) {
+                for (int i = Fx.count(d * lod * (0.04 + e * 0.01)); i > 0; i--) {
                     double a = Fx.R.nextDouble() * Math.PI * 2;
                     double rr = 0.3 + Fx.R.nextDouble() * 0.8;
                     double sp = 0.02 + Fx.R.nextDouble() * 0.04 + e * 0.002;
                     Fx.add(ModParticles.FOAM.get(), sx + Math.cos(a) * rr, sy + 0.01, sz + Math.sin(a) * rr,
                             Math.cos(a) * sp, 0.35 + Fx.R.nextDouble() * 0.5, Math.sin(a) * sp);
                 }
-                if (Fx.R.nextDouble() < d * lod * (0.12 + e * 0.01))
+                if (Fx.R.nextDouble() < d * lod * (0.06 + e * 0.005))
                     Fx.add(ModParticles.RIPPLE.get(), sx + Fx.sym(1.2), sy + 0.015, sz + Fx.sym(1.2), 0, 1.0 + Fx.R.nextDouble() * (0.8 + e * 0.05), 0);
             }
         }

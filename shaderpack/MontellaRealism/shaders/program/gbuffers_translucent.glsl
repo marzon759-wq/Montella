@@ -99,12 +99,12 @@ void main() {
                 float a1 = noise2s(vec2(q.x * 2.2, q.y * 0.55 - t * speed * 0.55));
                 float a2 = noise2s(vec2(q.x * 4.7 + 9.0, q.y * 1.3 - t * speed * 1.3));
                 float a3 = noise2s(vec2(q.x * 9.0 + 3.0, q.y * 2.6 - t * speed * 2.6));
-                vec2 g = side * (a1 - 0.5) * 0.5 + flow * (a2 - 0.5) * 0.35 + side * (a3 - 0.5) * 0.25;
+                vec2 g = side * (a1 - 0.5) * 0.22 + flow * (a2 - 0.5) * 0.16 + side * (a3 - 0.5) * 0.1;
                 wn = normalize(wn + vec3(g.x, 0.0, g.y));
 #ifdef WATERFALL_FOAM
                 // churned white water where the stream is fast (lip of the fall, slopes)
-                float churn = id == 10024 ? 0.9 : sat((speed - 1.5) * 0.12) + 0.12;
-                foam = sat((a1 * 0.5 + a2 * 0.35 + a3 * 0.25 - 0.62 + churn * 0.35) * 3.0) * churn;
+                float churn = id == 10024 ? 0.45 : sat((speed - 3.0) * 0.06);
+                foam = sat((a1 * 0.5 + a2 * 0.35 + a3 * 0.25 - 0.72 + churn * 0.3) * 3.0) * churn;
 #endif
             }
             if (rainStrength > 0.01 && biome_precipitation == 1) {
@@ -124,11 +124,11 @@ void main() {
             float streak = l1 * 0.42 + l2 * 0.28 + l3 * 0.18 + l4 * 0.12;
             // clumps: falling water breaks into fast white packets
             float clump = noise2s(vec2(u * 1.3 + 5.0, (y + t * 8.0) * 0.45));
-            vec3 bump = side * ((l2 - 0.5) * 0.9 + (l4 - 0.5) * 0.5) + vec3(0.0, (l3 - 0.5) * 0.25, 0.0);
+            vec3 bump = side * ((l2 - 0.5) * 0.45 + (l4 - 0.5) * 0.25) + vec3(0.0, (l3 - 0.5) * 0.12, 0.0);
             n = normalize(n + bump);
 #ifdef WATERFALL_FOAM
-            foam = smoothstep(0.36, 0.70, streak + (clump - 0.5) * 0.5);
-            foam = foam * 0.9 + l4 * 0.1;
+            // mostly clear water with white streaks; the sheet only turns white where it breaks up
+            foam = smoothstep(0.50, 0.80, streak + (clump - 0.5) * 0.45) * 0.75;
 #endif
         }
         outColor = vec4(0.0);

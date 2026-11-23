@@ -72,7 +72,7 @@ public final class WaterParticles {
             super.tick();
             float t = (float) age / lifetime;
             quadSize = Mth.lerp(1f - (1f - t) * (1f - t), start, end);
-            alpha = 0.32f * Math.min(1f, t * 6f) * (1f - t);
+            alpha = 0.18f * Math.min(1f, t * 6f) * (1f - t);
             oRoll = roll;
             roll += 0.004f;
         }
@@ -119,8 +119,9 @@ public final class WaterParticles {
             super(l, x, y, z);
             this.xd = vx; this.zd = vz; this.yd = 0;
             this.friction = 0.95f;
-            this.lifetime = 60 + random.nextInt(90);
-            this.size = (float) (vy > 0 ? vy : 0.35f + random.nextFloat() * 0.55f);
+            this.lifetime = 35 + random.nextInt(45);
+            this.size = (float) (vy > 0 ? vy : 0.35f + random.nextFloat() * 0.55f) * 0.75f;
+            this.rCol = 0.86f; this.gCol = 0.9f; this.bCol = 0.92f;
             this.quadSize = size * 0.6f;
             pickSprite(s);
         }
@@ -137,8 +138,8 @@ public final class WaterParticles {
             double surface = p.getY() + fs.getHeight(level, p) + 0.01;
             x += xd; z += zd; y += (surface - y) * 0.3;
             float t = (float) age / lifetime;
-            quadSize = size * (0.6f + 0.6f * Math.min(1f, t * 3f));
-            alpha = 0.9f * Math.min(1f, t * 8f) * (t > 0.55f ? 1f - (t - 0.55f) / 0.45f : 1f);
+            quadSize = size * (0.5f + 0.4f * Math.min(1f, t * 3f));
+            alpha = 0.45f * Math.min(1f, t * 8f) * (t > 0.55f ? 1f - (t - 0.55f) / 0.45f : 1f);
             angle += 0.002f;
         }
         public record Provider(SpriteSet s) implements ParticleProvider<SimpleParticleType> {
@@ -156,6 +157,7 @@ public final class WaterParticles {
             this.radius = (float) (vy > 0 ? vy : 0.6);
             this.lifetime = (int) (12 + radius * 14);
             this.quadSize = 0.05f;
+            this.rCol = 0.82f; this.gCol = 0.88f; this.bCol = 0.92f;
             pickSprite(s);
         }
         @Override public void tick() {
@@ -163,7 +165,7 @@ public final class WaterParticles {
             if (age++ >= lifetime) { remove(); return; }
             float t = (float) age / lifetime;
             quadSize = radius * (float) Math.sqrt(t) + 0.05f;
-            alpha = 0.55f * (1f - t);
+            alpha = 0.16f * (1f - t);
         }
         public record Provider(SpriteSet s) implements ParticleProvider<SimpleParticleType> {
             public Particle createParticle(SimpleParticleType t, ClientLevel l, double x, double y, double z, double vx, double vy, double vz) {

@@ -99,7 +99,7 @@ public final class WaterFx {
         }
         for (int i = 0; i < 2 + (int) (energy * 2); i++)
             Fx.add(ModParticles.RIPPLE.get(), e.getX() + Fx.sym(0.2), s + 0.015, e.getZ() + Fx.sym(0.2), 0, w + 0.6 + energy * (0.8 + i * 0.6), 0);
-        for (int i = Fx.count(d * (3 + energy * 10)); i > 0; i--) {
+        for (int i = Fx.count(d * (1 + energy * 4)); i > 0; i--) {
             double a = Fx.R.nextDouble() * Math.PI * 2;
             double sp = 0.02 + Fx.R.nextDouble() * 0.05 * (0.5 + energy);
             Fx.add(ModParticles.FOAM.get(), e.getX() + Math.cos(a) * w, s + 0.01, e.getZ() + Math.sin(a) * w, Math.cos(a) * sp, 0.3 + energy * 0.25, Math.sin(a) * sp);
@@ -124,7 +124,7 @@ public final class WaterFx {
         Fx.add(ModParticles.RIPPLE.get(), e.getX() - vx * 2, s + 0.015, e.getZ() - vz * 2, 0, w + 0.4 + sp * 4, 0);
         // bow wave: foam pushed to both sides, wider and whiter with speed
         double nx = -vz / sp, nz = vx / sp;
-        for (int i = Fx.count(d * (0.4 + sp * 8)); i > 0; i--) {
+        for (int i = Fx.count(d * (0.1 + sp * 3)); i > 0; i--) {
             double side = Fx.R.nextBoolean() ? 1 : -1;
             Fx.add(ModParticles.FOAM.get(), e.getX() + nx * side * w - vx * 3, s + 0.01, e.getZ() + nz * side * w - vz * 3,
                     nx * side * sp * 0.3, 0.25 + Math.min(0.5, sp * 1.5), nz * side * sp * 0.3);
