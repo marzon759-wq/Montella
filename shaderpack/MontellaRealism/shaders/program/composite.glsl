@@ -81,7 +81,8 @@ vec3 reflectedSky(vec3 Rw, vec3 Rv, float skyLm) {
     return sky * sat(skyLm * 1.3 - 0.15);
 }
 
-vec3 waterAbsorption() { return vec3(0.42, 0.075, 0.055); }
+// real lake / river water: red is gone after ~2 blocks, the bottom fades into blue-green after ~5
+vec3 waterAbsorption() { return vec3(0.55, 0.17, 0.13); }
 
 // how much water of the other kind is close by in the world: falling sheets above a pool surface (impact zone),
 // or the pool surface below a falling sheet. Screen-space search, verified with reconstructed world positions.
@@ -120,7 +121,7 @@ void main() {
     bool water = wdata.b >= 1.0 && d0 < d1 + 1e-6 && d0 < 1.0;
     vec4 nl = texture(colortex1, uv);
     vec3 n = octDecode(nl.xy);
-    float skyLm = nl.w;
+    float skyLm = water ? nl.z : nl.w;
 
     float cloudSh = cloudShadow(ppos0 + cameraPosition, L);
 
@@ -128,10 +129,10 @@ void main() {
     if (water) {
         bool sheet = wdata.b >= 3.0 && wdata.b < 5.0;
         bool stream = wdata.b >= 5.0;
-        vec3 tint = vec3(wdata.r, wdata.g, wdata.b - (sheet ? 3.0 : (stream ? 5.0 : 1.0)));
+        vec3 tint = vec3(wdata.g, wdata.g, wdata.b - (sheet ? 3.0 : (stream ? 5.0 : 1.0)));
         vec3 wp = ppos0 + cameraPosition;
         float t = frameTimeCounter;
-        float foam = wdata.a;
+        float foam = wdata.r;
         float impact = 0.0;
 #ifdef WATERFALL_FOAM
         if (isEyeInWater == 0) {
@@ -212,7 +213,7 @@ void main() {
         // absorption + in-scattering of the water body
         vec3 absorb = waterAbsorption() * mix(vec3(1.0), vec3(1.4, 0.9, 1.0) - tint * 0.4, 0.35);
         vec3 transm = exp(-absorb * wdist);
-        vec3 scatterCol = vec3(0.020, 0.075, 0.085) * (directCol * sat(L.y) * cloudSh * 0.9 + ambientCol * 0.6) * (skyLm * 0.9 + 0.1);
+        vec3 scatterCol = vec3(0.012, 0.062, 0.075) * (directCol * sat(L.y) * cloudSh * 0.9 + ambientCol * 0.6) * (skyLm * 0.9 + 0.1);
         vec3 refr = behind * transm + scatterCol * (1.0 - transm);
         if (isEyeInWater == 1) refr = behind;
 
@@ -230,7 +231,7 @@ void main() {
         float NdotV = sat(dot(-V, n));
         float F = 0.02 + 0.98 * pow(1.0 - NdotV, 5.0);
         // choppy, flowing or falling water scatters its reflection: less mirror, more water colour
-        F *= sheet ? 0.45 : (stream ? 0.55 : 0.9);
+        F *= sheet ? 0.45 : (stream ? 0.55 : 0.75);
         if (isEyeInWater == 1) { F = NdotV < 0.66 ? 1.0 : F; refl = refl * 0.4; }
         // sun glint
         float wd;

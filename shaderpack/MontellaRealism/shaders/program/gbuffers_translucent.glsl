@@ -132,9 +132,10 @@ void main() {
 #endif
         }
         outColor = vec4(0.0);
-        outNormal = vec4(octEncode(n), lmcoord);
-        // rg = biome tint, b = type + tint.b (1 still, 3 falling sheet, 5 flowing surface), a = foam
-        outWater = vec4(glcolor.rg, (falling ? 3.0 : (id == 10004 ? 1.0 : 5.0)) + glcolor.b, foam);
+        // every value written with alpha 1: correct even where the loader ignores the per-buffer blend settings
+        outNormal = vec4(octEncode(n), lmcoord.y, 1.0);
+        // r = foam, g = biome tint green, b = type + tint blue (1 still, 3 falling sheet, 5 flowing surface)
+        outWater = vec4(foam, glcolor.g, (falling ? 3.0 : (id == 10004 ? 1.0 : 5.0)) + glcolor.b, 1.0);
         return;
     }
     vec4 albedo = texture(gtexture, texcoord) * glcolor;
@@ -154,7 +155,7 @@ void main() {
     col = mix(col, skyRadiance(R, 6) * lmcoord.y, f * 0.6);
     float alpha = mix(albedo.a, 1.0, f * 0.5);
     outColor = vec4(col, alpha);
-    outNormal = vec4(octEncode(n), lmcoord);
-    outWater = vec4(0.0);
+    outNormal = vec4(octEncode(n), lmcoord.y, 1.0);
+    outWater = vec4(0.0, 0.0, 0.0, 1.0);
 }
 #endif
