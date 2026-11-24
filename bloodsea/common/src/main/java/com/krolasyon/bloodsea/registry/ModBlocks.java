@@ -39,6 +39,8 @@ public final class ModBlocks {
 
     // ---- the Bone Reach
     public static final RegistryObject<Block> BONE_MUD = reg("bone_mud", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(0.6f).sound(SoundType.MUD)));
+    public static final RegistryObject<Block> MUD_LAYER = reg("mud_layer", () -> new com.krolasyon.bloodsea.block.MudLayerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(0.5f).sound(SoundType.MUD).noOcclusion()));
+    public static final RegistryObject<Block> BONE_COLLIDER = BLOCKS.register("bone_collider", () -> new com.krolasyon.bloodsea.block.BoneColliderBlock(BlockBehaviour.Properties.of().strength(-1f, 3600000f).noOcclusion().noLootTable()));
     // ---- the sea floor
     public static final RegistryObject<Block> CLOT = reg("clot", () -> new Block(meat().strength(1.0f)));
     public static final RegistryObject<Block> FLESH = reg("flesh", () -> new Block(meat()));

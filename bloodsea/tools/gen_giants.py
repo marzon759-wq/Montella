@@ -19,6 +19,48 @@ REG = {"bone": (0, 0, 256, 256), "grime": (256, 0, 256, 256), "flesh": (0, 256, 
        "dark": (384, 256, 128, 128), "eye": (256, 384, 128, 128)}
 
 
+# collision: cells (in blocks, model space) each giant fills, written next to its model
+COLL = set()
+SEGS = []
+
+
+def mark_segment(p0, p1, t):
+    """cells along a rod of thickness t px from p0 to p1 (px)"""
+    p0 = np.array(p0, float)
+    p1 = np.array(p1, float)
+    L = np.linalg.norm(p1 - p0)
+    r = max(t / 2, 4)
+    for k in range(int(L / 4) + 1):
+        c = p0 + (p1 - p0) * (k * 4 / max(L, 1e-6))
+        for dx in (-r, 0, r):
+            for dy in (-r, 0, r):
+                for dz in (-r, 0, r):
+                    COLL.add((int(math.floor((c[0] + dx * 0.7) / 16)), int(math.floor((c[1] + dy * 0.7) / 16)), int(math.floor((c[2] + dz * 0.7) / 16))))
+
+
+def mark_box(o, sz):
+    for x in range(int(math.floor(o[0] / 16)), int(math.floor((o[0] + sz[0] - 0.01) / 16)) + 1):
+        for y in range(int(math.floor(o[1] / 16)), int(math.floor((o[1] + sz[1] - 0.01) / 16)) + 1):
+            for z in range(int(math.floor(o[2] / 16)), int(math.floor((o[2] + sz[2] - 0.01) / 16)) + 1):
+                COLL.add((x, y, z))
+
+
+def mark_voxels(mask, grid, px):
+    for i, j, k in np.argwhere(mask):
+        COLL.add((int(math.floor((grid.lo[0] + i + 0.5) * px / 16)), int(math.floor((grid.lo[1] + j + 0.5) * px / 16)),
+                  int(math.floor((grid.lo[2] + k + 0.5) * px / 16))))
+
+
+def write_collision(name):
+    cells = sorted(COLL)
+    p = os.path.join(HERE, "../common/src/main/resources/data/bloodsea/giant_collision", name + ".json")
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, "w") as f:
+        json.dump({"cells": [list(c) for c in cells]}, f, separators=(",", ":"))
+    COLL.clear()
+    return len(cells)
+
+
 def W(path, obj):
     p = os.path.join(A, path)
     os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -32,7 +74,8 @@ def geo(name, bones, bounds=(64, 48)):
                         "visible_bounds_width": bounds[0], "visible_bounds_height": bounds[1], "visible_bounds_offset": [0, bounds[1] / 2, 0]},
         "bones": bones}]})
     n = sum(len(b.get("cubes", [])) for b in bones)
-    print(f"{name:20s} {n:5d} cubes")
+    c = write_collision(name)
+    print(f"{name:20s} {n:5d} cubes {c:5d} collision cells")
 
 
 def cube(rng, origin, size, mat, pivot=None, rotation=None, window=32):
@@ -50,15 +93,29 @@ def bent_bone(rng, start, L, n, t0, t1, a0, da, mat="bone", plane="xy", jitter=0
         t = t0 + (t1 - t0) * k / max(1, n - 1)
         ang = a + rng.uniform(-jitter, jitter)
         cubes.append(cube(rng, [x, y - t / 2, z - t / 2], [L + t * 0.3, t, t], mat, pivot=[x, y, z], rotation=[0, 0, ROT_SIGN * ang]))
-        x += L * math.cos(math.radians(ang))
-        y += L * math.sin(math.radians(ang))
+        nx = x + L * math.cos(math.radians(ang))
+        ny = y + L * math.sin(math.radians(ang))
+        SEGS.append(((x, y, z), (nx, ny, z), t))
+        x, y = nx, ny
         a += da
     return cubes
 
 
 def rib_group(rng, name, root, side, L, n, t0, t1, a0, da, tilt=0.0, mat="bone"):
     """one rib: built pointing +x and mirrored for the left side by a 180 degree turn of its bone"""
+    SEGS.clear()
     cubes = bent_bone(rng, (root[0], root[1], root[2]), L, n, t0, t1, a0, da, mat, jitter=1.5)
+    # the same rib in the model's frame: tilted about x at its root, mirrored for the left side
+    ca, sa = math.cos(math.radians(tilt)), math.sin(math.radians(tilt))
+
+    def place(p):
+        x, y, z = p
+        y0, z0 = root[1], root[2]
+        yy, zz = y - y0, z - z0
+        y, z = y0 + yy * ca - zz * sa, z0 + yy * sa + zz * ca
+        return (-x if side < 0 else x, y, z)
+    for p0, p1, t in SEGS:
+        mark_segment(place(p0), place(p1), t)
     b = {"name": name, "parent": "root", "pivot": [0, root[1], root[2]], "cubes": cubes}
     rot = [tilt, 180 if side < 0 else 0, 0]
     if any(rot):
@@ -68,6 +125,8 @@ def rib_group(rng, name, root, side, L, n, t0, t1, a0, da, tilt=0.0, mat="bone")
 
 def vertebra_cubes(rng, z, s, mat="bone"):
     """a vertebra lying with its centrum on the spine line, processes out to the sides and down"""
+    mark_box([-20 * s, -20 * s, z - 26 * s], [40 * s, 40 * s, 52 * s])
+    mark_box([-58 * s, -6 * s, z - 8 * s], [116 * s, 12 * s, 16 * s])
     c = [cube(rng, [-20 * s, -20 * s, z - 26 * s], [40 * s, 40 * s, 52 * s], mat),
          cube(rng, [-24 * s, -14 * s, z - 18 * s], [48 * s, 28 * s, 36 * s], mat),
          cube(rng, [-58 * s, -6 * s, z - 8 * s], [116 * s, 12 * s, 16 * s], "grime" if rng.random() < 0.3 else mat),
@@ -107,49 +166,56 @@ def leviathan_tail(seed, scale, name):
     geo(name, [root], (60, 30))
 
 
+PX = 4  # pixels per voxel of the leviathan's skull
+
+
 def leviathan_skull_sdf(s):
-    """a long, flat, crocodile-like skull of something that fed on whales: in voxels of 8 px, facing -z"""
+    """a long, flat, crocodile-like skull of something that fed on whales: in units of 8 px, facing -z"""
     cran = ellipsoid(s, (0, 5, 10), (11, 7.5, 12))
-    snout = capsule(s, (0, 3.5, 4), (0, 2.5, -26), 8, 4.5)
+    snout = capsule(s, (0, 3.8, 4), (0, 2.6, -26), 8, 4.2)
     d = smooth_union(cran, snout, 4)
-    d = union(d, ellipsoid(s, (8.5, 5, 6), (3.2, 4.5, 6)), ellipsoid(s, (-8.5, 5, 6), (3.2, 4.5, 6)))   # cheekbones
-    # the orbits, high and set back, and the nostrils at the tip
-    for sx in (5.5, -5.5):
-        d = cut(d, sphere(s, (sx, 9.5, 2), 3.4))
-        d = cut(d, sphere(s, (sx * 0.4, 5, -25), 1.3))
+    d = union(d, ellipsoid(s, (8.8, 5, 6), (3.2, 4.5, 6.5)), ellipsoid(s, (-8.8, 5, 6), (3.2, 4.5, 6.5)))   # cheekbones
+    d = union(d, capsule(s, (6, 10.5, 6), (3, 9, -6), 2.2, 1.2), capsule(s, (-6, 10.5, 6), (-3, 9, -6), 2.2, 1.2))  # brow ridges
+    d = union(d, capsule(s, (0, 12, 2), (0, 9.5, 20), 1.4, 2.2))  # a crest down the middle
+    for sx in (5.8, -5.8):
+        d = cut(d, sphere(s, (sx, 9.0, 1.5), 3.6))                    # the orbits, high and set back
+        d = cut(d, ellipsoid(s, (sx * 1.3, 6, 13), (2.0, 3.0, 4.2)))  # openings behind them
+        d = cut(d, sphere(s, (sx * 0.38, 5.2, -25.5), 1.4))           # nostrils at the tip
     d = cut(d, ellipsoid(s, (0, 5, 10), (9, 5.5, 10)))  # hollow
-    # the lower jaw, dropped open
-    jaw = union(capsule(s, (6.5, -2, 14), (3.5, -9, -22), 2.4, 1.6), capsule(s, (-6.5, -2, 14), (-3.5, -9, -22), 2.4, 1.6),
-                capsule(s, (3.5, -9, -22), (-3.5, -9, -22), 1.8))
-    # teeth: up from the jaw, down from the snout
+    # the lower jaw, hanging open
+    jaw = union(capsule(s, (7, -1, 14), (3.8, -12, -22), 2.6, 1.7), capsule(s, (-7, -1, 14), (-3.8, -12, -22), 2.6, 1.7),
+                capsule(s, (3.8, -12, -22), (-3.8, -12, -22), 2.0))
+    # teeth: down from the snout, up from the jaw, long and hooked
     teeth = None
-    for k in range(9):
-        t = k / 8
+    for k in range(10):
+        t = k / 9
         for sx in (1, -1):
-            zu = 2 - t * 26
-            xu = sx * (7.2 - t * 3.2)
-            a = capsule(s, (xu, 1.5 - t * 1.0, zu), (xu * 0.95, -2.5 - t * 1.0, zu - 0.6), 0.9, 0.15)
+            zu = 3 - t * 27
+            xu = sx * (7.4 - t * 3.4)
+            a = capsule(s, (xu, 2.0 - t * 0.8, zu), (xu * 0.96, -3.6 - t * 0.6, zu - 0.9), 1.05, 0.15)
             zl = 10 - t * 31
-            xl = sx * (6.2 - t * 2.8)
-            yl = -2 - 7 * (1 - (zl - 14) / -36 * -1) if False else -2 - 7 * min(1, (14 - zl) / 36)
-            b = capsule(s, (xl, yl + 0.5, zl), (xl * 0.95, yl + 4.2, zl - 0.5), 0.85, 0.15)
+            xl = sx * (6.4 - t * 2.8)
+            yl = -1 - 11 * min(1, (14 - zl) / 36)
+            b = capsule(s, (xl, yl + 0.6, zl), (xl * 0.96, yl + 5.0, zl - 0.7), 1.0, 0.15)
             teeth = union(a, b) if teeth is None else union(teeth, a, b)
     return d, jaw, teeth
 
 
 def leviathan_head(seed):
     rng = random.Random(seed)
-    grid = Grid((-16, -14, -32), (16, 16, 28))
-    s = Space(grid.X, grid.Y, grid.Z)
+    k = 8 / PX
+    grid = Grid((-16 * k, -16 * k, -32 * k), (16 * k, 18 * k, 28 * k))
+    s = Space(grid.X, grid.Y, grid.Z).moved(rot=(-12, 0, 0), scale=k)
     d, jaw, teeth = leviathan_skull_sdf(s)
     labels = np.zeros(d.shape, np.int8)
     labels[(jaw < 0)] = 2
     labels[(d < 0)] = 1
     labels[(teeth < 0) & (labels == 0)] = 3
-    low = grid.Y < -6
+    low = grid.Y < -7 * k
     labels[(labels == 1) & low] = 2
     mb = vox.boxes_by_material(labels, ["bone", "grime", "tooth"])
-    cubes = vox.geo_cubes(mb, grid, 8, TEX, REG, rng)
+    cubes = vox.geo_cubes(mb, grid, PX, TEX, REG, rng)
+    mark_voxels(labels > 0, grid, PX)
     geo("leviathan_head", [{"name": "root", "pivot": [0, 0, 0], "cubes": cubes}], (40, 30))
 
 
@@ -162,12 +228,18 @@ def maw(seed):
         a = k / 28 * 360
         x, z = 360 * math.cos(math.radians(a)), 360 * math.sin(math.radians(a))
         bones[0]["cubes"].append(cube(rng, [x - 48, 40, z - 48], [96, 52, 96], "flesh", pivot=[x, 60, z], rotation=[0, -a, 0]))
+        mark_box([x - 40, 40, z - 40], [80, 52, 80])
     # two rings of fangs, curving in over the throat
     for ring, (R, count, L, t0, n, da) in enumerate(((352, 22, 38, 50, 10, 6.6), (290, 16, 30, 36, 8, 8))):
         for k in range(count):
             a = (k + ring * 0.5) / count * 360
             length = L * rng.uniform(0.8, 1.15)
+            SEGS.clear()
             cubes = bent_bone(rng, (R, 50, 0), length, n, t0 * rng.uniform(0.85, 1.1), 5, 92, da + rng.uniform(-2, 2), "tooth", jitter=1)
+            ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+            for p0, p1, t in SEGS:
+                rot = lambda p: (p[0] * ca + p[2] * sa, p[1], -p[0] * sa + p[2] * ca)
+                mark_segment(rot(p0), rot(p1), t)
             bones.append({"name": f"fang{ring}_{k}", "parent": "root", "pivot": [0, 0, 0], "rotation": [0, a + rng.uniform(-3, 3), 0], "cubes": cubes})
     geo("maw", bones, (60, 40))
 
@@ -208,6 +280,7 @@ def giant_skull(seed):
     labels[(d < 0) & (grid.Y < -2)] = 2
     mb = vox.boxes_by_material(labels, ["bone", "grime"])
     cubes = vox.geo_cubes(mb, grid, 5, TEX, REG, rng)
+    mark_voxels(labels > 0, grid, 5)
     geo("giant_skull", [{"name": "root", "pivot": [0, 0, 0], "cubes": cubes}], (24, 20))
 
 

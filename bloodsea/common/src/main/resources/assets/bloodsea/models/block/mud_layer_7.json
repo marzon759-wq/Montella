@@ -1,0 +1,82 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "bloodsea:block/bone_mud",
+  "particle": "bloodsea:block/bone_mud"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    14,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "cullface": "north",
+     "uv": [
+      0,
+      2,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "cullface": "south",
+     "uv": [
+      0,
+      2,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "cullface": "east",
+     "uv": [
+      0,
+      2,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "cullface": "west",
+     "uv": [
+      0,
+      2,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "cullface": "down",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

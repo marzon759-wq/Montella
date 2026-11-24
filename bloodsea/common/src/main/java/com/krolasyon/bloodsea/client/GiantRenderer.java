@@ -16,6 +16,15 @@ public class GiantRenderer extends GeoEntityRenderer<GiantEntity> {
         this.shadowRadius = 0f;
     }
 
+    /** GeckoLib does not turn entities that are not alive: turn the model to the giant's yaw ourselves */
+    @Override
+    public void render(GiantEntity e, float yaw, float pt, com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource buf, int light) {
+        ps.pushPose();
+        ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180f - e.getYRot()));
+        super.render(e, yaw, pt, ps, buf, light);
+        ps.popPose();
+    }
+
     @Override
     protected int getSkyLightLevel(GiantEntity e, BlockPos p) { return e.level().getBrightness(LightLayer.SKY, p.above(8)); }
 

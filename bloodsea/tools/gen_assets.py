@@ -479,6 +479,15 @@ def gen_models():
     W(f"assets/{NS}/models/block/phantom_wall.json", {"textures": {"particle": f"{NS}:block/phantom_wall"}})
     W(f"assets/{NS}/blockstates/phantom_wall.json", {"variants": {"": {"model": f"{NS}:block/phantom_wall"}}})
     W(f"assets/{NS}/models/item/phantom_wall.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:block/phantom_wall"}})
+    for i in range(1, 9):
+        W(f"assets/{NS}/models/block/mud_layer_{i}.json", {"parent": "minecraft:block/thin_block" if False else "minecraft:block/block", "textures": {"t": f"{NS}:block/bone_mud", "particle": f"{NS}:block/bone_mud"},
+                                                         "elements": [{"from": [0, 0, 0], "to": [16, i * 2, 16], "faces": {
+                                                             f: {"texture": "#t", **({"cullface": f} if f != "up" or i == 8 else {}), "uv": [0, 16 - i * 2, 16, 16] if f not in ("up", "down") else [0, 0, 16, 16]}
+                                                             for f in ("north", "south", "east", "west", "up", "down")}}]})
+    W(f"assets/{NS}/blockstates/mud_layer.json", {"variants": {f"layers={i}": {"model": f"{NS}:block/mud_layer_{i}"} for i in range(1, 9)}})
+    BLOCK_ITEMS.append(("mud_layer", "mud_layer_2"))
+    W(f"assets/{NS}/models/block/bone_collider.json", {"textures": {"particle": f"{NS}:block/bone_mud"}})
+    W(f"assets/{NS}/blockstates/bone_collider.json", {"variants": {"": {"model": f"{NS}:block/bone_collider"}}})
     W(f"assets/{NS}/models/block/blood.json", {"textures": {"particle": f"{NS}:block/blood_still"}})
     W(f"assets/{NS}/blockstates/blood.json", {"variants": {"": {"model": f"{NS}:block/blood"}}})
     W(f"assets/{NS}/models/item/blood_bucket.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:item/blood_bucket"}})
@@ -525,7 +534,7 @@ EN = {
     "itemGroup.bloodsea.main": "Blood Sea",
     "block.bloodsea.blood": "Blood", "fluid_type.bloodsea.blood": "Blood", "item.bloodsea.blood_bucket": "Bucket of Blood",
     
-    "block.bloodsea.clot": "Clotted Blood", "block.bloodsea.bone_mud": "Ossuary Mud", "block.bloodsea.flesh": "Flesh",
+    "block.bloodsea.clot": "Clotted Blood", "block.bloodsea.bone_mud": "Ossuary Mud", "block.bloodsea.mud_layer": "Ossuary Mud Layer", "block.bloodsea.bone_collider": "Giant Bone", "block.bloodsea.flesh": "Flesh",
     "block.bloodsea.edge_stone": "Edge Stone", 
     "block.bloodsea.maw_core": "The Throat", "block.bloodsea.mirage_sand": "Mirage Sand",
     "block.bloodsea.mirage_grass": "Mirage Grass", "block.bloodsea.mirage_log": "Mirage Log", "block.bloodsea.mirage_leaves": "Mirage Leaves",
@@ -571,7 +580,7 @@ TR = {
     "itemGroup.bloodsea.main": "Kan Denizi",
     "block.bloodsea.blood": "Kan", "fluid_type.bloodsea.blood": "Kan", "item.bloodsea.blood_bucket": "Kan Kovası",
     
-    "block.bloodsea.clot": "Pıhtılaşmış Kan", "block.bloodsea.bone_mud": "Kemik Çamuru", "block.bloodsea.flesh": "Et",
+    "block.bloodsea.clot": "Pıhtılaşmış Kan", "block.bloodsea.bone_mud": "Kemik Çamuru", "block.bloodsea.mud_layer": "Kemik Çamuru Katmanı", "block.bloodsea.bone_collider": "Dev Kemik", "block.bloodsea.flesh": "Et",
     "block.bloodsea.edge_stone": "Kıyı Taşı", 
     "block.bloodsea.maw_core": "Gırtlak", "block.bloodsea.mirage_sand": "Serap Kumu",
     "block.bloodsea.mirage_grass": "Serap Çimi", "block.bloodsea.mirage_log": "Serap Kütüğü", "block.bloodsea.mirage_leaves": "Serap Yaprakları",

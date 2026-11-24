@@ -32,6 +32,8 @@ wet black mud with the dead lying on them.
 
 The giant dead are GeckoLib models (tools/gen_giants.py) placed by the world generator: the leviathan (a tail, segments
 of curved rib arches, a long toothed skull), the Maw (two rings of curved fangs over a gum ridge), and giant human rib
-cages and skulls half sunk in the Bone Reach.
+cages and skulls half sunk in the Bone Reach. They are solid: the generator lays invisible blocks along their bones
+(from the collision cells tools/gen_giants.py writes), so boats stop against ribs and fangs and you can climb a skull.
+Run the client with BLOODSEA_SHOWCOLL=1 to see those blocks as glass.
 
 Build: `python3 tools/gen_assets.py && python3 tools/gen_props.py && python3 tools/gen_giants.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.

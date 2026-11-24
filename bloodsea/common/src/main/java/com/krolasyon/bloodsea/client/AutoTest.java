@@ -126,6 +126,12 @@ public final class AutoTest {
             cue(160, () -> shot("s_giant_ribcage"));
             cue(1, () -> { if (giantSkull != null) cmd("execute in bloodsea:blood_sea run tp @s " + (giantSkull.x() + 14) + " 68 " + (giantSkull.z() + 14) + " 135 15"); });
             cue(160, () -> shot("s_giant_skull"));
+            view("s_head_close", 1346, 69, 40, 100, 16, 4000);
+            view("s_island_smooth", 0.5, 76, -1418, 180, 30, 4000);
+            // stand on the giant skull: the colliders must hold you up
+            cue(5, () -> cmd("gamemode adventure"));
+            cue(5, () -> { if (giantSkull != null) cmd("execute in bloodsea:blood_sea run tp @s " + giantSkull.x() + " 80 " + giantSkull.z()); });
+            cue(100, () -> BloodSea.LOG.info("[AUTOTEST] standing on the giant skull at y={}", Minecraft.getInstance().player.getY()));
             cue(20, () -> Minecraft.getInstance().stop());
             return;
         }

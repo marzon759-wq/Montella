@@ -114,6 +114,10 @@ public final class SeaShape {
                 .setValue(BonePropBlock.BLOODLOGGED, blood);
     }
 
+    private static BlockState layer(int n) {
+        return ModBlocks.MUD_LAYER.get().defaultBlockState().setValue(com.krolasyon.bloodsea.block.MudLayerBlock.LAYERS, n);
+    }
+
     private static String pick(String[] list, int x, int z, long salt) { return list[(int) (Noise.rand(x, z, salt) * list.length)]; }
 
     private static void bones(int x, int z, int floor, BlockState[] col) {
@@ -121,9 +125,12 @@ public final class SeaShape {
         // islands of wet black mud, and the dead lying on them
         double v = Noise.fbm(x, z, 70, S + 10);
         if (v > 0.3) {
-            int top = Math.min(SEA + 9, SEA + 1 + (int) ((v - 0.3) * 40));
+            double hf = Math.min(SEA + 9.9, SEA + 1 + (v - 0.3) * 40);
+            int top = (int) hf;
             fill(col, floor, top, mud);
+            int layers = (int) Math.round((hf - top) * 8);
             if (Noise.rand(x, z, S + 11) < 0.16) put(col, top + 1, prop(pick(GROUND, x, z, S + 12), x, z, false));
+            else if (layers > 0) put(col, top + 1, layer(Math.min(8, layers)));
         } else if (Noise.rand(x, z, S + 15) < 0.014) {
             // the drowned, floating
             put(col, SEA + 1, prop(pick(FLOAT, x, z, S + 16), x, z, false));
@@ -135,10 +142,13 @@ public final class SeaShape {
         double dt = Math.sqrt((x - THRONE_X) * (double) (x - THRONE_X) + (z - THRONE_Z) * (double) (z - THRONE_Z));
         if (dt < 40) {
             int P = SEA + 17;
-            int top = Math.min(P, SEA + 3 + (int) ((40 - dt) * 0.42));
+            double hf = Math.min(P, SEA + 3 + (40 - dt) * 0.42);
+            int top = (int) hf;
             for (int y = SEA + 1; y <= P + 12; y++) put(col, y, null);
             fill(col, floor, top, mud);
+            int layers = (int) Math.round((hf - top) * 8);
             if (dt > 5 && Noise.rand(x, z, S + 30) < 0.34) put(col, top + 1, prop(Noise.rand(x, z, S + 31) < 0.3 ? "skull_heap" : pick(GROUND, x, z, S + 32), x, z, false));
+            else if (layers > 0 && top < P) put(col, top + 1, layer(Math.min(8, layers)));
             int lx = x - THRONE_X, lz = z - THRONE_Z;
             if (Math.abs(lx) <= 4 && Math.abs(lz) <= 4) {
                 fill(col, floor, P, mud);
@@ -199,7 +209,7 @@ public final class SeaShape {
         }
         double dz = 0.7 * Math.cos(x / 200.0);
         float yaw = (float) -Math.toDegrees(Math.atan2(1, dz));
-        out.add(new Giant("leviathan_head", x + 10, SEA + 2, spineZ(x + 10), yaw));
+        out.add(new Giant("leviathan_head", x + 10, SEA + 4, spineZ(x + 10), yaw + 180));  // its snout away from the body
         out.add(new Giant("maw", MAW_X + 0.5, SEA - 4, MAW_Z + 0.5, 0));
         LEVIATHAN = out;
         return out;
@@ -326,6 +336,57 @@ public final class SeaShape {
                 // the waterfall moves: let its top and the blood beside it tick once the chunk is done
                 if (fall) chunk.markPosForPostprocessing(new BlockPos(bx + lx, SEA, bz + lz));
             }
+        colliders(chunk);
+    }
+
+    // ================================================================== the solid parts of the giants
+    private static final java.util.Map<String, int[][]> CELLS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final boolean SHOW = Boolean.getBoolean("bloodsea.showcolliders");
+
+    static int[][] cells(String variant) {
+        return CELLS.computeIfAbsent(variant, v -> {
+            try (var in = SeaShape.class.getResourceAsStream("/data/bloodsea/giant_collision/" + v + ".json")) {
+                if (in == null) return new int[0][];
+                var arr = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in)).getAsJsonObject().getAsJsonArray("cells");
+                int[][] out = new int[arr.size()][3];
+                for (int i = 0; i < arr.size(); i++) {
+                    var c = arr.get(i).getAsJsonArray();
+                    out[i][0] = c.get(0).getAsInt();
+                    out[i][1] = c.get(1).getAsInt();
+                    out[i][2] = c.get(2).getAsInt();
+                }
+                return out;
+            } catch (Exception e) {
+                return new int[0][];
+            }
+        });
+    }
+
+    /** lay invisible solid blocks along every giant that reaches into this chunk */
+    private static void colliders(ChunkAccess chunk) {
+        int cx = chunk.getPos().x, cz = chunk.getPos().z;
+        int bx = cx * 16, bz = cz * 16;
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
+        for (int ox = cx - 3; ox <= cx + 3; ox++)
+            for (int oz = cz - 3; oz <= cz + 3; oz++)
+                for (Giant g : giantsIn(ox, oz)) {
+                    // the renderer turns the model by 180 - yaw and GeckoLib by another 180: -yaw in all, x mirrored
+                    double a = Math.toRadians(-g.yaw());
+                    double ca = Math.cos(a), sa = Math.sin(a);
+                    for (int[] c : cells(g.variant())) {
+                        double mx = -(c[0] + 0.5), my = c[1] + 0.5, mz = c[2] + 0.5;
+                        double wx = g.x() + mx * ca + mz * sa, wz = g.z() - mx * sa + mz * ca;
+                        int x = (int) Math.floor(wx), y = (int) Math.floor(g.y() + my), z = (int) Math.floor(wz);
+                        if (x < bx || x >= bx + 16 || z < bz || z >= bz + 16 || y <= MIN_Y || y >= MIN_Y + HEIGHT) continue;
+                        m.set(x, y, z);
+                        BlockState here = chunk.getBlockState(m);
+                        boolean blood = here.getBlock() == ModBlocks.BLOOD.get();
+                        if (!here.isAir() && !blood) continue;
+                        BlockState put = SHOW ? Blocks.GLASS.defaultBlockState()
+                                : ModBlocks.BONE_COLLIDER.get().defaultBlockState().setValue(com.krolasyon.bloodsea.block.BoneColliderBlock.BLOODLOGGED, blood);
+                        chunk.setBlockState(m, put, false);
+                    }
+                }
     }
 
     /** the highest non-air block of a column, for height queries */

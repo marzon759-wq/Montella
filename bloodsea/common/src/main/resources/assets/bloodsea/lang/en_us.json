@@ -5,6 +5,8 @@
  "item.bloodsea.blood_bucket": "Bucket of Blood",
  "block.bloodsea.clot": "Clotted Blood",
  "block.bloodsea.bone_mud": "Ossuary Mud",
+ "block.bloodsea.mud_layer": "Ossuary Mud Layer",
+ "block.bloodsea.bone_collider": "Giant Bone",
  "block.bloodsea.flesh": "Flesh",
  "block.bloodsea.edge_stone": "Edge Stone",
  "block.bloodsea.maw_core": "The Throat",
