@@ -25,3 +25,10 @@ the Bone Reach, Leviathan's Deep, the Edge of the World and the Mirage. Type /bl
     versionRange="${mc_range}"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.bloodsea]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="${gecko_range}"
+    ordering="AFTER"
+    side="BOTH"

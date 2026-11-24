@@ -39,7 +39,7 @@ dependencies {
 }
 tasks.named('processResources', ProcessResources).configure {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    def props = [mod_version: mod_version, pack_format: pack_format, loader_range: loader_range, mc_range: mc_range]
+    def props = [mod_version: mod_version, pack_format: pack_format, loader_range: loader_range, mc_range: mc_range, gecko_range: gecko_range]
     inputs.properties props
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
 }

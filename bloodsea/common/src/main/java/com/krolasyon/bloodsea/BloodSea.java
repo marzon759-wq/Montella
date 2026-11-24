@@ -25,11 +25,13 @@ public class BloodSea {
 
     public BloodSea() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        com.krolasyon.bloodsea.registry.ModProps.init();
         ModFluids.FLUID_TYPES.register(bus);
         ModFluids.FLUIDS.register(bus);
         ModBlocks.BLOCKS.register(bus);
         ModItems.ITEMS.register(bus);
         ModItems.TABS.register(bus);
+        com.krolasyon.bloodsea.registry.ModEntities.ENTITIES.register(bus);
         WorldCompat.register(bus);
         bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(Compat::initNetwork));
         ServerCompat.init();

@@ -83,6 +83,11 @@ public final class SeaEvents {
     // ================================================================== interaction
     @SubscribeEvent
     public static void onRightClick(PlayerInteractEvent.RightClickBlock e) {
+        if (e.getLevel().getBlockState(e.getPos()).getBlock() == com.krolasyon.bloodsea.registry.ModProps.get("heart")) {
+            if (!e.getLevel().isClientSide && e.getEntity() instanceof ServerPlayer sp) Endings.begin(sp, "bone");
+            e.setCanceled(true);
+            return;
+        }
         if (e.getLevel().getBlockState(e.getPos()).getBlock() instanceof EndingBlock) {
             if (!e.getLevel().isClientSide) EndingBlock.use(e.getLevel(), e.getPos(), e.getEntity());
             e.setCanceled(true);

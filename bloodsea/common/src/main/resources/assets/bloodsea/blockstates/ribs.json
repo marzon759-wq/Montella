@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"bloodsea:block/prop/ribs"},"facing=east":{"model":"bloodsea:block/prop/ribs","y":90},"facing=south":{"model":"bloodsea:block/prop/ribs","y":180},"facing=west":{"model":"bloodsea:block/prop/ribs","y":270}}}

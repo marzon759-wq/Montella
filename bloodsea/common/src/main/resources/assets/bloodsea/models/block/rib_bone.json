@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cube_column",
- "textures": {
-  "side": "bloodsea:block/rib_bone",
-  "end": "bloodsea:block/rib_bone_top"
- }
-}

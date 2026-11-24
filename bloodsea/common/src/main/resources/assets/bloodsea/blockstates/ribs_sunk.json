@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"bloodsea:block/prop/ribs_sunk"},"facing=east":{"model":"bloodsea:block/prop/ribs_sunk","y":90},"facing=south":{"model":"bloodsea:block/prop/ribs_sunk","y":180},"facing=west":{"model":"bloodsea:block/prop/ribs_sunk","y":270}}}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"bloodsea:block/prop/ribcage"},"facing=east":{"model":"bloodsea:block/prop/ribcage","y":90},"facing=south":{"model":"bloodsea:block/prop/ribcage","y":180},"facing=west":{"model":"bloodsea:block/prop/ribcage","y":270}}}

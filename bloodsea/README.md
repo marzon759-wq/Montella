@@ -24,4 +24,14 @@ A horror dimension for Minecraft Forge **1.20.1** and **1.21.1**: an endless oce
 
 Each ending shows its own epilogue and sends you back to the overworld. The creatures come next.
 
-Build: `python3 tools/gen_assets.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.
+## The dead
+No bones are cubes. Human remains are sculpted shapes (tools/gen_props.py): skulls with sockets, nose and teeth (upright,
+fallen, half sunk in the blood, heaped), rib cages, whole skeletons lying where they fell, ribs breaking out of the mud,
+a hand reaching up out of the blood, bone piles and spines. Skulls open red eyes under the Blood Moon. Bone islands are
+wet black mud with the dead lying on them.
+
+The giant dead are GeckoLib models (tools/gen_giants.py) placed by the world generator: the leviathan (a tail, segments
+of curved rib arches, a long toothed skull), the Maw (two rings of curved fangs over a gum ridge), and giant human rib
+cages and skulls half sunk in the Bone Reach.
+
+Build: `python3 tools/gen_assets.py && python3 tools/gen_props.py && python3 tools/gen_giants.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.

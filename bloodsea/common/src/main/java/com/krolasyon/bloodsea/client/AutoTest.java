@@ -15,6 +15,7 @@ public final class AutoTest {
     private static String mode = null;
     private static int menu = 0, n = 0, at = 0;
     private static boolean created = false;
+    private static com.krolasyon.bloodsea.world.SeaShape.Giant giantRib = null, giantSkull = null;
     private static final List<Object[]> cues = new ArrayList<>();
 
     private AutoTest() {}
@@ -88,14 +89,54 @@ public final class AutoTest {
         cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("bloodsea enter"); });
         cue(80, () -> cmd("gamemode spectator"));
         cue(5, () -> Minecraft.getInstance().options.hideGui = true);
+        // every bone prop in a row on a platform by the raft
+        cue(5, () -> cmd("execute in bloodsea:blood_sea run fill -16 62 -12 16 62 -5 minecraft:spruce_planks"));
+        String[] props = {"skull", "skull_side", "skull_heap", "bone_pile", "ribs", "ribcage", "skeleton", "spine", "hand", "heart"};
+        for (int i = 0; i < props.length; i++) {
+            int x = -14 + i * 3;
+            String pn = props[i];
+            cue(2, () -> cmd("execute in bloodsea:blood_sea run setblock " + x + " 63 -9 bloodsea:" + pn + "[facing=south]"));
+        }
+        view("s_props", 0.5, 64.2, -1.5, 180, 22, 6000);
+        view("s_props_close", -9.5, 63.5, -6.0, 180, 30, 6000);
+        view("s_props_night", 0.5, 64.2, -1.5, 180, 22, 17000);
+        cue(1, () -> { if (giantRib != null) cmd("execute in bloodsea:blood_sea run tp @s " + giantRib.x() + " 70 " + (giantRib.z() + 30) + " 180 12"); });
+        cue(160, () -> shot("s_giant_ribcage"));
+        cue(1, () -> { if (giantSkull != null) cmd("execute in bloodsea:blood_sea run tp @s " + giantSkull.x() + " 66 " + (giantSkull.z() + 18) + " 180 8"); });
+        cue(160, () -> shot("s_giant_skull"));
+        view("s_island", 0.5, 68, -1385, 180, 18, 4000);
+        view("s_lev_head", 1285, 70, 75, -150, 12, 4000);
+        // the giants of the Bone Reach: find the nearest ones and look at them
+        cue(1, () -> {
+            for (int cx = -30; cx <= 30 && giantRib == null; cx++)
+                for (int cz = -70; cz <= -40 && giantRib == null; cz++)
+                    for (var g : com.krolasyon.bloodsea.world.SeaShape.giantsIn(cx, cz))
+                        if (g.variant().startsWith("giant_ribcage") && giantRib == null) giantRib = g;
+            for (int cx = -30; cx <= 30 && giantSkull == null; cx++)
+                for (int cz = -70; cz <= -40 && giantSkull == null; cz++)
+                    for (var g : com.krolasyon.bloodsea.world.SeaShape.giantsIn(cx, cz))
+                        if (g.variant().equals("giant_skull") && giantSkull == null) giantSkull = g;
+            BloodSea.LOG.info("[AUTOTEST] giant rib cage {}, skull {}", giantRib, giantSkull);
+        });
+        if (mode.contains("giants")) {
+            view("s_maw", 1408, 76, 0.5, -90, 6, 5000);
+            view("s_leviathan", 900.5, 80, -60, 180, 10, 3500);
+            view("s_lev_head", 1285, 70, 75, -150, 12, 4000);
+            cue(1, () -> { if (giantRib != null) cmd("execute in bloodsea:blood_sea run tp @s " + giantRib.x() + " 70 " + (giantRib.z() + 30) + " 180 12"); });
+            cue(160, () -> shot("s_giant_ribcage"));
+            cue(1, () -> { if (giantSkull != null) cmd("execute in bloodsea:blood_sea run tp @s " + (giantSkull.x() + 14) + " 68 " + (giantSkull.z() + 14) + " 135 15"); });
+            cue(160, () -> shot("s_giant_skull"));
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         view("s_raft_day", 3.5, 64.6, 6.5, 150, 12, 1000);
         view("s_sun", 0.5, 64.6, 0.5, -90, -50, 2500);
         view("s_moon", 0.5, 64.6, 0.5, -90, -60, 16500);
         view("s_raft_night", 3.5, 64.6, 6.5, 150, 8, 15000);
         view("s_bones", 0.5, 72, -980, 180, 6, 3000);
         view("s_bones_night", 0.5, 72, -980, 180, 6, 17000);
-        view("s_throne", 0.5, 88, -1408, 180, 14, 4000);
-        view("s_leviathan", 900.5, 74, -60, 180, 4, 3500);
+        view("s_throne", 0.5, 84, -1441, 180, 18, 4000);
+        view("s_leviathan", 900.5, 80, -60, 180, 10, 3500);
         view("s_maw", 1408, 84, 0.5, -90, 12, 5000);
         view("s_edge", 0.5, 70, 1870, 0, 8, 6000);
         view("s_waterfall", 40, 50, 1935, 160, 20, 6000);

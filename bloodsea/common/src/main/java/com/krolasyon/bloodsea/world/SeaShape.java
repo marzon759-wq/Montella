@@ -1,6 +1,8 @@
 package com.krolasyon.bloodsea.world;
 
+import com.krolasyon.bloodsea.block.BonePropBlock;
 import com.krolasyon.bloodsea.registry.ModBlocks;
+import com.krolasyon.bloodsea.registry.ModProps;
 import com.krolasyon.bloodsea.registry.ModFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -71,7 +73,7 @@ public final class SeaShape {
         fill(col, MIN_Y + 1, floor - 6, st(ModBlocks.EDGE_STONE));
         fill(col, floor - 5, floor - 1, st(ModBlocks.FLESH));
         BlockState skin = st(ModBlocks.CLOT);
-        if (reg == Region.BONES && Noise.rand(x, z, S + 6) < 0.45) skin = st(ModBlocks.HUMAN_BONES);
+        if (reg == Region.BONES) skin = st(ModBlocks.BONE_MUD);
         if (reg == Region.LEVIATHAN && Noise.rand(x, z, S + 7) < 0.3) skin = st(ModBlocks.EDGE_STONE);
         put(col, floor, skin);
         fill(col, floor + 1, SEA, blood);
@@ -92,72 +94,68 @@ public final class SeaShape {
                 }
             }
             case MIRAGE -> mirage(x, z, floor, col);
-            case DRIFT -> raft(x, z, col);
+            case DRIFT -> {
+                raft(x, z, col);
+                if (Regions.dist(x, z) > 40 && Noise.rand(x, z, S + 19) < 0.0015) put(col, SEA + 1, prop(Noise.rand(x, z, S + 9) < 0.6 ? "skull_sunk" : "hand", x, z, false));
+            }
         }
         return false;
     }
 
     // ================================================================== the Bone Reach
+    private static final String[] GROUND = {"skull", "skull", "skull", "skull_side", "skull_side", "bone_pile", "bone_pile", "ribs", "ribs",
+            "skeleton", "skeleton", "spine", "ribcage", "skull_heap"};
+    private static final String[] FLOAT = {"skull_sunk", "skull_sunk", "skull_sunk", "ribs_sunk", "ribs_sunk", "skeleton_sunk", "skeleton_sunk", "hand", "hand"};
+
+    /** one of the bone props, turned some way, lying in blood or not */
+    static BlockState prop(String name, int x, int z, boolean blood) {
+        Direction[] dirs = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        return ModProps.get(name).defaultBlockState().setValue(BonePropBlock.FACING, dirs[(int) (Noise.rand(x, z, S + 90) * 4)])
+                .setValue(BonePropBlock.BLOODLOGGED, blood);
+    }
+
+    private static String pick(String[] list, int x, int z, long salt) { return list[(int) (Noise.rand(x, z, salt) * list.length)]; }
+
     private static void bones(int x, int z, int floor, BlockState[] col) {
-        BlockState bones = st(ModBlocks.HUMAN_BONES), skulls = st(ModBlocks.SKULL_PILE);
-        // islands of the dead, heaped out of the blood
+        BlockState mud = st(ModBlocks.BONE_MUD);
+        // islands of wet black mud, and the dead lying on them
         double v = Noise.fbm(x, z, 70, S + 10);
         if (v > 0.3) {
-            int top = Math.min(SEA + 14, SEA + 1 + (int) ((v - 0.3) * 55));
-            fill(col, floor, top, bones);
-            put(col, top, Noise.rand(x, z, S + 11) < 0.35 ? skulls : bones);
-            if (Noise.rand(x, z, S + 12) < 0.04) fill(col, top + 1, top + 1 + (int) (Noise.rand(x, z, S + 13) * 3), skulls);
-        } else if (Noise.fbm(x, z, 22, S + 15) > 0.18) {
-            // mats of the drowned floating on the surface, bones knotted together
-            put(col, SEA, Noise.rand(x, z, S + 16) < 0.18 ? skulls : bones);
-            if (Noise.rand(x, z, S + 17) < 0.06) put(col, SEA + 1, Noise.rand(x, z, S + 18) < 0.5 ? skulls : pillar(ModBlocks.RIB_BONE, Direction.Axis.Y));
-        } else if (Noise.rand(x, z, S + 14) < 0.015) {
-            // a skull just breaking the surface
-            fill(col, floor, SEA, bones);
-            put(col, SEA + 1, skulls);
+            int top = Math.min(SEA + 9, SEA + 1 + (int) ((v - 0.3) * 40));
+            fill(col, floor, top, mud);
+            if (Noise.rand(x, z, S + 11) < 0.16) put(col, top + 1, prop(pick(GROUND, x, z, S + 12), x, z, false));
+        } else if (Noise.rand(x, z, S + 15) < 0.014) {
+            // the drowned, floating
+            put(col, SEA + 1, prop(pick(FLOAT, x, z, S + 16), x, z, false));
+        } else if (Noise.rand(x, z, S + 17) < 0.02 && floor < SEA - 2) {
+            // and the ones that sank
+            put(col, floor + 1, prop(pick(GROUND, x, z, S + 18), x, z, true));
         }
-        // rib cages arching out of the sea
-        int cell = 56;
-        int cx0 = Math.floorDiv(x, cell), cz0 = Math.floorDiv(z, cell);
-        for (int cx = cx0 - 1; cx <= cx0 + 1; cx++)
-            for (int cz = cz0 - 1; cz <= cz0 + 1; cz++) {
-                if (Noise.rand(cx, cz, S + 20) > 0.42) continue;
-                double ox = cx * cell + Noise.rand(cx, cz, S + 21) * cell, oz = cz * cell + Noise.rand(cx, cz, S + 22) * cell;
-                if (Regions.at(ox, oz) != Region.BONES) continue;
-                double a = Noise.rand(cx, cz, S + 23) * Math.PI;
-                double R = 9 + Noise.rand(cx, cz, S + 24) * 9;
-                int ribs = 3 + (int) (Noise.rand(cx, cz, S + 25) * 4);
-                double dx = x - ox, dz = z - oz;
-                double along = dx * Math.cos(a) + dz * Math.sin(a), across = -dx * Math.sin(a) + dz * Math.cos(a);
-                double half = (ribs - 1) / 2.0 * 4;
-                double crown = SEA - 6 + R * 1.25;
-                if (Math.abs(across) < 0.8 && Math.abs(along) <= half + 1) put(col, (int) crown + 1, pillar(ModBlocks.RIB_BONE, Math.abs(Math.cos(a)) > 0.7 ? Direction.Axis.X : Direction.Axis.Z));
-                for (int k = 0; k < ribs; k++) {
-                    double t = (k - (ribs - 1) / 2.0) * 4;
-                    if (Math.abs(along - t) > 0.55 || Math.abs(across) > R) continue;
-                    double ys = SEA - 6 + Math.sqrt(R * R - across * across) * 1.25;
-                    fill(col, (int) ys - 1, (int) ys + 1, pillar(ModBlocks.RIB_BONE, Direction.Axis.Y));
-                    if (Math.abs(across) > R - 0.9) fill(col, floor, (int) ys, pillar(ModBlocks.RIB_BONE, Direction.Axis.Y));
-                }
-            }
-        // the Ossuary Throne
+        // the Ossuary Throne: a hill of mud and skulls, and on top a throne of skulls with a heart on the seat
         double dt = Math.sqrt((x - THRONE_X) * (double) (x - THRONE_X) + (z - THRONE_Z) * (double) (z - THRONE_Z));
         if (dt < 40) {
             int P = SEA + 17;
             int top = Math.min(P, SEA + 3 + (int) ((40 - dt) * 0.42));
-            fill(col, floor, top, bones);
-            put(col, top, dt > 6 && Noise.rand(x, z, S + 30) < 0.4 ? skulls : bones);
+            for (int y = SEA + 1; y <= P + 12; y++) put(col, y, null);
+            fill(col, floor, top, mud);
+            if (dt > 5 && Noise.rand(x, z, S + 30) < 0.34) put(col, top + 1, prop(Noise.rand(x, z, S + 31) < 0.3 ? "skull_heap" : pick(GROUND, x, z, S + 32), x, z, false));
             int lx = x - THRONE_X, lz = z - THRONE_Z;
             if (Math.abs(lx) <= 4 && Math.abs(lz) <= 4) {
-                fill(col, floor, P, bones);
+                fill(col, floor, P, mud);
                 for (int y = P + 1; y <= P + 12; y++) put(col, y, null);
-                if (lz == -2 && Math.abs(lx) <= 2) fill(col, P + 1, P + (Math.abs(lx) == 2 ? 7 : 6), skulls);       // the back
-                if (lz == -2 && Math.abs(lx) == 3) fill(col, P + 1, P + 9, pillar(ModBlocks.RIB_BONE, Direction.Axis.Y)); // two horns
-                if (Math.abs(lx) == 2 && lz >= -1 && lz <= 0) fill(col, P + 1, P + 2, skulls);                        // the arms
-                if (lx == 0 && lz == -1) {
-                    put(col, P + 1, skulls);                                                                           // the seat
-                    put(col, P + 2, st(ModBlocks.THRONE_HEART));                                                       // and on it, the heart
+                BlockState heap = prop("skull_heap", x, z, false);
+                if (lz == -2 && Math.abs(lx) <= 2) {                                    // the back
+                    int h = Math.abs(lx) == 2 ? 5 : 4;
+                    for (int y = P + 1; y <= P + h; y++) put(col, y, prop("skull_heap", x, z + y, false));
+                    put(col, P + h + 1, prop("skull", x, z + 7, false));
                 }
+                if (lz == -2 && Math.abs(lx) == 3) { put(col, P + 1, prop("ribs", x, z, false)); put(col, P + 2, prop("ribs", x + 1, z, false)); }  // horns
+                if (Math.abs(lx) == 2 && lz >= -1 && lz <= 0) put(col, P + 1, heap);    // the arms
+                if (lx == 0 && lz == -1) {
+                    put(col, P + 1, heap);                                               // the seat
+                    put(col, P + 2, ModProps.get("heart").defaultBlockState().setValue(BonePropBlock.FACING, Direction.SOUTH)); // and on it, the heart
+                }
+                if (lz >= 1 && Noise.rand(x, z, S + 33) < 0.25) put(col, P + 1, prop("skull", x, z, false));
             }
         }
     }
@@ -166,39 +164,77 @@ public final class SeaShape {
     private static double spineZ(double x) { return 140 * Math.sin(x / 200.0); }
 
     private static void leviathan(int x, int z, int floor, BlockState[] col) {
-        BlockState bone = pillar(ModBlocks.LEVIATHAN_BONE, Direction.Axis.Y), vert = st(ModBlocks.VERTEBRA);
-        // the bones of the last one, as long as a town
-        if (x >= 600 && x <= 1300) {
-            double dz = z - spineZ(x);
-            if (Math.abs(dz) <= 3) fill(col, 32, 38, vert);
-            if (x % 8 == 0 && Math.abs(dz) <= 1) fill(col, 38, SEA + 7, bone);
-            if (x >= 650 && x <= 1250 && Math.floorMod(x, 12) <= 1 && Math.abs(dz) <= 34) {
-                double ys = 36 + Math.sqrt(34 * 34 - dz * dz) * 1.5;
-                fill(col, (int) ys - 1, (int) ys + 1, bone);
-                if (Math.abs(dz) > 30) fill(col, floor, (int) ys, bone);
-            }
-            // its skull, half sunk
-            double sx = 1320, sz = spineZ(1320);
-        }
-        double ds = Math.sqrt((x - 1320) * (double) (x - 1320) + (z - spineZ(1320)) * (z - spineZ(1320)));
-        if (ds < 20) fill(col, floor, (int) (36 + Math.sqrt(400 - ds * ds) * 1.35), ds > 6 && ds < 9 && Noise.rand(x, z, S + 40) < 0.5 ? st(ModBlocks.EDGE_STONE) : vert);
-        // the Maw: a ring of teeth taller than a church, and a black throat in the middle
+        // the bones themselves are giants (models); here only the throat in the middle of the Maw
         double dm = Math.sqrt((x - MAW_X) * (double) (x - MAW_X) + (z - MAW_Z) * (double) (z - MAW_Z));
-        if (dm < 30) {
-            double ang = Math.toDegrees(Math.atan2(z - MAW_Z, x - MAW_X)) + 360;
-            double inTooth = Math.abs(((ang % 16) + 16) % 16 - 8);
-            // each fang leans in over the throat and thins to a point
-            for (int y = floor; y <= SEA + 30; y++) {
-                double up = Math.max(0, y - SEA);
-                double rc = 23 - up * up * 0.012;
-                double w = 2.6 * (1 - up / 31.0);
-                double wa = 4.0 * (1 - up / 34.0);
-                if (Math.abs(dm - rc) < w && inTooth < wa) put(col, y, pillar(ModBlocks.LEVIATHAN_TOOTH, Direction.Axis.Y));
+        if (dm < 6) {
+            fill(col, floor, SEA - 3, st(ModBlocks.EDGE_STONE));
+            fill(col, SEA - 2, SEA, st(ModBlocks.MAW_CORE));
+        }
+    }
+
+    // ================================================================== the giant dead
+    public record Giant(String variant, double x, double y, double z, float yaw) {}
+
+    private static java.util.List<Giant> LEVIATHAN = null;
+
+    /** the dead leviathan, laid out along its spine: a tail, segments of ribs, and its skull at the east end */
+    static synchronized java.util.List<Giant> leviathanParts() {
+        if (LEVIATHAN != null) return LEVIATHAN;
+        java.util.List<Giant> out = new java.util.ArrayList<>();
+        double x = 540, along = 0, next = 0;
+        int n = 0;
+        while (x < 1300) {
+            double z = spineZ(x);
+            if (along >= next) {
+                double dz = 0.7 * Math.cos(x / 200.0);
+                float yaw = (float) -Math.toDegrees(Math.atan2(1, dz));
+                String v = n == 0 ? "leviathan_tail_end" : n < 3 ? "leviathan_tail" : "leviathan_segment";
+                out.add(new Giant(v, x, SEA - 5, z, yaw));
+                next += 32;
+                n++;
             }
-            if (dm < 6) {
-                fill(col, floor, SEA - 3, st(ModBlocks.EDGE_STONE));
-                fill(col, SEA - 2, SEA, st(ModBlocks.MAW_CORE));
+            double nx = x + 0.25;
+            along += Math.sqrt(0.0625 + Math.pow(spineZ(nx) - z, 2));
+            x = nx;
+        }
+        double dz = 0.7 * Math.cos(x / 200.0);
+        float yaw = (float) -Math.toDegrees(Math.atan2(1, dz));
+        out.add(new Giant("leviathan_head", x + 10, SEA + 2, spineZ(x + 10), yaw));
+        out.add(new Giant("maw", MAW_X + 0.5, SEA - 4, MAW_Z + 0.5, 0));
+        LEVIATHAN = out;
+        return out;
+    }
+
+    /** the giant dead whose anchor falls in this chunk */
+    public static java.util.List<Giant> giantsIn(int cx, int cz) {
+        java.util.List<Giant> out = new java.util.ArrayList<>();
+        for (Giant g : leviathanParts()) if (Math.floorDiv((int) Math.floor(g.x()), 16) == cx && Math.floorDiv((int) Math.floor(g.z()), 16) == cz) out.add(g);
+        // the Bone Reach: giant rib cages and skulls, one per cell at most
+        int cell = 56;
+        for (int gx = Math.floorDiv(cx * 16, cell); gx <= Math.floorDiv(cx * 16 + 15, cell); gx++)
+            for (int gz = Math.floorDiv(cz * 16, cell); gz <= Math.floorDiv(cz * 16 + 15, cell); gz++) {
+                if (Noise.rand(gx, gz, S + 20) > 0.42) continue;
+                double ox = gx * cell + Noise.rand(gx, gz, S + 21) * cell, oz = gz * cell + Noise.rand(gx, gz, S + 22) * cell;
+                if (Math.floorDiv((int) Math.floor(ox), 16) != cx || Math.floorDiv((int) Math.floor(oz), 16) != cz) continue;
+                if (Regions.at(ox, oz) != Region.BONES || Regions.dist(ox - THRONE_X, oz - THRONE_Z) < 60) continue;
+                if (Noise.fbm(ox, oz, 70, S + 10) > 0.22) continue;  // not inside an island
+                float yaw = (float) (Noise.rand(gx, gz, S + 23) * 360);
+                double k = Noise.rand(gx, gz, S + 24);
+                if (k < 0.22) out.add(new Giant("giant_skull", ox, SEA + 1, oz, yaw));
+                else out.add(new Giant(k < 0.6 ? "giant_ribcage" : "giant_ribcage_broken", ox, SEA - 2, oz, yaw));
             }
+        return out;
+    }
+
+    /** called once per chunk when it is generated */
+    public static void spawnGiants(net.minecraft.server.level.WorldGenRegion region) {
+        net.minecraft.world.level.ChunkPos cp = region.getCenter();
+        for (Giant g : giantsIn(cp.x, cp.z)) {
+            com.krolasyon.bloodsea.entity.GiantEntity e = new com.krolasyon.bloodsea.entity.GiantEntity(com.krolasyon.bloodsea.registry.ModEntities.GIANT.get(), region.getLevel());
+            e.moveTo(g.x(), g.y(), g.z(), g.yaw(), 0);
+            e.setYRot(g.yaw());
+            e.setVariant(g.variant());
+            region.addFreshEntity(e);
         }
     }
 

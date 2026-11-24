@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cube_column",
- "textures": {
-  "side": "bloodsea:block/leviathan_tooth",
-  "end": "bloodsea:block/leviathan_tooth_top"
- }
-}

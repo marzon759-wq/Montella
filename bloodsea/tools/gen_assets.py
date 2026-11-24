@@ -231,6 +231,27 @@ def tooth_side():
     return img(col)
 
 
+def bone_mud():
+    """wet black mud with rotten leaves and splinters of bone in it, a sheen of standing water"""
+    n = 32
+    v = noise(n, 171, 3, 4)
+    col = ramp(v, [(0, "#14100e"), (0.5, "#2a221e"), (1, "#40342c")])
+    rng = np.random.default_rng(172)
+    leaf = (noise(n, 173, 6, 2) > 0.66) & (rng.random((n, n)) < 0.7)
+    col[leaf] = ramp(noise(n, 174, 8, 2), [(0, "#4a2a14"), (1, "#7a4a24")])[leaf]
+    wet = noise(n, 175, 2, 2) > 0.7
+    col[wet] = col[wet] * 0.6 + np.array([70, 60, 58]) * 0.4
+    im = img(col)
+    d = ImageDraw.Draw(im)
+    rr = random.Random(176)
+    for _ in range(7):  # splinters of bone
+        x, y = rr.uniform(0, 32), rr.uniform(0, 32)
+        a = rr.uniform(0, math.pi)
+        L = rr.uniform(2, 5)
+        d.line([(x, y), (x + math.cos(a) * L, y + math.sin(a) * L)], fill=rr.choice(["#bfb090", "#d8ccb0", "#8a7a5a"]), width=1)
+    return im
+
+
 def flesh():
     n = 16
     v = noise(n, 61, 2, 3)
@@ -442,7 +463,7 @@ def pillar(name):
 
 
 def gen_models():
-    for n in ("human_bones", "vertebra", "flesh", "clot", "edge_stone", "mirage_sand", "lighthouse_wall", "lighthouse_lamp", "home_door", "throne_heart", "maw_core"):
+    for n in ("bone_mud", "flesh", "clot", "edge_stone", "mirage_sand", "lighthouse_wall", "lighthouse_lamp", "home_door", "maw_core"):
         cube_all(n)
     W(f"assets/{NS}/models/block/mirage_leaves.json", {"parent": "minecraft:block/leaves", "textures": {"all": f"{NS}:block/mirage_leaves"}})
     W(f"assets/{NS}/blockstates/mirage_leaves.json", {"variants": {"": {"model": f"{NS}:block/mirage_leaves"}}})
@@ -451,16 +472,10 @@ def gen_models():
         "top": f"{NS}:block/mirage_grass_top", "side": f"{NS}:block/mirage_grass_side", "bottom": f"{NS}:block/mirage_sand"}})
     W(f"assets/{NS}/blockstates/mirage_grass.json", {"variants": {"": {"model": f"{NS}:block/mirage_grass"}}})
     BLOCK_ITEMS.append(("mirage_grass", "mirage_grass"))
-    for n in ("rib_bone", "leviathan_bone", "leviathan_tooth"):
-        pillar(n)
     W(f"assets/{NS}/models/block/mirage_log.json", {"parent": "minecraft:block/cube_column", "textures": {"side": f"{NS}:block/mirage_log", "end": f"{NS}:block/mirage_log_top"}})
     W(f"assets/{NS}/blockstates/mirage_log.json", {"variants": {"": {"model": f"{NS}:block/mirage_log"}}})
     BLOCK_ITEMS.append(("mirage_log", "mirage_log"))
-    for lit in (False, True):
-        suf = "_lit" if lit else ""
-        W(f"assets/{NS}/models/block/skull_pile{suf}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"{NS}:block/skull_pile{suf}"}})
-    W(f"assets/{NS}/blockstates/skull_pile.json", {"variants": {"lit=false": {"model": f"{NS}:block/skull_pile"}, "lit=true": {"model": f"{NS}:block/skull_pile_lit"}}})
-    BLOCK_ITEMS.append(("skull_pile", "skull_pile"))
+
     W(f"assets/{NS}/models/block/phantom_wall.json", {"textures": {"particle": f"{NS}:block/phantom_wall"}})
     W(f"assets/{NS}/blockstates/phantom_wall.json", {"variants": {"": {"model": f"{NS}:block/phantom_wall"}}})
     W(f"assets/{NS}/models/item/phantom_wall.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:block/phantom_wall"}})
@@ -509,13 +524,14 @@ def gen_data():
 EN = {
     "itemGroup.bloodsea.main": "Blood Sea",
     "block.bloodsea.blood": "Blood", "fluid_type.bloodsea.blood": "Blood", "item.bloodsea.blood_bucket": "Bucket of Blood",
-    "block.bloodsea.human_bones": "Human Bones", "block.bloodsea.skull_pile": "Skull Pile", "block.bloodsea.rib_bone": "Rib Bone",
-    "block.bloodsea.throne_heart": "The Heart on the Throne", "block.bloodsea.clot": "Clotted Blood", "block.bloodsea.flesh": "Flesh",
-    "block.bloodsea.edge_stone": "Edge Stone", "block.bloodsea.leviathan_bone": "Leviathan Bone", "block.bloodsea.vertebra": "Leviathan Vertebra",
-    "block.bloodsea.leviathan_tooth": "Leviathan Tooth", "block.bloodsea.maw_core": "The Throat", "block.bloodsea.mirage_sand": "Mirage Sand",
+    
+    "block.bloodsea.clot": "Clotted Blood", "block.bloodsea.bone_mud": "Ossuary Mud", "block.bloodsea.flesh": "Flesh",
+    "block.bloodsea.edge_stone": "Edge Stone", 
+    "block.bloodsea.maw_core": "The Throat", "block.bloodsea.mirage_sand": "Mirage Sand",
     "block.bloodsea.mirage_grass": "Mirage Grass", "block.bloodsea.mirage_log": "Mirage Log", "block.bloodsea.mirage_leaves": "Mirage Leaves",
     "block.bloodsea.phantom_wall": "Phantom Wall", "block.bloodsea.lighthouse_wall": "Lighthouse Wall", "block.bloodsea.lighthouse_lamp": "Lighthouse Lamp",
     "block.bloodsea.home_door": "The Door Home",
+    "block.bloodsea.skull": "Skull", "block.bloodsea.skull_side": "Fallen Skull", "block.bloodsea.skull_sunk": "Drowned Skull", "block.bloodsea.skull_heap": "Heap of Skulls", "block.bloodsea.ribs": "Ribs in the Mud", "block.bloodsea.ribs_sunk": "Drowned Ribs", "block.bloodsea.ribcage": "Rib Cage", "block.bloodsea.skeleton": "Skeleton", "block.bloodsea.skeleton_sunk": "Drowned Skeleton", "block.bloodsea.hand": "Reaching Hand", "block.bloodsea.bone_pile": "Bone Pile", "block.bloodsea.spine": "Spine", "block.bloodsea.heart": "The Heart on the Throne", "entity.bloodsea.giant": "Giant Bones",
 
     "region.bloodsea.drift": "THE DRIFT", "region.bloodsea.drift.sub": "Calm blood, in every direction",
     "region.bloodsea.bones": "THE BONE REACH", "region.bloodsea.bones.sub": "Everyone the sea ever took is here",
@@ -554,13 +570,14 @@ EN = {
 TR = {
     "itemGroup.bloodsea.main": "Kan Denizi",
     "block.bloodsea.blood": "Kan", "fluid_type.bloodsea.blood": "Kan", "item.bloodsea.blood_bucket": "Kan Kovası",
-    "block.bloodsea.human_bones": "İnsan Kemikleri", "block.bloodsea.skull_pile": "Kafatası Yığını", "block.bloodsea.rib_bone": "Kaburga Kemiği",
-    "block.bloodsea.throne_heart": "Tahttaki Kalp", "block.bloodsea.clot": "Pıhtılaşmış Kan", "block.bloodsea.flesh": "Et",
-    "block.bloodsea.edge_stone": "Kıyı Taşı", "block.bloodsea.leviathan_bone": "Leviathan Kemiği", "block.bloodsea.vertebra": "Leviathan Omuru",
-    "block.bloodsea.leviathan_tooth": "Leviathan Dişi", "block.bloodsea.maw_core": "Gırtlak", "block.bloodsea.mirage_sand": "Serap Kumu",
+    
+    "block.bloodsea.clot": "Pıhtılaşmış Kan", "block.bloodsea.bone_mud": "Kemik Çamuru", "block.bloodsea.flesh": "Et",
+    "block.bloodsea.edge_stone": "Kıyı Taşı", 
+    "block.bloodsea.maw_core": "Gırtlak", "block.bloodsea.mirage_sand": "Serap Kumu",
     "block.bloodsea.mirage_grass": "Serap Çimi", "block.bloodsea.mirage_log": "Serap Kütüğü", "block.bloodsea.mirage_leaves": "Serap Yaprakları",
     "block.bloodsea.phantom_wall": "Hayalet Duvar", "block.bloodsea.lighthouse_wall": "Deniz Feneri Duvarı", "block.bloodsea.lighthouse_lamp": "Deniz Feneri Lambası",
     "block.bloodsea.home_door": "Eve Açılan Kapı",
+    "block.bloodsea.skull": "Kafatası", "block.bloodsea.skull_side": "Devrik Kafatası", "block.bloodsea.skull_sunk": "Boğulmuş Kafatası", "block.bloodsea.skull_heap": "Kafatası Yığını", "block.bloodsea.ribs": "Çamurdaki Kaburgalar", "block.bloodsea.ribs_sunk": "Boğulmuş Kaburgalar", "block.bloodsea.ribcage": "Göğüs Kafesi", "block.bloodsea.skeleton": "İskelet", "block.bloodsea.skeleton_sunk": "Boğulmuş İskelet", "block.bloodsea.hand": "Uzanan El", "block.bloodsea.bone_pile": "Kemik Yığını", "block.bloodsea.spine": "Omurga", "block.bloodsea.heart": "Tahttaki Kalp", "entity.bloodsea.giant": "Dev Kemikler",
 
     "region.bloodsea.drift": "SÜRÜKLENME", "region.bloodsea.drift.sub": "Her yönde durgun kan",
     "region.bloodsea.bones": "KEMİK DİYARI", "region.bloodsea.bones.sub": "Denizin aldığı herkes burada",
@@ -606,16 +623,7 @@ def gen_lang():
 
 def gen_textures():
     gen_blood()
-    save(human_bones(), "block/human_bones.png")
-    save(skull_tile(False, 22), "block/skull_pile.png")
-    save(skull_tile(True, 22), "block/skull_pile_lit.png")
-    save(rib_side(), "block/rib_bone.png")
-    save(rib_top(), "block/rib_bone_top.png")
-    save(vertebra(), "block/vertebra.png")
-    save(ivory(42), "block/leviathan_bone.png")
-    save(ivory_top(43), "block/leviathan_bone_top.png")
-    save(tooth_side(), "block/leviathan_tooth.png")
-    save(ivory_top(52), "block/leviathan_tooth_top.png")
+    save(bone_mud(), "block/bone_mud.png")
     save(flesh(), "block/flesh.png")
     save(clot(), "block/clot.png")
     save(edge_stone(), "block/edge_stone.png")
@@ -628,7 +636,6 @@ def gen_textures():
     save(lighthouse(), "block/lighthouse_wall.png")
     save(lamp(), "block/lighthouse_lamp.png")
     save(door(), "block/home_door.png")
-    save(heart_frames(), "block/throne_heart.png", 10)
     save(maw_frames(), "block/maw_core.png", 2)
     save(phantom(), "block/phantom_wall.png")
     save(bucket(), "item/blood_bucket.png")

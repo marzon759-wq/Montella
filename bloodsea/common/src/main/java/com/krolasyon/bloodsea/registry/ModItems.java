@@ -28,7 +28,7 @@ public final class ModItems {
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.bloodsea.main"))
-            .icon(() -> new ItemStack(ModBlocks.SKULL_PILE.get()))
+            .icon(() -> new ItemStack(ModProps.get("skull")))
             .displayItems((params, out) -> {
                 out.accept(BLOOD_BUCKET.get());
                 for (RegistryObject<Block> b : ModBlocks.WITH_ITEM) out.accept(b.get());

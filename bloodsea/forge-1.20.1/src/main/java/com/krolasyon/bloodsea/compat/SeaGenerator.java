@@ -37,7 +37,7 @@ public class SeaGenerator extends ChunkGenerator {
 
     @Override public void buildSurface(WorldGenRegion r, StructureManager sm, RandomState rs, ChunkAccess c) {}
 
-    @Override public void spawnOriginalMobs(WorldGenRegion r) {}
+    @Override public void spawnOriginalMobs(WorldGenRegion r) { SeaShape.spawnGiants(r); }
 
     @Override public int getGenDepth() { return SeaShape.HEIGHT; }
 

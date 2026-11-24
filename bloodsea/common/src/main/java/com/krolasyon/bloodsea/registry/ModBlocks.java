@@ -5,10 +5,8 @@ import com.krolasyon.bloodsea.block.EndingBlock;
 import com.krolasyon.bloodsea.block.MawCoreBlock;
 import com.krolasyon.bloodsea.block.MirageBlock;
 import com.krolasyon.bloodsea.block.PhantomWallBlock;
-import com.krolasyon.bloodsea.block.SkullPileBlock;
 import com.krolasyon.bloodsea.compat.Compat;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -40,18 +38,12 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).replaceable().noCollission().strength(100f).pushReaction(PushReaction.DESTROY).noLootTable().liquid()));
 
     // ---- the Bone Reach
-    public static final RegistryObject<Block> HUMAN_BONES = reg("human_bones", () -> new Block(bone()));
-    public static final RegistryObject<Block> SKULL_PILE = reg("skull_pile", () -> new SkullPileBlock(bone().lightLevel(s -> s.getValue(SkullPileBlock.LIT) ? 5 : 0)));
-    public static final RegistryObject<Block> RIB_BONE = reg("rib_bone", () -> new RotatedPillarBlock(bone()));
-    public static final RegistryObject<Block> THRONE_HEART = reg("throne_heart", () -> new EndingBlock(meat().strength(-1f, 3600000f).lightLevel(s -> 7), "bone"));
+    public static final RegistryObject<Block> BONE_MUD = reg("bone_mud", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(0.6f).sound(SoundType.MUD)));
     // ---- the sea floor
     public static final RegistryObject<Block> CLOT = reg("clot", () -> new Block(meat().strength(1.0f)));
     public static final RegistryObject<Block> FLESH = reg("flesh", () -> new Block(meat()));
     public static final RegistryObject<Block> EDGE_STONE = reg("edge_stone", () -> new Block(stone()));
     // ---- Leviathan's Deep
-    public static final RegistryObject<Block> LEVIATHAN_BONE = reg("leviathan_bone", () -> new RotatedPillarBlock(bone().strength(4f)));
-    public static final RegistryObject<Block> VERTEBRA = reg("vertebra", () -> new Block(bone().strength(4f)));
-    public static final RegistryObject<Block> LEVIATHAN_TOOTH = reg("leviathan_tooth", () -> new RotatedPillarBlock(bone().strength(5f)));
     public static final RegistryObject<Block> MAW_CORE = reg("maw_core", () -> new MawCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK)
             .strength(-1f, 3600000f).noCollission().noOcclusion().lightLevel(s -> 3)));
     // ---- the Mirage
