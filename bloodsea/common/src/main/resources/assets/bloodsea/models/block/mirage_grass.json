@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/cube_bottom_top",
+ "textures": {
+  "top": "bloodsea:block/mirage_grass_top",
+  "side": "bloodsea:block/mirage_grass_side",
+  "bottom": "bloodsea:block/mirage_sand"
+ }
+}

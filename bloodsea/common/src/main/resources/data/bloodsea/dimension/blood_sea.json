@@ -1,0 +1,14 @@
+{
+ "type": "bloodsea:blood_sea",
+ "generator": {
+  "type": "bloodsea:blood_sea",
+  "biome_source": {
+   "type": "bloodsea:regions",
+   "drift": "bloodsea:drift",
+   "bones": "bloodsea:bones",
+   "leviathan": "bloodsea:leviathan",
+   "edge": "bloodsea:edge",
+   "mirage": "bloodsea:mirage"
+  }
+ }
+}

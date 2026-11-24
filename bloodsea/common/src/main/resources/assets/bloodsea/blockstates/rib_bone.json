@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "bloodsea:block/rib_bone"
+  },
+  "axis=z": {
+   "model": "bloodsea:block/rib_bone_horizontal",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "bloodsea:block/rib_bone_horizontal",
+   "x": 90,
+   "y": 90
+  }
+ }
+}

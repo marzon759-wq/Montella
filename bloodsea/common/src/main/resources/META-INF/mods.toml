@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="${loader_range}"
+license="All Rights Reserved"
+
+[[mods]]
+modId="bloodsea"
+version="${mod_version}"
+displayName="Blood Sea"
+authors="krolasyon"
+description='''
+An endless ocean of blood under a white sun and a blood moon. Four ways across it, and four ways it ends:
+the Bone Reach, Leviathan's Deep, the Edge of the World and the Mirage. Type /bloodsea enter.
+'''
+
+[[dependencies.bloodsea]]
+    modId="forge"
+    mandatory=true
+    versionRange="${loader_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.bloodsea]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${mc_range}"
+    ordering="NONE"
+    side="BOTH"

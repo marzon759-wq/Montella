@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "lit=false": {
+   "model": "bloodsea:block/skull_pile"
+  },
+  "lit=true": {
+   "model": "bloodsea:block/skull_pile_lit"
+  }
+ }
+}

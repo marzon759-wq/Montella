@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_column_horizontal",
+ "textures": {
+  "side": "bloodsea:block/leviathan_bone",
+  "end": "bloodsea:block/leviathan_bone_top"
+ }
+}

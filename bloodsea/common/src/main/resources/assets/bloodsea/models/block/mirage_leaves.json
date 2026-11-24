@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/leaves",
+ "textures": {
+  "all": "bloodsea:block/mirage_leaves"
+ }
+}

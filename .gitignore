@@ -22,3 +22,10 @@ mimic/*.mp4
 mimic/tools/vanilla/
 mimic/MIMIC_Harrow_Farm.zip
 mimic/MIMIC_CurseForge.zip
+
+# Blood Sea
+bloodsea/forge-*/build/
+bloodsea/forge-*/run/
+bloodsea/forge-*/.gradle/
+bloodsea/tools/__pycache__/
+bloodsea/*.zip

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "bloodsea:block/leviathan_tooth"
+  },
+  "axis=z": {
+   "model": "bloodsea:block/leviathan_tooth_horizontal",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "bloodsea:block/leviathan_tooth_horizontal",
+   "x": 90,
+   "y": 90
+  }
+ }
+}

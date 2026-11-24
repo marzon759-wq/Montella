@@ -1,0 +1,57 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+}
+version = "${mc_version}-forge-${mod_version}"
+group = 'com.krolasyon.bloodsea'
+base { archivesName = 'bloodsea' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+minecraft {
+    mappings channel: 'official', version: mc_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            if (mc_version == '1.20.1') {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            }
+            mods { bloodsea { source sourceSets.main } }
+        }
+        client {
+            if (System.getenv('BLOODSEA_AUTOTEST') != null) property 'bloodsea.autotest', System.getenv('BLOODSEA_AUTOTEST')
+            if (System.getenv('BLOODSEA_SIZE') != null) args '--width', System.getenv('BLOODSEA_SIZE').split('x')[0], '--height', System.getenv('BLOODSEA_SIZE').split('x')[1]
+        }
+        server { args '--nogui' }
+    }
+}
+sourceSets.main {
+    java.srcDirs = ['../common/src/main/java', 'src/main/java']
+    resources.srcDirs = ['../common/src/main/resources', 'src/main/resources']
+}
+repositories {
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+}
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${mc_version}:${gecko_version}")
+}
+tasks.named('processResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    def props = [mod_version: mod_version, pack_format: pack_format, loader_range: loader_range, mc_range: mc_range, gecko_range: gecko_range]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['Specification-Title': 'bloodsea', 'Implementation-Title': 'bloodsea', 'Implementation-Version': project.version]) }
+    if (mc_version == '1.20.1') finalizedBy 'reobfJar'
+}
+
+// Forge 1.20.6+ dev runs need classes and resources in one folder (from the official MDK)
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
+}

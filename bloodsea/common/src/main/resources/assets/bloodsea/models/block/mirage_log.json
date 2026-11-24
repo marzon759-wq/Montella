@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_column",
+ "textures": {
+  "side": "bloodsea:block/mirage_log",
+  "end": "bloodsea:block/mirage_log_top"
+ }
+}
