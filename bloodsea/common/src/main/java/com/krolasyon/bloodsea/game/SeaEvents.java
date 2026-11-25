@@ -74,6 +74,24 @@ public final class SeaEvents {
                         .then(Commands.argument("action", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
                                 debugState(ctx.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "s"),
                                         com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "action")))))));
+        c.then(Commands.literal("moveraft").requires(s -> s.hasPermission(2)).then(Commands.argument("x", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg())
+                .then(Commands.argument("z", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg()).executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    double x = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(ctx, "x"), z = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(ctx, "z");
+                    ServerLevel sea = p.server.getLevel(SEA);
+                    var r = raftFor(sea, p);
+                    p.stopRiding();
+                    p.teleportTo(sea, x, com.krolasyon.bloodsea.entity.RaftEntity.Y + 1, z, p.getYRot(), 0);
+                    p.server.tell(new net.minecraft.server.TickTask(p.server.getTickCount() + 20, () -> {
+                        var r2 = raftFor(sea, p);
+                        r2.teleportTo(x, com.krolasyon.bloodsea.entity.RaftEntity.Y, z);
+                        var pips = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.PipEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000));
+                        for (var c2 : pips) { c2.stopRiding(); c2.teleportTo(x - 1.4, com.krolasyon.bloodsea.entity.RaftEntity.Y + 0.6, z - 1.4); }
+                        var st = r2.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2);
+                        p.teleportTo(sea, st.x, st.y, st.z, p.getYRot(), 0);
+                    }));
+                    return 1;
+                }))));
         c.then(Commands.literal("where").executes(ctx -> {
             ServerPlayer p = ctx.getSource().getPlayerOrException();
             Regions.Region r = Regions.at(p.getX(), p.getZ());
@@ -97,7 +115,6 @@ public final class SeaEvents {
             p.sendSystemMessage(Component.literal("The Blood Sea is missing (datapack not loaded)."));
             return;
         }
-        if (!p.getInventory().contains(new ItemStack(Items.SPRUCE_BOAT))) p.getInventory().add(new ItemStack(Items.SPRUCE_BOAT));
         com.krolasyon.bloodsea.entity.RaftEntity raft = raftFor(sea, p);
         p.teleportTo(sea, raft.getX(), raft.getY() + com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, raft.getZ() + 1.5, 180f, 0f);
         REGION.remove(p.getUUID());
@@ -106,12 +123,18 @@ public final class SeaEvents {
 
     /** the raft: the one already afloat near the middle, or a new one */
     public static com.krolasyon.bloodsea.entity.RaftEntity raftFor(ServerLevel sea, ServerPlayer p) {
+        net.minecraft.nbt.CompoundTag d = p.getPersistentData();
+        if (d.hasUUID("bloodsea_raft") && sea.getEntity(d.getUUID("bloodsea_raft")) instanceof com.krolasyon.bloodsea.entity.RaftEntity r0 && !r0.isRemoved()) return r0;
         sea.getChunkAt(BlockPos.containing(0, Regions.SEA, 0));
         var list = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000));
-        if (!list.isEmpty()) return list.get(0);
-        com.krolasyon.bloodsea.entity.RaftEntity r = com.krolasyon.bloodsea.registry.ModEntities.RAFT.get().create(sea);
-        r.moveTo(0.5, com.krolasyon.bloodsea.entity.RaftEntity.Y, 0.5, 0f, 0f);
-        sea.addFreshEntity(r);
+        com.krolasyon.bloodsea.entity.RaftEntity r;
+        if (!list.isEmpty()) r = list.get(0);
+        else {
+            r = com.krolasyon.bloodsea.registry.ModEntities.RAFT.get().create(sea);
+            r.moveTo(0.5, com.krolasyon.bloodsea.entity.RaftEntity.Y, 0.5, 0f, 0f);
+            sea.addFreshEntity(r);
+        }
+        d.putUUID("bloodsea_raft", r.getUUID());
         return r;
     }
 
@@ -164,7 +187,8 @@ public final class SeaEvents {
 
     // ================================================================== every tick, for each player
     public static void playerTick(ServerPlayer p) {
-        if (!inSea(p) || p.tickCount % 10 != 0) return;
+        int now = p.server.getTickCount();
+        if (!inSea(p) || now % 10 != 0) return;
         ServerLevel lvl = p.serverLevel();
         UUID id = p.getUUID();
         if (Endings.active(p)) return;
@@ -191,7 +215,7 @@ public final class SeaEvents {
                 lvl.playSound(null, p.blockPosition(), day ? SoundEvents.BEACON_ACTIVATE : SoundEvents.WARDEN_HEARTBEAT, SoundSource.AMBIENT, 1f, day ? 0.5f : 0.6f);
             }
         }
-        if (p.tickCount % 20 != 0) return;
+        if (now % 20 != 0) return;
         if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
         com.krolasyon.bloodsea.story.Story.tick(p);
         boolean inBlood = p.isInFluidType(ModFluids.BLOOD_TYPE.get());

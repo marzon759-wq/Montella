@@ -102,7 +102,12 @@ public final class AutoTest {
         cue(Math.max(60, (c == null ? 0 : c.length) - prev + 140), () -> {});
     }
 
+    static boolean waiting;
+
+    static void waitFree() { cue(1, () -> waiting = true); }
+
     static void stageShots(String stage, String cut, int... at) {
+        waitFree();
         cue(5, () -> cmd("bloodsea stage " + stage));
         cue(30, () -> {});
         shots(cut, at);
@@ -115,6 +120,19 @@ public final class AutoTest {
             // the whole story, stage by stage, with pictures through every cutscene
             String ending = mode.contains("bone") ? "accept" : mode.contains("lev") ? "courage" : mode.contains("edge") ? "fury" : "hope";
             cue(0, () -> { cmd("gamemode survival"); cmd("bloodsea start"); });
+            if (mode.contains("mid")) {
+                cue(900, () -> {});
+                waitFree(); cue(5, () -> cmd("bloodsea moveraft 800.5 0.5"));
+                cue(60, () -> {});
+                stageShots("east", "lev", 60, 160, 260, 340);
+                cue(200, () -> {});
+                shots("mem2", 120, 330);
+                waitFree(); cue(5, () -> cmd("bloodsea moveraft -700.5 0.5"));
+                cue(60, () -> {});
+                stageShots("west", "voice", 60, 160, 260);
+                stageShots("fog", "taken", 60, 130, 200, 250, 270, 300, 340, 420, 560);
+                cue(300, () -> {});
+            }
             if (mode.contains("full")) {
                 shots("wake", 60, 150, 260, 330, 420, 520, 640, 760);
                 cue(40, () -> cmd("execute as @s run ride @s mount @e[type=bloodsea:raft,limit=1,sort=nearest]"));
@@ -125,15 +143,15 @@ public final class AutoTest {
                 stageShots("night1b", "dawn", 80, 200);
                 shots("mem1", 120, 330, 420);
                 stageShots("north", "eye", 60, 160, 260);
-                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] 0.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " -900.5"); cmd("execute in bloodsea:blood_sea run tp @s 0.5 66 -900.5"); });
+                waitFree(); cue(5, () -> cmd("bloodsea moveraft 0.5 -900.5"));
                 cue(60, () -> {});
                 stageShots("north2", "bones", 60, 160, 260, 380);
-                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] 800.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " 0.5"); cmd("execute in bloodsea:blood_sea run tp @s 800.5 66 0.5"); });
+                waitFree(); cue(5, () -> cmd("bloodsea moveraft 800.5 0.5"));
                 cue(60, () -> {});
                 stageShots("east", "lev", 60, 160, 260, 340);
                 cue(200, () -> {});
                 shots("mem2", 120, 330);
-                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] -700.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " 0.5"); cmd("execute in bloodsea:blood_sea run tp @s -700.5 66 0.5"); });
+                waitFree(); cue(5, () -> cmd("bloodsea moveraft -700.5 0.5"));
                 cue(60, () -> {});
                 stageShots("west", "voice", 60, 160, 260);
                 stageShots("fog", "taken", 60, 130, 200, 250, 270, 300, 340, 420, 560);
@@ -144,7 +162,8 @@ public final class AutoTest {
             // the ending
             double[] goal = switch (ending) { case "accept" -> new double[]{0.5, -1380}; case "courage" -> new double[]{1370, 0.5}; case "fury" -> new double[]{0.5, 1870}; default -> new double[]{-1410, 0.5}; };
             cue(5, () -> cmd("bloodsea stage dest_" + ending));
-            cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] " + goal[0] + " " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " " + goal[1]); cmd("execute in bloodsea:blood_sea run tp @s " + goal[0] + " 66 " + goal[1]); });
+            waitFree(); cue(5, () -> cmd("bloodsea moveraft " + goal[0] + " " + goal[1]));
+            cue(80, () -> {});
             cue(10, () -> cmd("bloodsea stage dest"));
             for (int k = 0; k < 40; k++) { int kk = k; cue(60, () -> shot("z_" + ending + "_" + kk)); }
             cue(20, () -> Minecraft.getInstance().stop());
@@ -303,6 +322,13 @@ public final class AutoTest {
                 }
             }
             return;
+        }
+        if (waiting) {
+            if (mc.screen instanceof CutScreen || mc.screen instanceof ChoiceScreen) {
+                if (mc.screen instanceof ChoiceScreen cs && (mc.level.getGameTime() % 40 == 0)) cs.pick(0);
+                return;
+            }
+            waiting = false;
         }
         n++;
         if (mc.screen instanceof ChoiceScreen cs && n % 40 == 0) { shot("choice_" + n); cs.pick(0); }

@@ -132,6 +132,8 @@ public final class Story {
 
     // ================================================================== every second, for each player in the story
     public static void tick(ServerPlayer p) {
+        if (Boolean.getBoolean("bloodsea.debugai") && p.server.getTickCount() % 400 == 0)
+            BloodSea.LOG.info("[STORY] guard active={} cut={} asking={} dim={}", active(p), SESSIONS.containsKey(p.getUUID()), ASKING.containsKey(p.getUUID()), p.level().dimension().location());
         if (!active(p) || SESSIONS.containsKey(p.getUUID()) || ASKING.containsKey(p.getUUID())) return;
         if (!p.level().dimension().equals(SeaEvents.SEA)) return;
         CompoundTag s = st(p);
@@ -142,6 +144,8 @@ public final class Story {
         Regions.Region reg = Regions.at(p.getX(), p.getZ());
         double moved = Math.hypot(p.getX() - s.getDouble("x0"), p.getZ() - s.getDouble("z0"));
         String stage = stage(p);
+        if (t % 200 == 0 && Boolean.getBoolean("bloodsea.debugai"))
+            BloodSea.LOG.info("[STORY] tick {} t={} region={} dist={} raft={}", stage, t, reg, (int) Regions.dist(p.getX(), p.getZ()), r != null);
         switch (stage) {
             case "oar" -> {
                 if (p.getVehicle() instanceof RaftEntity) {
@@ -282,7 +286,7 @@ public final class Story {
             default -> {}
         }
         // the Watcher opens its eye now and then, by day, once it has been seen
-        if (s.getBoolean("eye_free") && com.krolasyon.bloodsea.world.SeaTime.isDay(lvl) && p.getRandom().nextInt(90) == 0) eye(p, 160);
+        if (s.getBoolean("eye_free") && com.krolasyon.bloodsea.world.SeaTime.isDay(lvl) && p.getRandom().nextInt(150) == 0) eye(p, 160);
     }
 
     /** hope, unless something else outweighs it */

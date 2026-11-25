@@ -36,6 +36,22 @@ cages and skulls half sunk in the Bone Reach. They are solid: the generator lays
 (from the collision cells tools/gen_giants.py writes), so boats stop against ribs and fangs and you can climb a skull.
 Run the client with BLOODSEA_SHOWCOLL=1 to see those blocks as glass.
 
+## The story: `/bloodsea start`
+You wake face down on a raft in a sea of blood, with a black cat you have never seen and a hand-drawn map. Who are you,
+where is this, and why are you here? Everything outside the cutscenes is played in first person.
+
+- **The raft** is the whole world: sit at the steering oar (use it) and row with the movement keys. Stand on it when it is
+  still; it will not let you step off by accident. **Touching the blood kills you.**
+- **Survival**: you get hungry. Food comes from floating crates of cargo (row into them or use them) and from Pip, who
+  hooks fish out of the blood and brings them to you - more often the more you care for her. Stroke her (use, empty
+  hand), feed her, and she purrs, rubs against you, sleeps on the blanket, hisses at what is in the water.
+- **18 cutscenes**, fully voiced (English, with English and Turkish subtitles), and **timed choices**. Every choice weighs
+  hope, acceptance, courage or fury; what weighs most decides where the voyage ends:
+  - *The Stomach* (the lighthouse): a hospital bed, Pip alive in your lap... and what is really there.
+  - *Acceptance* (the throne of bones), *Return* (through the Leviathan), *The Fall* (the edge of the sea).
+- **The Watcher**: the sun is only a sun - until the story opens its eye, and after that it opens at the worst moments.
+- The map (use it) shows where you are and where you are pointing.
+
 ## The living
 Five creatures and the sky (tools/gen_creatures.py sculpts them as distance fields, one per bone, and paints every
 visible voxel face into its own texels; tools/gen_creature_anims.py animates them; tools/gen_creature_sounds.py voices them).

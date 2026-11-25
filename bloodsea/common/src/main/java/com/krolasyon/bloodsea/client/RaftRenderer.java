@@ -29,9 +29,12 @@ public class RaftRenderer extends GeoEntityRenderer<RaftEntity> {
         double hr = Waves.height(x + rx * 2, z + rz * 2, t), hl = Waves.height(x - rx * 2, z - rz * 2, t);
         ps.pushPose();
         ps.translate(0, e.bob(pt), 0);
+        // GeckoLib turns an entity that is not alive by a fixed half turn; turn the rest of the way to the raft's
+        // heading, tip it on the swell in its own frame, then hand GeckoLib its half turn back
         ps.mulPose(Axis.YP.rotationDegrees(180f - ry));
         ps.mulPose(Axis.XP.rotationDegrees((float) Math.toDegrees(Math.atan2(hb - hf, 4)) * 0.8f));
         ps.mulPose(Axis.ZP.rotationDegrees((float) Math.toDegrees(Math.atan2(hr - hl, 4)) * 0.8f));
+        ps.mulPose(Axis.YP.rotationDegrees(-180f));
         super.render(e, yaw, pt, ps, buf, light);
         ps.popPose();
     }
