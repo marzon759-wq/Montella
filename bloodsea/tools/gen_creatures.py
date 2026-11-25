@@ -1164,24 +1164,24 @@ def raft():
     c.part("deck", (-42, -6, -44), (42, 28, 44), 1.0, deck)
 
     # the mast and its torn sail
-    c.bone("mast", (0, 8, -22), "deck")
+    c.bone("mast", (0, 8, -32), "deck")
 
     def mast(s):
         X, Y, Z = P3(s)
-        d = capsule(s, (0, 6, -22), (0, 70, -22), 2.6, 2.0)
-        d = union(d, capsule(s, (-26, 66, -22), (26, 66, -22), 1.5))
+        d = capsule(s, (0, 6, -32), (0, 74, -32), 2.6, 2.0)
+        d = union(d, capsule(s, (-26, 70, -32), (26, 70, -32), 1.5))
         d = d + (vnoise(X, Y, Z, 1.5, 133) - 0.5) * 0.4
         mat = np.ones(d.shape, np.int16)
         # the sail: a sheet hanging from the yard, torn ragged at the bottom, bellied slightly forward
-        tear = 34 + vnoise(X * 0.3, 0, 0, 1.0, 134) * 18 - 6
-        bell = -22 - 3.5 * np.sin(np.clip((66 - Y) / 40, 0, 1) * np.pi) * np.cos(X / 26 * np.pi / 2)
-        sh = np.maximum(np.abs(Z - bell) - 0.6, np.maximum(np.abs(X) - 24, np.maximum(Y - 65, (66 - tear) - Y)))
+        tear = 18 + vnoise(X * 0.3, 0, 0, 1.0, 134) * 12 - 4
+        bell = -32 - 3.0 * np.sin(np.clip((70 - Y) / 24, 0, 1) * np.pi) * np.cos(X / 26 * np.pi / 2)
+        sh = np.maximum(np.abs(Z - bell) - 0.6, np.maximum(np.abs(X) - 24, np.maximum(Y - 69, (70 - tear) - Y)))
         holes = vnoise(X, Y, 0, 4.0, 135) > 0.72
         sh = np.where(holes, 50.0, sh)
         d = union(d, sh)
         mat = np.where(sh <= d + 0.01, 4, mat)
         return d, mat
-    c.part("mast", (-28, 4, -30), (28, 74, -14), 1.0, mast)
+    c.part("mast", (-28, 4, -40), (28, 78, -24), 1.0, mast)
 
     # the lantern on its pole at the front left
     c.bone("lantern", (-31, 44, -31), "deck")

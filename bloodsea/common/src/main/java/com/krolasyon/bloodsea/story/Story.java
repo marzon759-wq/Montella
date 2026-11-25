@@ -408,7 +408,15 @@ public final class Story {
     }
 
     /** every tick */
+    private static final List<Object[]> LATER = new ArrayList<>();
+    private static int clock;
+
+    /** run something a number of server ticks from now */
+    public static void later(int ticks, Runnable r) { LATER.add(new Object[]{clock + ticks, r}); }
+
     public static void serverTick(net.minecraft.server.MinecraftServer server) {
+        clock++;
+        for (Object[] o : new ArrayList<>(LATER)) if ((int) o[0] <= clock) { LATER.remove(o); ((Runnable) o[1]).run(); }
         for (Session s : new ArrayList<>(SESSIONS.values())) s.tick();
     }
 

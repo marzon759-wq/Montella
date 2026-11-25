@@ -81,15 +81,21 @@ public final class SeaEvents {
                     ServerLevel sea = p.server.getLevel(SEA);
                     var r = raftFor(sea, p);
                     p.stopRiding();
-                    p.teleportTo(sea, x, com.krolasyon.bloodsea.entity.RaftEntity.Y + 1, z, p.getYRot(), 0);
-                    p.server.tell(new net.minecraft.server.TickTask(p.server.getTickCount() + 20, () -> {
-                        var r2 = raftFor(sea, p);
-                        r2.teleportTo(x, com.krolasyon.bloodsea.entity.RaftEntity.Y, z);
-                        var pips = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.PipEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000));
-                        for (var c2 : pips) { c2.stopRiding(); c2.teleportTo(x - 1.4, com.krolasyon.bloodsea.entity.RaftEntity.Y + 0.6, z - 1.4); }
-                        var st = r2.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2);
-                        p.teleportTo(sea, st.x, st.y, st.z, p.getYRot(), 0);
-                    }));
+                    int cx = net.minecraft.util.Mth.floor(x) >> 4, cz = net.minecraft.util.Mth.floor(z) >> 4;
+                    sea.setChunkForced(cx, cz, true);
+                    // the destination loads first, with the player still on the raft; then the raft goes, then the player
+                    com.krolasyon.bloodsea.story.Story.later(80, () -> {
+                        r.teleportTo(x, com.krolasyon.bloodsea.entity.RaftEntity.Y, z);
+                        for (var c2 : sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.PipEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000))) {
+                            c2.stopRiding();
+                            c2.teleportTo(x - 1.4, com.krolasyon.bloodsea.entity.RaftEntity.Y + 0.6, z - 1.4);
+                        }
+                    });
+                    com.krolasyon.bloodsea.story.Story.later(84, () -> {
+                        p.teleportTo(sea, x, com.krolasyon.bloodsea.entity.RaftEntity.Y + 0.6, z - 1.2, p.getYRot(), 0);
+                        BloodSea.LOG.info("[TEST] after move: raft {}", sea.getEntity(r.getUUID()));
+                    });
+                    com.krolasyon.bloodsea.story.Story.later(400, () -> sea.setChunkForced(cx, cz, false));
                     return 1;
                 }))));
         c.then(Commands.literal("where").executes(ctx -> {
