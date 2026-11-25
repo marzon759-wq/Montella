@@ -32,6 +32,14 @@ public abstract class RaftBase extends Entity implements GeoEntity {
     public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
         lerpX = x; lerpY = y; lerpZ = z; lerpYRot = yRot;
         lerpSteps = 10;
+        // a real jump (a teleport, or a correction after the player stops steering) is taken at once, not slid into
+        if ((x - getX()) * (x - getX()) + (z - getZ()) * (z - getZ()) > 1.0 || Math.abs(net.minecraft.util.Mth.wrapDegrees(yRot - getYRot())) > 25) {
+            setPos(x, y, z);
+            setYRot(yRot);
+            yRotO = yRot;
+            xo = x; yo = y; zo = z; xOld = x; yOld = y; zOld = z;
+            lerpSteps = 0;
+        }
     }
 
     public abstract String animName();

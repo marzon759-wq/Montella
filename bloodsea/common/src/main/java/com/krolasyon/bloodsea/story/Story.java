@@ -105,15 +105,21 @@ public final class Story {
         sea.setDayTime(1000);
         RaftEntity r = SeaEvents.enter(p);
         if (r == null) return;
-        pip(sea, r);
+        PipEntity cat = pip(sea, r);
+        if (cat != null) cat.scripted = true;
         p.getFoodData().setFoodLevel(14);
         stage(p, "wake");
-        play(p, "wake", () -> {
+        // the raft was just made in a chunk that is still loading: hand it over directly, and give the world a moment
+        final RaftEntity raft = r;
+        Story.later(10, () -> play(p, "wake", raft, () -> {
             if (!p.getInventory().contains(new ItemStack(ModItems.SEA_MAP.get()))) p.getInventory().add(new ItemStack(ModItems.SEA_MAP.get()));
             obj(p, "oar");
             stage(p, "oar");
-        });
+        }));
     }
+
+    /** the cat just made, which a search cannot see until its chunk has finished loading */
+    static java.lang.ref.WeakReference<PipEntity> LAST_PIP = new java.lang.ref.WeakReference<>(null);
 
     static PipEntity pip(ServerLevel lvl, RaftEntity r) {
         var l = lvl.getEntitiesOfClass(PipEntity.class, r.getBoundingBox().inflate(40));
@@ -122,12 +128,26 @@ public final class Story {
         Vec3 b = r.local(-1.4, RaftEntity.TOP + 0.05, -1.45);
         c.moveTo(b.x, b.y, b.z, r.getYRot(), 0);
         lvl.addFreshEntity(c);
+        LAST_PIP = new java.lang.ref.WeakReference<>(c);
         return c;
     }
 
     static RaftEntity raft(ServerPlayer p) {
+        if (p.getVehicle() instanceof RaftEntity rv) return rv;
         var l = p.serverLevel().getEntitiesOfClass(RaftEntity.class, p.getBoundingBox().inflate(48));
-        return l.isEmpty() ? null : l.get(0);
+        if (l.isEmpty()) return null;
+        CompoundTag d = p.getPersistentData();
+        if (d.hasUUID("bloodsea_raft")) for (RaftEntity r : l) if (r.getUUID().equals(d.getUUID("bloodsea_raft"))) return r;
+        l.sort(java.util.Comparator.comparingDouble(r -> r.distanceToSqr(p)));
+        return l.get(0);
+    }
+
+    /** the player's raft even where the world has not finished loading around it */
+    static RaftEntity raftAny(ServerPlayer p) {
+        RaftEntity r = raft(p);
+        if (r != null) return r;
+        ServerLevel sea = p.server.getLevel(SeaEvents.SEA);
+        return sea == null ? null : SeaEvents.raftFor(sea, p);
     }
 
     // ================================================================== every second, for each player in the story
@@ -141,6 +161,12 @@ public final class Story {
         s.putInt("t", t);
         ServerLevel lvl = p.serverLevel();
         RaftEntity r = raft(p);
+        if (r != null) {
+            CompoundTag d = p.getPersistentData();
+            d.putDouble("bloodsea_raft_x", r.getX());
+            d.putDouble("bloodsea_raft_z", r.getZ());
+            d.putFloat("bloodsea_raft_yaw", r.getYRot());
+        }
         Regions.Region reg = Regions.at(p.getX(), p.getZ());
         double moved = Math.hypot(p.getX() - s.getDouble("x0"), p.getZ() - s.getDouble("z0"));
         String stage = stage(p);
@@ -379,8 +405,9 @@ public final class Story {
     public static boolean inCut(ServerPlayer p) { return SESSIONS.containsKey(p.getUUID()); }
 
     /** play a cutscene around the player's raft */
-    public static void play(ServerPlayer p, String id, Runnable then) {
-        RaftEntity r = raft(p);
+    public static void play(ServerPlayer p, String id, Runnable then) { play(p, id, p.level().dimension().equals(SeaEvents.SEA) ? raftAny(p) : raft(p), then); }
+
+    public static void play(ServerPlayer p, String id, RaftEntity r, Runnable then) {
         Vec3 o = r != null ? new Vec3(r.getX(), r.getY() + RaftEntity.TOP, r.getZ()) : p.position();
         float yaw = r != null ? r.getYRot() : p.getYRot();
         if (r != null) {
@@ -388,8 +415,25 @@ public final class Story {
             r.setDeltaMovement(Vec3.ZERO);
             r.setYRot(Math.round(r.getYRot() / 90f) * 90f);
             yaw = r.getYRot();
+            // the client steered this raft itself until now: tell it exactly where the raft is, or it may draw it
+            // where it last heard of it while the people of the scene stand where it really is
+            syncRaft(r);
+            Story.later(2, () -> syncRaft(r));
+            Story.later(10, () -> syncRaft(r));
         }
         playAt(p, id, o, yaw, then);
+    }
+
+    static void retrack(Entity e) {
+        if (e == null || e.isRemoved() || e instanceof ServerPlayer || !(e.level() instanceof ServerLevel sl)) return;
+        sl.getChunkSource().removeEntity(e);
+        sl.getChunkSource().addEntity(e);
+    }
+
+    static void syncRaft(RaftEntity r) {
+        if (r.isRemoved() || !(r.level() instanceof ServerLevel sl)) return;
+        r.setDeltaMovement(Vec3.ZERO);
+        sl.getChunkSource().broadcast(r, new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(r));
     }
 
     public static void playAt(ServerPlayer p, String id, Vec3 origin, float yaw, Runnable then) { playAt(p, id, p.serverLevel(), origin, yaw, then); }
@@ -465,10 +509,12 @@ public final class Story {
             p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 999999, 0, false, false));
             SeaCreature.FROZEN = true;
             var pips = lvl().getEntitiesOfClass(PipEntity.class, new AABB(o, o).inflate(48));
-            if (!pips.isEmpty()) {
-                pip = pips.get(0);
-                pip.scripted = true;
+            if (!pips.isEmpty()) pip = pips.get(0);
+            else {
+                PipEntity lp = LAST_PIP.get();
+                if (lp != null && !lp.isRemoved() && lp.level() == lvl() && lp.distanceToSqr(o) < 48 * 48) pip = lp;
             }
+            if (pip != null) pip.scripted = true;
             Net.toPlayer(p, Msg.of("cut").s("id", cut.id).d("x", o.x).d("y", o.y).d("z", o.z).f("yaw", yaw));
             BloodSea.LOG.info("[STORY] cut {} begins", cut.id);
         }
@@ -484,6 +530,12 @@ public final class Story {
                 lvl().setDayTime((long) Mth.lerp(k, timeRamp[0], timeRamp[1]));
             }
             p.setDeltaMovement(Vec3.ZERO);
+            // what was made before the world around it reached the player may never have been shown to it: show it again
+            if (t == 4 || t == 30) {
+                retrack(actor);
+                retrack(pip);
+                for (Entity e : things.values()) retrack(e);
+            }
             t++;
             if (t > cut.length + 80) end();
         }

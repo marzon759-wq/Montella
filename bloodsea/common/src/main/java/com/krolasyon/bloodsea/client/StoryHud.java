@@ -30,7 +30,12 @@ public final class StoryHud {
 
     public static void tick() {
         objT++;
-        if (sayKey != null && ++sayT > sayLen) sayKey = null;
+        if (sayKey != null) {
+            String txt = I18n.get("line.bloodsea." + sayKey);
+            int d = Lines.ticks(sayKey);
+            murmur(Lines.ALL.get(sayKey).speaker(), txt, sayT == 0 ? 0 : typed(txt, d, sayT), typed(txt, d, sayT + 1));
+            if (++sayT > sayLen) sayKey = null;
+        }
         if (shakeT > 0) shakeT--;
     }
 
@@ -60,22 +65,52 @@ public final class StoryHud {
         }
         if (sayKey != null) {
             float a = Math.min(1f, Math.min(sayT / 8f, (sayLen - sayT) / 10f));
-            subtitle(g, f, w, h - 70, Lines.ALL.get(sayKey).speaker(), I18n.get("line.bloodsea." + sayKey), a);
+            String txt = I18n.get("line.bloodsea." + sayKey);
+            subtitle(g, f, w, h - 70, Lines.ALL.get(sayKey).speaker(), txt, a, typed(txt, Lines.ticks(sayKey), sayT + pt));
         }
     }
 
-    static void subtitle(GuiGraphics g, Font font, int w, int y, String speaker, String txt, float a) {
+    // ------------------------------------------------------------------ the line types itself out, with a murmur per syllable
+
+    /** how many characters of a line are showing this long after it began */
+    public static int typed(String txt, int dur, float since) {
+        float rate = Math.max(1.3f, txt.length() / Math.max(1f, dur * 0.55f));
+        return Math.min(txt.length(), (int) (since * rate));
+    }
+
+    /** the murmur, pitched to whoever speaks: called each tick with how much was showing before and now */
+    public static void murmur(String speaker, String txt, int before, int now) {
+        int voiced = 0;
+        for (int i = Math.max(0, before); i < now && i < txt.length(); i++) if (Character.isLetterOrDigit(txt.charAt(i))) voiced++;
+        if (voiced == 0) return;
+        // one murmur per couple of letters, not per letter
+        if (((before / 3) == (now / 3)) && before > 0) return;
+        float pitch = switch (speaker) { case "anna" -> 1.45f; case "voice" -> 0.62f; case "nurse" -> 1.3f; case "rescuer", "man" -> 0.85f; default -> 1.0f; };
+        pitch *= 0.94f + (float) Math.random() * 0.12f;
+        Minecraft mc = Minecraft.getInstance();
+        mc.getSoundManager().play(SimpleSoundInstance.forUI(com.krolasyon.bloodsea.registry.ModSounds.get("talk_blip"), pitch, 0.32f));
+    }
+
+    static void subtitle(GuiGraphics g, Font font, int w, int y, String speaker, String txt, float a) { subtitle(g, font, w, y, speaker, txt, a, txt.length()); }
+
+    static void subtitle(GuiGraphics g, Font font, int w, int y, String speaker, String txt, float a, int shown) {
         String name = I18n.get("speaker.bloodsea." + speaker);
-        List<FormattedCharSequence> lines = font.split(Component.literal(txt), Math.min(360, w - 60));
+        List<String> lines = new java.util.ArrayList<>();
+        for (var ft : font.getSplitter().splitLines(Component.literal(txt), Math.min(360, w - 60), net.minecraft.network.chat.Style.EMPTY)) lines.add(ft.getString());
         int hh = lines.size() * 10 + 11;
         int mw = font.width(name);
-        for (FormattedCharSequence l : lines) mw = Math.max(mw, font.width(l));
+        for (String l : lines) mw = Math.max(mw, font.width(l));
         g.fill((w - mw) / 2 - 8, y - 4, (w + mw) / 2 + 8, y + hh + 3, argb(0.55f * a, 0x000000));
         int col = switch (speaker) { case "anna" -> 0xD8B070; case "voice" -> 0xB02828; case "nurse" -> 0xA8C8D8; case "rescuer", "man" -> 0xC8B890; default -> 0xE8C8A0; };
         g.drawString(font, name, (w - font.width(name)) / 2, y, argb(a, col), false);
         y += 11;
-        for (FormattedCharSequence l : lines) {
-            g.drawString(font, l, (w - font.width(l)) / 2, y, argb(a, 0xF0ECE0), false);
+        int pos = 0;
+        for (String l : lines) {
+            int at = txt.indexOf(l, pos);
+            if (at < 0) at = pos;
+            pos = at + l.length();
+            String part = l.substring(0, Math.max(0, Math.min(l.length(), shown - at)));
+            g.drawString(font, part, (w - font.width(l)) / 2, y, argb(a, 0xF0ECE0), false);
             y += 10;
         }
     }

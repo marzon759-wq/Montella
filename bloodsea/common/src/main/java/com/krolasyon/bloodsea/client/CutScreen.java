@@ -28,7 +28,7 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     private static final double[][] PROPS = {
             {-0.2, 0.2, -0.5, 4.2, 1.8, 2.2}, {-1.7, 1.7, 4.2, 4.5, 1.85, 2.15}, {-1.5, 1.5, 2.6, 3.9, 1.8, 2.3},
             {-2.05, -1.8, -0.5, 2.4, 1.8, 2.1}, {-1.8, -1.3, 1.4, 2.3, 1.7, 2.2},
-            {1.2, 2.2, -0.5, 1.15, 1.2, 2.2}, {1.2, 2.2, -0.5, 1.15, 0.33, 1.3}, {0.35, 1.15, -0.5, 0.8, 1.45, 2.3}};
+            {1.2, 2.2, -0.5, 1.15, 1.2, 2.2}, {1.2, 2.2, -0.5, 1.15, 0.33, 1.3}, {0.35, 1.15, -0.5, 0.8, 1.45, 2.3}, {-0.25, 0.25, -0.5, 1.0, -5, -1.15}};
 
     public CutScreen(String id, double ox, double oy, double oz, float yaw) {
         this.cut = Cuts.ALL.get(id);
@@ -110,6 +110,14 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     @Override
     public void tick() {
         if (cut == null) { finish(); return; }
+        for (Cut.Say l : cut.lines) {
+            int len = com.krolasyon.bloodsea.story.Lines.ticks(l.key());
+            if (t + 1 >= l.t() && t < l.t() + len) {
+                String txt = I18n.get("line.bloodsea." + l.key());
+                StoryHud.murmur(com.krolasyon.bloodsea.story.Lines.ALL.get(l.key()).speaker(), txt,
+                        t < l.t() ? 0 : StoryHud.typed(txt, len, t - l.t()), StoryHud.typed(txt, len, t + 1 - l.t()));
+            }
+        }
         t++;
         if (t >= cut.length) finish();
         long win = Minecraft.getInstance().getWindow().getWindow();
@@ -160,7 +168,8 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
             int len = com.krolasyon.bloodsea.story.Lines.ticks(l.key());
             if (tt >= l.t() && tt < l.t() + len) {
                 float a = Math.min(1f, Math.min((tt - l.t()) / 6f, (l.t() + len - tt) / 8f));
-                StoryHud.subtitle(g, font, w, h - bar - 36, com.krolasyon.bloodsea.story.Lines.ALL.get(l.key()).speaker(), I18n.get("line.bloodsea." + l.key()), a);
+                String txt = I18n.get("line.bloodsea." + l.key());
+                StoryHud.subtitle(g, font, w, h - bar - 36, com.krolasyon.bloodsea.story.Lines.ALL.get(l.key()).speaker(), txt, a, StoryHud.typed(txt, len, tt - l.t()));
             }
         }
         if (t > 40 && t < 160 || skipHold > 0) {

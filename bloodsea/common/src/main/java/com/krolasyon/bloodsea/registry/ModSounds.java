@@ -20,7 +20,7 @@ public final class ModSounds {
             "changer_blink", "changer_scuttle", "changer_bite", "changer_squelch",
             "lev_heartbeat", "lev_roar", "lev_rise", "lev_bite",
             "watcher_stare", "pip_meow", "pip_chirp", "pip_purr", "pip_hiss", "pip_scream", "blood_splash", "monitor_beep", "storm",
-            "stomach", "heartbeat_near"};
+            "stomach", "heartbeat_near", "talk_blip"};
     private static final Map<String, RegistryObject<SoundEvent>> MAP = new HashMap<>();
 
     static {

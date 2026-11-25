@@ -140,7 +140,11 @@ public final class SeaEvents {
         if (!list.isEmpty()) r = list.get(0);
         else {
             r = com.krolasyon.bloodsea.registry.ModEntities.RAFT.get().create(sea);
-            r.moveTo(0.5, com.krolasyon.bloodsea.entity.RaftEntity.Y, 0.5, 0f, 0f);
+            // the raft not loaded yet (after dying far from it, say): it comes back where it was last seen, not at the start;
+            // the old one, once its chunk loads, is the extra that oneRaft clears away
+            if (d.contains("bloodsea_raft_x"))
+                r.moveTo(d.getDouble("bloodsea_raft_x"), com.krolasyon.bloodsea.entity.RaftEntity.Y, d.getDouble("bloodsea_raft_z"), d.getFloat("bloodsea_raft_yaw"), 0f);
+            else r.moveTo(0.5, com.krolasyon.bloodsea.entity.RaftEntity.Y, 0.5, 0f, 0f);
             sea.addFreshEntity(r);
         }
         d.putUUID("bloodsea_raft", r.getUUID());
@@ -274,6 +278,18 @@ public final class SeaEvents {
                 lvl.playSound(null, p.getX() + lvl.random.nextGaussian() * 6, p.getY(), p.getZ() + lvl.random.nextGaussian() * 6,
                         SoundEvents.AMBIENT_CAVE.value(), SoundSource.AMBIENT, 0.7f, 0.6f + lvl.random.nextFloat() * 0.3f);
         }
+    }
+
+    /** a new player in a new world wakes on the raft at once: the story is the game, no command needed */
+    @SubscribeEvent
+    public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        String test = System.getProperty("bloodsea.autotest", "");
+        if (!test.isEmpty() && !test.contains("auto")) return;
+        net.minecraft.nbt.CompoundTag d = p.getPersistentData();
+        if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
+        d.putBoolean("bloodsea_began", true);
+        com.krolasyon.bloodsea.story.Story.later(40, () -> { if (!p.hasDisconnected()) com.krolasyon.bloodsea.story.Story.start(p); });
     }
 
     /** dying out here puts you back on the raft */

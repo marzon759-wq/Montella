@@ -22,48 +22,48 @@ public final class Cuts {
     static {
         // ============================================================== waking on the raft (third person)
         cut("wake")
-                .at(0, s -> { s.actorAt(0, 0.02, -1.4, 0); s.actor("wake"); s.pipAt(-6, -20, 0, 0); s.time(1000, 1000, 1); })
+                .at(0, s -> { s.actorAt(0.8, 0.02, -0.8, 0); s.actor("wake"); s.pipAt(-6, -20, 0, 0); s.time(1000, 1000, 1); })
                 // the raft alone on the blood, the camera coming down out of the sky
                 .shot(90, v(26, 22, 22), v(0, 0.6, 0), v(9, 5, 7), v(0, 0.6, 0), 55, 60)
                 // close on him, face down on the logs; a finger moves
-                .shot(60, v(-1.1, 0.6, 0.9), v(0, 0.2, 0.2), v(-0.9, 0.62, 0.7), v(0, 0.25, 0.2), 50, 46)
+                .shot(60, v(-0.6, 0.9, 0.9), v(0.8, 0.2, 0.7), v(-0.45, 0.85, 0.8), v(0.8, 0.25, 0.7), 50, 46)
                 // he pushes himself up, coughing
-                .shot(80, v(-2.3, 1.9, 0.8), v(0, 0.6, -0.8), v(-2.1, 2.0, 0.3), v(0, 0.8, -1.0))
+                .shot(80, v(-1.5, 1.9, 1.4), v(0.8, 0.6, -0.2), v(-1.3, 2, 0.9), v(0.8, 0.8, -0.4))
                 .say(100, "wake.1")
                 // on his knees, looking at his hands
-                .shot(80, v(-0.9, 1.25, 0.3), v(0, 0.85, -1.3), v(-0.75, 1.2, 0.2), v(0, 0.8, -1.3), 55, 48)
+                .shot(80, v(-0.1, 1.25, 0.9), v(0.8, 0.85, -0.7), v(0.05, 1.2, 0.8), v(0.8, 0.8, -0.7), 55, 48)
                 .say(168, "wake.2")
                 // the hand to the head; he gets up and looks out at the sea
-                .shot(90, v(-1.2, 2.3, -3.8), v(1.5, 1.2, 6), v(-0.8, 2.2, -3.6), v(2.5, 1.3, 8))
+                .shot(90, v(-0.4, 2.3, -3.2), v(1.5, 1.2, 6), v(0, 2.2, -3), v(2.5, 1.3, 8))
                 // wide: one man standing on a raft in an endless red sea
-                .shot(70, v(7, 3, 5), v(0, 1.1, -1.2), v(5, 3.4, -6), v(0, 1.1, -1.2), 60, 62)
+                .shot(70, v(7, 3, 5), v(0.8, 1.1, -0.6), v(5, 3.4, -6), v(0.8, 1.1, -0.6), 60, 62)
                 // a meow behind him: Pip
                 .at(388, s -> { s.pipAt(-1.4, 0.02, -1.45, 60); s.pip("stand"); s.pipMeow(); })
-                .at(392, s -> { s.actorAt(0, 0.02, -1.4, 90); s.actor("look_around"); })
-                .shot(80, v(0.6, 0.8, 0.2), v(-1.4, 0.3, -1.45), v(0.5, 0.75, 0.0), v(-1.4, 0.35, -1.45), 50, 44)
+                .at(392, s -> { s.actorAt(0.8, 0.02, -0.8, 90); s.actor("look_around"); })
+                .shot(80, v(0.6, 0.8, 0.2), v(-1.4, 0.3, -1.45), v(0.5, 0.75, 0), v(-1.4, 0.35, -1.45), 50, 44)
                 .at(415, s -> s.actor("kneel_reach"))
                 .say(420, "wake.3")
-                .at(450, s -> { s.pipWalk(-0.7, 0.02, -1.4, 90, 30); s.pip("walk"); })
+                .at(450, s -> { s.pipWalk(0.1, 0.02, -0.8, 90, 30); s.pip("walk"); })
                 .at(480, s -> s.pip("rub"))
-                .shot(110, v(1.4, 1.2, -0.6), v(-0.6, 0.5, -1.4), v(1.2, 1.1, -0.9), v(-0.6, 0.45, -1.4))
+                .shot(110, v(-1.2, 1.0, 0.2), v(0.4, 0.5, -0.8), v(-1.0, 0.95, 0.0), v(0.4, 0.45, -0.8))
                 .say(485, "wake.4")
                 .at(540, s -> { s.actor("pet"); s.pip("petted"); s.sound("pip_purr", 1f, 1f); })
                 .say(550, "wake.5")
-                .shot(90, v(-0.2, 0.7, 0.4), v(-0.4, 0.6, -1.4), v(-0.3, 0.6, 0.2), v(-0.5, 0.55, -1.4), 48, 42)
+                .shot(90, v(-1.0, 1.1, 0.4), v(0.45, 0.5, -0.8), v(-0.9, 1.05, 0.3), v(0.45, 0.5, -0.8), 48, 42)
                 // the map tied to the mast
                 .at(620, s -> { s.actorAt(0.2, 0.02, 0.6, 0); s.actor("talk"); s.pip("sit"); })
-                .shot(90, v(1.0, 1.9, -0.6), v(0.1, 1.45, 1.6), v(0.8, 1.85, -0.5), v(0.05, 1.4, 1.7))
+                .shot(90, v(1, 1.9, -0.6), v(0.1, 1.45, 1.6), v(0.8, 1.85, -0.5), v(0.05, 1.4, 1.7))
                 .say(625, "wake.6")
-                .shot(90, v(-1.7, 1.9, 4.0), v(0.2, 1.3, 0.6), v(-1.6, 1.8, 3.6), v(0.2, 1.3, 0.6))
+                .shot(90, v(-1.7, 1.9, 4), v(0.2, 1.3, 0.6), v(-1.6, 1.8, 3.6), v(0.2, 1.3, 0.6))
                 .say(735, "wake.7")
                 .len(830);
 
         // ============================================================== the rule: the blood eats what it touches
         cut("rule")
-                .at(0, s -> { s.actorAt(0, 0.02, -1.4, 0); s.actor("stand"); s.pipAt(-1.0, 0.02, 0.4, 90); s.pip("walk");
+                .at(0, s -> { s.actorAt(0, 0.02, -0.9, 0); s.actor("stand"); s.pipAt(-1.0, 0.02, 0.4, 90); s.pip("walk");
                     s.pipWalk(-2.0, 0.02, 0.5, 90, 30); s.drop(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD), -2.3, 0.1, 0.5); })
                 .at(32, s -> s.pip("swipe"))
-                .hold(70, v(0.4, 0.9, -0.9), v(-2.2, 0.2, 0.5))
+                .hold(70, v(0.9, 1.0, -0.2), v(-2.2, 0.2, 0.5))
                 .say(30, "rule.1")
                 .at(40, s -> { s.actor("recoil"); })
                 .at(70, s -> { s.splash(-3.1, -0.3, 0.5); s.puff(-3.1, -0.2, 0.5, 20); s.sound("blood_splash", 1.2f, 1.3f); })
@@ -119,7 +119,7 @@ public final class Cuts {
 
         // ============================================================== morning
         cut("dawn")
-                .at(0, s -> { s.time(22600, 24800, 220); s.actorAt(0, 0.02, -1.2, 0); s.actor("sit"); s.pipAt(-0.6, 0.02, -1.2, 90); s.pip("knead"); })
+                .at(0, s -> { s.time(22600, 24800, 220); s.actorAt(0, 0.02, -0.9, 0); s.actor("sit"); s.pipAt(-0.6, 0.02, -0.9, 90); s.pip("knead"); })
                 .shot(140, v(20, 4, 20), v(0, 0.5, 0), v(10, 3, 12), v(0, 0.5, 0), 60, 58)
                 .shot(110, v(0.9, 0.9, 0.3), v(-0.3, 0.6, -1.2), v(0.8, 0.85, 0.2), v(-0.3, 0.55, -1.2))
                 .say(160, "dawn.1")
@@ -128,7 +128,7 @@ public final class Cuts {
         // ============================================================== memory: the night he left (heard, not seen)
         cut("mem1")
                 .black(0, 300)
-                .at(0, s -> { s.actorAt(0, 0.02, -1.2, 0); s.actor("sit"); s.pipAt(-0.6, 0.02, -1.2, 90); s.pip("sleep"); s.time(2000, 2000, 1); })
+                .at(0, s -> { s.actorAt(0, 0.02, -0.9, 0); s.actor("sit"); s.pipAt(-0.6, 0.02, -0.9, 90); s.pip("sleep"); s.time(2000, 2000, 1); })
                 .hold(300, v(0.8, 0.9, 0.5), v(-0.2, 0.6, -1.2))
                 .say(20, "mem1.1")
                 .say(110, "mem1.2")
@@ -182,7 +182,7 @@ public final class Cuts {
         // ============================================================== memory: the storm
         cut("mem2")
                 .black(0, 280)
-                .at(0, s -> { s.sound("storm", 2f, 1f); s.actorAt(0, 0.02, -1.2, 0); s.actor("hold_head"); })
+                .at(0, s -> { s.sound("storm", 2f, 1f); s.actorAt(0, 0.02, -0.9, 0); s.actor("hold_head"); })
                 .hold(280, v(0.8, 1.7, 0.6), v(0, 1.7, -1.2))
                 .say(20, "mem2.1")
                 .say(95, "mem2.2")
@@ -207,7 +207,7 @@ public final class Cuts {
 
         // ============================================================== Pip is taken
         cut("taken")
-                .at(0, s -> { s.actorAt(0, 0.02, -1.3, 0); s.actor("sit"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("sit");
+                .at(0, s -> { s.actorAt(0, 0.02, -0.9, 0); s.actor("sit"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("sit");
                     s.spawn("caller", -3.6, -7.5, 0.4, 90); s.anim("caller", "idle"); })
                 .shot(90, v(-3.5, 2.0, 3.5), v(-0.6, 0.5, -1.2), v(-3.2, 2.1, 3.0), v(-0.6, 0.5, -1.2))
                 .say(20, "taken.1")
@@ -226,7 +226,7 @@ public final class Cuts {
                 .at(276, s -> { s.pipWalk(-3.4, -3.0, 0.5, 90, 30); s.moveThing("caller", -3.6, -8, 0.4, 90, 34); })
                 .at(300, s -> { s.splash(-3.2, -0.2, 0.4); s.sound("blood_splash", 2f, 0.6f); })
                 .at(318, s -> { s.pipGone(); s.gone("caller"); })
-                .shot(70, v(-1.2, 1.4, -1.9), v(-3.2, -0.3, 0.4), v(-1.3, 1.3, -1.7), v(-3.2, -0.3, 0.4), 45, 38)
+                .shot(70, v(-4.2, 2.6, -1.6), v(-3.0, -0.3, 0.4), v(-4.3, 2.4, -1.4), v(-3.0, -0.3, 0.4), 45, 38)
                 .at(330, s -> { s.actorAt(-1.3, 0.02, 0.0, 70); s.actor("sob"); })
                 .shot(130, v(-2.9, 0.9, 0.9), v(-1.3, 0.7, 0.0), v(-2.8, 0.85, 0.7), v(-1.3, 0.65, 0.0), 50, 42)
                 .say(380, "taken.4")

@@ -104,6 +104,8 @@ public final class AutoTest {
 
     static boolean waiting;
 
+    static final class Story2 { static java.util.function.Supplier<float[]> saved; }
+
     static void waitFree() { cue(1, () -> waiting = true); }
 
     static void stageShots(String stage, String cut, int... at) {
@@ -116,6 +118,13 @@ public final class AutoTest {
 
     private static void build() {
         at = 60;
+        if (mode.contains("auto")) {
+            cue(200, () -> shot("a_start0"));
+            cue(150, () -> shot("a_start1"));
+            cue(300, () -> shot("a_start2"));
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("cuts")) {
             // every cutscene played on the raft, a picture from the middle of every shot
             cue(0, () -> { cmd("gamemode survival"); cmd("gamerule sendCommandFeedback false"); cmd("bloodsea start"); });
@@ -130,6 +139,14 @@ public final class AutoTest {
                 }
                 cue(w.length - prev + 80, () -> {});
             }
+            // row off and turn first, the way a player would, so the scenes start from a raft that moved and turned
+            waitFree();
+            cue(10, () -> cmd("ride @s mount @e[type=bloodsea:raft,limit=1,sort=nearest]"));
+            cue(20, () -> { var keep = com.krolasyon.bloodsea.entity.RaftEntity.INPUT; com.krolasyon.bloodsea.entity.RaftEntity.INPUT = () -> new float[]{1f, 0.8f};
+                Story2.saved = keep; });
+            cue(170, () -> { com.krolasyon.bloodsea.entity.RaftEntity.INPUT = Story2.saved; BloodSea.LOG.info("[AUTOTEST] rowed to {} raft yaw {}", Minecraft.getInstance().player.position(),
+                    Minecraft.getInstance().player.getVehicle() == null ? "none" : Minecraft.getInstance().player.getVehicle().getYRot()); });
+            cue(40, () -> {});
             String only = System.getProperty("bloodsea.cuts", "");
             String[] ids = only.isEmpty() ? new String[]{"rule", "gift", "moon", "bump", "dawn", "mem1", "eye", "bones", "lev", "mem2", "voice", "mirage", "throne", "maw", "edge", "taken"}
                     : only.split(",");

@@ -37,7 +37,7 @@ cages and skulls half sunk in the Bone Reach. They are solid: the generator lays
 Run the client with BLOODSEA_SHOWCOLL=1 to see those blocks as glass.
 
 ## The story: `/bloodsea start`
-You wake face down on a raft in a sea of blood, with a black cat you have never seen and a hand-drawn map. Who are you,
+Create a world and the story begins by itself: you wake face down on a raft in a sea of blood, with a black cat you have never seen and a hand-drawn map. Who are you,
 where is this, and why are you here? Everything outside the cutscenes is played in first person.
 
 - **The raft** is the whole world: sit at the steering oar (use it) and row with the movement keys. Stand on it when it is
@@ -45,7 +45,7 @@ where is this, and why are you here? Everything outside the cutscenes is played 
 - **Survival**: you get hungry. Food comes from floating crates of cargo (row into them or use them) and from Pip, who
   hooks fish out of the blood and brings them to you - more often the more you care for her. Stroke her (use, empty
   hand), feed her, and she purrs, rubs against you, sleeps on the blanket, hisses at what is in the water.
-- **18 cutscenes** with subtitled dialogue (English and Turkish, no spoken voice), and **timed choices**. Every choice weighs
+- **18 cutscenes** with subtitled dialogue that types itself out with a murmur per speaker (English and Turkish, no spoken voice), and **timed choices**. Every choice weighs
   hope, acceptance, courage or fury; what weighs most decides where the voyage ends:
   - *The Stomach* (the lighthouse): a hospital bed, Pip alive in your lap... and what is really there.
   - *Acceptance* (the throne of bones), *Return* (through the Leviathan), *The Fall* (the edge of the sea).
