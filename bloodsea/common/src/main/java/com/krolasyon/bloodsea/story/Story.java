@@ -349,7 +349,7 @@ public final class Story {
             case "bone" -> play(p, "throne", end);
             case "leviathan" -> play(p, "maw", () -> {
                 ServerLevel ow = p.server.overworld();
-                playAt(p, "rescue", Sets.rescue(ow), 0f, end);
+                playAt(p, "rescue", ow, Sets.rescue(ow), 0f, end);
             });
             default -> play(p, "edge", end);
         }
@@ -392,12 +392,14 @@ public final class Story {
         playAt(p, id, o, yaw, then);
     }
 
-    public static void playAt(ServerPlayer p, String id, Vec3 origin, float yaw, Runnable then) {
+    public static void playAt(ServerPlayer p, String id, Vec3 origin, float yaw, Runnable then) { playAt(p, id, p.serverLevel(), origin, yaw, then); }
+
+    public static void playAt(ServerPlayer p, String id, ServerLevel where, Vec3 origin, float yaw, Runnable then) {
         Cut c = Cuts.ALL.get(id);
         if (c == null) { then.run(); return; }
         Session old = SESSIONS.remove(p.getUUID());
         if (old != null) old.cleanup(false);
-        Session s = new Session(p, c, origin, yaw, then);
+        Session s = new Session(p, c, where, origin, yaw, then);
         SESSIONS.put(p.getUUID(), s);
         s.begin();
     }
@@ -437,11 +439,13 @@ public final class Story {
         boolean ended;
         long[] timeRamp;
 
-        Session(ServerPlayer p, Cut cut, Vec3 o, float yaw, Runnable then) {
-            this.p = p; this.cut = cut; this.o = o; this.yaw = yaw; this.then = then;
+        final ServerLevel where;
+
+        Session(ServerPlayer p, Cut cut, ServerLevel where, Vec3 o, float yaw, Runnable then) {
+            this.p = p; this.cut = cut; this.where = where; this.o = o; this.yaw = yaw; this.then = then;
         }
 
-        public ServerLevel lvl() { return p.serverLevel(); }
+        public ServerLevel lvl() { return where; }
 
         public Vec3 at(double lx, double ly, double lz) {
             double a = Math.toRadians(yaw), c = Math.cos(a), s = Math.sin(a);
