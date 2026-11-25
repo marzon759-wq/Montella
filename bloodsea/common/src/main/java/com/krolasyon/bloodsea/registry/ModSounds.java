@@ -19,11 +19,16 @@ public final class ModSounds {
             "caller_whisper", "caller_call", "caller_scream", "caller_wade", "caller_lunge",
             "changer_blink", "changer_scuttle", "changer_bite", "changer_squelch",
             "lev_heartbeat", "lev_roar", "lev_rise", "lev_bite",
-            "watcher_stare"};
+            "watcher_stare", "pip_meow", "pip_chirp", "pip_purr", "pip_hiss", "pip_scream", "blood_splash", "monitor_beep", "storm",
+            "stomach", "heartbeat_near"};
     private static final Map<String, RegistryObject<SoundEvent>> MAP = new HashMap<>();
 
     static {
         for (String n : NAMES) MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
+        for (String k : com.krolasyon.bloodsea.story.Lines.ALL.keySet()) {
+            String n = com.krolasyon.bloodsea.story.Lines.sound(k);
+            MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
+        }
     }
 
     public static SoundEvent get(String n) { return MAP.get(n).get(); }

@@ -88,8 +88,68 @@ public final class AutoTest {
         }
     }
 
+    /** wait for a cutscene to start, then pictures at these ticks into it */
+    static void shots(String cut, int... at) {
+        cue(1, () -> {});
+        int base = at.length > 0 ? 0 : 0;
+        int prev = 0;
+        for (int a : at) {
+            int d = a - prev;
+            prev = a;
+            cue(d, () -> shot("s_" + cut + "_" + String.format("%03d", Math.max(0, n))));
+        }
+        var c = com.krolasyon.bloodsea.story.Cuts.ALL.get(cut);
+        cue(Math.max(60, (c == null ? 0 : c.length) - prev + 140), () -> {});
+    }
+
+    static void stageShots(String stage, String cut, int... at) {
+        cue(5, () -> cmd("bloodsea stage " + stage));
+        cue(30, () -> {});
+        shots(cut, at);
+        cue(Math.max(60, 0), () -> {});
+    }
+
     private static void build() {
         at = 60;
+        if (mode.contains("story")) {
+            // the whole story, stage by stage, with pictures through every cutscene
+            String ending = mode.contains("bone") ? "accept" : mode.contains("lev") ? "courage" : mode.contains("edge") ? "fury" : "hope";
+            cue(0, () -> { cmd("gamemode survival"); cmd("bloodsea start"); });
+            if (mode.contains("full")) {
+                shots("wake", 60, 150, 260, 330, 420, 520, 640, 760);
+                cue(40, () -> cmd("execute as @s run ride @s mount @e[type=bloodsea:raft,limit=1,sort=nearest]"));
+                stageShots("rowing", "rule", 40, 120, 220);
+                stageShots("day1", "gift", 30, 120, 220);
+                stageShots("dusk", "moon", 60, 180, 280);
+                stageShots("night1", "bump", 30, 90, 160);
+                stageShots("night1b", "dawn", 80, 200);
+                shots("mem1", 120, 330, 420);
+                stageShots("north", "eye", 60, 160, 260);
+                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] 0.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " -900.5"); cmd("execute in bloodsea:blood_sea run tp @s 0.5 66 -900.5"); });
+                cue(60, () -> {});
+                stageShots("north2", "bones", 60, 160, 260, 380);
+                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] 800.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " 0.5"); cmd("execute in bloodsea:blood_sea run tp @s 800.5 66 0.5"); });
+                cue(60, () -> {});
+                stageShots("east", "lev", 60, 160, 260, 340);
+                cue(200, () -> {});
+                shots("mem2", 120, 330);
+                cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] -700.5 " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " 0.5"); cmd("execute in bloodsea:blood_sea run tp @s -700.5 66 0.5"); });
+                cue(60, () -> {});
+                stageShots("west", "voice", 60, 160, 260);
+                stageShots("fog", "taken", 60, 130, 200, 250, 270, 300, 340, 420, 560);
+                cue(300, () -> {});
+            } else {
+                cue(200, () -> {});
+            }
+            // the ending
+            double[] goal = switch (ending) { case "accept" -> new double[]{0.5, -1380}; case "courage" -> new double[]{1370, 0.5}; case "fury" -> new double[]{0.5, 1870}; default -> new double[]{-1410, 0.5}; };
+            cue(5, () -> cmd("bloodsea stage dest_" + ending));
+            cue(5, () -> { cmd("execute in bloodsea:blood_sea run tp @e[type=bloodsea:raft] " + goal[0] + " " + com.krolasyon.bloodsea.entity.RaftEntity.Y + " " + goal[1]); cmd("execute in bloodsea:blood_sea run tp @s " + goal[0] + " 66 " + goal[1]); });
+            cue(10, () -> cmd("bloodsea stage dest"));
+            for (int k = 0; k < 40; k++) { int kk = k; cue(60, () -> shot("z_" + ending + "_" + kk)); }
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("sea")) {
             cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("gamerule doMobSpawning false"); cmd("time set 4000"); cmd("bloodsea enter"); cmd("gamemode survival"); });
             cue(120, () -> { Minecraft.getInstance().options.hideGui = true; shot("w_deck"); });
@@ -245,6 +305,8 @@ public final class AutoTest {
             return;
         }
         n++;
+        if (mc.screen instanceof ChoiceScreen cs && n % 40 == 0) { shot("choice_" + n); cs.pick(0); }
+        if (mc.screen instanceof EndingScreen && n % 100 == 0) shot("ending_" + n);
         for (Object[] c : cues) if ((int) c[0] == n) {
             try { ((Runnable) c[1]).run(); } catch (Throwable t) { BloodSea.LOG.error("[AUTOTEST] cue failed", t); }
         }

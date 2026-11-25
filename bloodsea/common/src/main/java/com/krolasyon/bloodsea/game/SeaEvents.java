@@ -52,6 +52,9 @@ public final class SeaEvents {
     public static void onCommands(RegisterCommandsEvent e) {
         LiteralArgumentBuilder<CommandSourceStack> c = Commands.literal("bloodsea");
         c.then(Commands.literal("enter").executes(ctx -> { enter(ctx.getSource().getPlayerOrException()); return 1; }));
+        c.then(Commands.literal("start").executes(ctx -> { com.krolasyon.bloodsea.story.Story.start(ctx.getSource().getPlayerOrException()); return 1; }));
+        c.then(Commands.literal("stage").requires(s -> s.hasPermission(2)).then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
+                .executes(ctx -> { var p = ctx.getSource().getPlayerOrException(); com.krolasyon.bloodsea.story.Story.jump(p, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "name")); return 1; })));
         c.then(Commands.literal("leave").executes(ctx -> { leave(ctx.getSource().getPlayerOrException()); return 1; }));
         c.then(Commands.literal("summon").requires(s -> s.hasPermission(2))
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
@@ -116,7 +119,7 @@ public final class SeaEvents {
     private static final Map<UUID, Integer> BURN = new HashMap<>();
 
     public static void bloodTick(ServerPlayer p) {
-        if (!inSea(p) || p.isCreative() || p.isSpectator() || !p.isAlive()) { BURN.remove(p.getUUID()); return; }
+        if (!inSea(p) || p.isCreative() || p.isSpectator() || !p.isAlive() || com.krolasyon.bloodsea.story.Story.inCut(p)) { BURN.remove(p.getUUID()); return; }
         if (!p.isInFluidType(ModFluids.BLOOD_TYPE.get())) { BURN.remove(p.getUUID()); return; }
         int t = BURN.merge(p.getUUID(), 1, Integer::sum);
         if (t == 1) {
@@ -155,6 +158,8 @@ public final class SeaEvents {
 
     public static void onClientMsg(ServerPlayer p, Msg m) {
         if (m.type.equals("ending_done")) Endings.finish(p);
+        if (m.type.equals("cut_done")) com.krolasyon.bloodsea.story.Story.onCutDone(p);
+        if (m.type.equals("pick")) com.krolasyon.bloodsea.story.Story.onPick(p, m.s("id"), m.s("pick"));
     }
 
     // ================================================================== every tick, for each player
@@ -168,7 +173,7 @@ public final class SeaEvents {
         Regions.Region r = Regions.at(p.getX(), p.getZ());
         if (REGION.get(id) != r) {
             REGION.put(id, r);
-            title(p, "region.bloodsea." + Regions.key(r), "region.bloodsea." + Regions.key(r) + ".sub", 10, 70, 20);
+            if (!com.krolasyon.bloodsea.story.Story.inCut(p)) title(p, "region.bloodsea." + Regions.key(r), "region.bloodsea." + Regions.key(r) + ".sub", 10, 70, 20);
         }
         // ---- off the edge of the world
         if (r == Regions.Region.EDGE && Regions.dist(p.getX(), p.getZ()) > Regions.EDGE_R && p.getY() < Regions.SEA - 50) {
@@ -181,13 +186,14 @@ public final class SeaEvents {
         Boolean was = DAY.get(id);
         if (was == null || was != day) {
             DAY.put(id, day);
-            if (was != null) {
+            if (was != null && !com.krolasyon.bloodsea.story.Story.active(p)) {
                 title(p, day ? "sky.bloodsea.sun" : "sky.bloodsea.moon", day ? "sky.bloodsea.sun.sub" : "sky.bloodsea.moon.sub", 20, 80, 30);
                 lvl.playSound(null, p.blockPosition(), day ? SoundEvents.BEACON_ACTIVATE : SoundEvents.WARDEN_HEARTBEAT, SoundSource.AMBIENT, 1f, day ? 0.5f : 0.6f);
             }
         }
         if (p.tickCount % 20 != 0) return;
         if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
+        com.krolasyon.bloodsea.story.Story.tick(p);
         boolean inBlood = p.isInFluidType(ModFluids.BLOOD_TYPE.get());
         boolean open = lvl.canSeeSky(BlockPos.containing(p.getEyePosition()));
         if (day) {
@@ -196,14 +202,14 @@ public final class SeaEvents {
             double a = lvl.getSunAngle(1f);
             Vec3 sun = new Vec3(-Math.sin(a), Math.cos(a), 0);
             int s = STARE.getOrDefault(id, 0);
-            if (open && p.getViewVector(1f).dot(sun) > 0.985) {
+            if (open && com.krolasyon.bloodsea.story.Story.eyeOpen(p) && p.getViewVector(1f).dot(sun) > 0.985) {
                 s++;
                 if (s == 1) lvl.playSound(null, p.blockPosition(), com.krolasyon.bloodsea.registry.ModSounds.get("watcher_stare"), SoundSource.AMBIENT, 1.2f, 1f);
                 if (s >= 2) {
                     for (com.krolasyon.bloodsea.entity.SeaCreature c : lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.SeaCreature.class, p.getBoundingBox().inflate(120)))
                         c.alert(p);
-                    p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0, false, false));
                     p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 0, false, false));
+                    lvl.playSound(null, p.blockPosition(), com.krolasyon.bloodsea.registry.ModSounds.get("heartbeat_near"), SoundSource.AMBIENT, 1.5f, 1f);
                     actionBar(p, "msg.bloodsea.stare");
                     s = -6;
                 }
@@ -220,6 +226,20 @@ public final class SeaEvents {
                 lvl.playSound(null, p.getX() + lvl.random.nextGaussian() * 6, p.getY(), p.getZ() + lvl.random.nextGaussian() * 6,
                         SoundEvents.AMBIENT_CAVE.value(), SoundSource.AMBIENT, 0.7f, 0.6f + lvl.random.nextFloat() * 0.3f);
         }
+    }
+
+    /** dying out here puts you back on the raft */
+    @SubscribeEvent
+    public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !com.krolasyon.bloodsea.story.Story.active(p)) return;
+        p.server.execute(() -> {
+            ServerLevel sea = p.server.getLevel(SEA);
+            if (sea == null) return;
+            var raft = raftFor(sea, p);
+            var st = raft.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2);
+            p.teleportTo(sea, st.x, st.y, st.z, raft.getYRot(), 0f);
+            p.getFoodData().setFoodLevel(12);
+        });
     }
 
     static void title(ServerPlayer p, String title, String sub, int in, int stay, int out) {

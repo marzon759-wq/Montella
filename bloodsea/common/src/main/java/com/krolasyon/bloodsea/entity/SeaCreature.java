@@ -26,6 +26,8 @@ import net.minecraft.world.phys.Vec3;
 public abstract class SeaCreature extends CreatureBase {
     /** development: hold every creature still in the state it is given, to look at it */
     public static boolean FROZEN = false;
+    /** driven by a cutscene: its own brain is off */
+    public boolean scripted = false;
     protected int stateTicks;
     protected int life;
 
@@ -66,7 +68,7 @@ public abstract class SeaCreature extends CreatureBase {
     @Override
     public void tick() {
         super.tick();
-        if (FROZEN) {
+        if (FROZEN || scripted) {
             this.yBodyRot = getYRot();
             this.yHeadRot = getYRot();
             if (noPhysics) setDeltaMovement(Vec3.ZERO);

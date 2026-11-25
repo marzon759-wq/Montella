@@ -1229,3 +1229,7 @@ def build(creature):
 if __name__ == "__main__":
     for c in ANIMS:
         print(c, build(c), "animations")
+    # the fisherman moves like Elias
+    d = json.load(open(os.path.join(A, "elias.animation.json")))
+    d["animations"] = {k.replace("animation.elias.", "animation.rescuer."): v for k, v in d["animations"].items()}
+    json.dump(d, open(os.path.join(A, "rescuer.animation.json"), "w"), separators=(",", ":"))

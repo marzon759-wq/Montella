@@ -19,6 +19,7 @@ public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, BloodSea.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, BloodSea.MODID);
 
+    public static final RegistryObject<Item> SEA_MAP = ITEMS.register("sea_map", () -> new com.krolasyon.bloodsea.item.SeaMapItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> BLOOD_BUCKET = ITEMS.register("blood_bucket",
             () -> new BucketItem(ModFluids.BLOOD, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 

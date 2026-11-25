@@ -66,12 +66,9 @@ public class RaftEntity extends RaftBase {
     protected void positionRider(Entity e, Entity.MoveFunction f) {
         // the rower at the stern by the oar, anyone else (the cat) on the blanket at the back left
         boolean rower = e == getControllingPassenger();
-        double lx = rower ? 0 : -1.4, lz = rower ? 1.55 : 1.45;
-        double yaw = Math.toRadians(getYRot());
-        double c = Math.cos(yaw), s = Math.sin(yaw);
-        double wx = getX() + lx * c - lz * s, wz = getZ() + lx * s + lz * c;
-        double y = getY() + TOP + bob(1f) + (rower ? -0.05 : 0.0);
-        f.accept(e, wx, y + (e instanceof Player ? -0.45 : 0), wz);
+        Vec3 w = local(rower ? 0 : -1.4, 0, rower ? -1.75 : -1.45);
+        double y = getY() + TOP + bob(1f);
+        f.accept(e, w.x, y + (e instanceof Player ? -0.35 : 0), w.z);
         if (rower) {
             e.setYBodyRot(getYRot());
         }
@@ -79,8 +76,8 @@ public class RaftEntity extends RaftBase {
 
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity e) {
-        double yaw = Math.toRadians(getYRot());
-        return new Vec3(getX() - Math.sin(yaw) * 0.0 + Math.cos(yaw) * 0.0, getY() + TOP + 0.01, getZ() + Math.cos(yaw) * 1.4);
+        Vec3 w = local(0, TOP + 0.01, -1.2);
+        return new Vec3(w.x, w.y, w.z);
     }
 
     @Override
@@ -122,6 +119,14 @@ public class RaftEntity extends RaftBase {
             level().addParticle(new DustParticleOptions(new Vector3f(0.45f, 0.02f, 0.03f), 1.6f),
                     getX() + back.x + (random.nextFloat() - 0.5) * 3, Waves.MEAN + 0.1, getZ() + back.z + (random.nextFloat() - 0.5) * 3, 0, 0.05, 0);
         }
+    }
+
+    /** a point on the raft in its own frame: x to the left, y up from the waterline, z toward the bow, in blocks.
+     * The model's pixels map to it as (mx, my, -mz) / 16. */
+    public Vec3 local(double lx, double ly, double lz) {
+        double yaw = Math.toRadians(getYRot());
+        double c = Math.cos(yaw), s = Math.sin(yaw);
+        return new Vec3(getX() + lx * c - lz * s, getY() + ly, getZ() + lx * s + lz * c);
     }
 
     /** the deck you can stand on, in the world */

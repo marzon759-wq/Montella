@@ -1452,7 +1452,7 @@ CREATURES["pip"] = pip
 
 
 # ============================================================================ Elias, the man on the raft (cutscene actor)
-def elias():
+def elias(name="elias"):
     """a fisherman in his thirties: a dark wool sweater torn at one sleeve, oilskin trousers, boots, a week of beard,
     hair stiff with dried blood. Rigged like a person: hips, spine, chest, neck, head, jaw, eyelids, arms and legs in
     three pieces each."""
@@ -1469,6 +1469,9 @@ def elias():
         hair = ramp(0.5 * n1 + 0.5 * n2, [(0, "#120c08"), (0.6, "#2a1c12"), (1, "#3e2a1c")])
         knit = vnoise(x * 3, y * 6, z * 3, 1.0, 163)
         sweater = ramp(0.4 * n1 + 0.6 * knit, [(0, "#14181e"), (0.5, "#222a36"), (1, "#323e4e")])
+        if name == "rescuer":     # an old fisherman in yellow oilskins, grey in the beard
+            hair = ramp(0.5 * n1 + 0.5 * n2, [(0, "#4a4844"), (1, "#9a968e")])
+            sweater = ramp(0.5 * n1 + 0.5 * n2, [(0, "#6a5410"), (0.5, "#b08e1c"), (1, "#d8b432")])
         trousers = ramp(0.5 * n1 + 0.5 * n2, [(0, "#1e1a14"), (0.5, "#3a3226"), (1, "#54483a")])
         boots = ramp(n2, [(0, "#0c0a08"), (1, "#2a221c")])
         belt = ramp(n2, [(0, "#1a120c"), (1, "#4a3420")])
@@ -1488,10 +1491,12 @@ def elias():
         stain = np.clip((fbm(x, y, z, 5, 165) - 0.55) * 3, 0, 0.8)[:, None]
         k = np.clip(drip * 0.7 + stain, 0, 0.85)
         k = np.where((mat == 7)[:, None], 0, k)
+        if name == "rescuer":
+            k = k * 0.0
         out = out * (1 - k) + blood * k
         return out * (0.5 + 0.5 * np.clip(ao, 0, 1.1))[:, None]
 
-    c = Creature("elias", paint, 1024)
+    c = Creature(name, paint, 1024)
     c.bone("root", (0, 0, 0))
     c.bone("hips", (0, 14.6, 0), "root")
     c.bone("torso", (0, 17.2, 0), "hips")
@@ -1640,6 +1645,7 @@ def elias():
 
 
 CREATURES["elias"] = elias
+CREATURES["rescuer"] = lambda: elias("rescuer")
 
 
 if __name__ == "__main__":

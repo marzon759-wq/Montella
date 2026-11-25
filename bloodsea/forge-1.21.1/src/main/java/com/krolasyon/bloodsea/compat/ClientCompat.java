@@ -27,6 +27,8 @@ public final class ClientCompat {
         bus.addListener((RegisterDimensionSpecialEffectsEvent e) -> e.register(Compat.rl("blood_sea"), new SeaSky()));
         com.krolasyon.bloodsea.client.AutoTest.init();
         MinecraftForge.EVENT_BUS.addListener(ClientCompat::drawSea);
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.CustomizeGuiOverlayEvent.Chat e) ->
+                com.krolasyon.bloodsea.client.StoryHud.render(e.getGuiGraphics(), e.getPartialTick(), e.getWindow().getGuiScaledWidth(), e.getWindow().getGuiScaledHeight()));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent.Post e) -> com.krolasyon.bloodsea.client.AutoTest.tick());
     }
 
@@ -54,6 +56,7 @@ public final class ClientCompat {
     static final ResourceLocation SUN = Compat.rl("textures/environment/pale_sun.png");
     static final ResourceLocation MOON = Compat.rl("textures/environment/blood_moon.png");
     static final ResourceLocation GLOW = Compat.rl("textures/environment/glow.png");
+    static final ResourceLocation VANILLA_SUN = Compat.rl("minecraft", "textures/environment/sun.png");
     static final ResourceLocation EYE = Compat.rl("textures/environment/watcher_eye.png");
     static final ResourceLocation PUPIL = Compat.rl("textures/environment/watcher_pupil.png");
     static final ResourceLocation LID = Compat.rl("textures/environment/watcher_lid.png");
@@ -90,25 +93,37 @@ public final class ClientCompat {
             RenderSystem.enableBlend();
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             // the Pale Sun is the Watcher: veins across the sky, a halo, and an eye that blinks and looks about
-            float blink = com.krolasyon.bloodsea.client.WatcherClient.blink(pt), stare = com.krolasyon.bloodsea.client.WatcherClient.stare(pt);
+            float eo = com.krolasyon.bloodsea.client.WatcherClient.openness(pt);
+            float blink = 1f - eo * (1f - com.krolasyon.bloodsea.client.WatcherClient.blink(pt)), stare = com.krolasyon.bloodsea.client.WatcherClient.stare(pt) * eo;
             float pu = com.krolasyon.bloodsea.client.WatcherClient.pupil(pt);
             float lx = com.krolasyon.bloodsea.client.WatcherClient.lookX(pt), ly = com.krolasyon.bloodsea.client.WatcherClient.lookY(pt);
             final float E = 44f;
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderTexture(0, VEINS);
             float up = (float) Math.max(0, Math.cos(level.getSunAngle(pt)) + 0.15);
-            RenderSystem.setShaderColor(1f, 1f, 1f, Math.min(1f, up * 2f) * (0.5f + 0.45f * stare));
+            RenderSystem.setShaderColor(1f, 1f, 1f, eo * Math.min(1f, up * 2f) * (0.5f + 0.45f * stare));
             rect(m, 0, 0, 250, 250, 100);
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
             RenderSystem.setShaderTexture(0, GLOW);
-            RenderSystem.setShaderColor(1f, 0.96f, 0.93f, 0.5f + 0.2f * stare);
+            RenderSystem.setShaderColor(1f, 0.96f - 0.1f * (1 - eo), 0.93f - 0.25f * (1 - eo), 0.35f + 0.15f * eo + 0.2f * stare);
             quad(m, 110, 100, true, false);
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            // before it opens it is only a sun: warm, ordinary
+            if (eo < 1f) {
+                RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+                RenderSystem.setShaderTexture(0, VANILLA_SUN);
+                RenderSystem.setShaderColor(1f, 0.92f, 0.78f, 1f - eo);
+                rect(m, 0, 0, 30, 30, 100);
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            }
+            RenderSystem.setShaderColor(1f, 1f, 1f, eo);
             RenderSystem.setShaderTexture(0, LID);
             rect(m, 0, 0, E * 1.04f, E * 1.04f, 100);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
             float open = 1f - blink;
-            if (open > 0.02f) {
+            if (open > 0.02f && eo > 0.02f) {
                 RenderSystem.setShaderTexture(0, EYE);
                 rect(m, 0, 0, E, E * open, 100);
                 // the iris glows

@@ -47,4 +47,8 @@ public final class Compat {
     public static void sendToPlayer(ServerPlayer p, Msg m) { CH.send(PacketDistributor.PLAYER.with(() -> p), m); }
 
     public static void sendToServer(Msg m) { CH.sendToServer(m); }
+
+    public static net.minecraft.world.item.ItemStack named(net.minecraft.world.item.ItemStack s, net.minecraft.network.chat.Component c) { s.setHoverName(c); return s; }
+
+    public static boolean edible(net.minecraft.world.item.ItemStack s) { return s.isEdible(); }
 }

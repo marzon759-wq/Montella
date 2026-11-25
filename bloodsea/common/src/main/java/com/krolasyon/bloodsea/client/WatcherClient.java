@@ -15,6 +15,14 @@ public final class WatcherClient {
     private static float pupil = 1f, pupilO = 1f, stare, stareO;
     private static int nextSaccade, blinkT, blinkO;
     private static final int BLINK = 9;
+    private static int openT;
+    private static float open, openO;
+
+    /** the story opens the eye for a while (0 shuts it) */
+    public static void open(int ticks) { openT = ticks; }
+
+    /** 0: the sun is only a sun; 1: the eye is wide open */
+    public static float openness(float pt) { return Mth.lerp(pt, openO, open); }
 
     private WatcherClient() {}
 
@@ -23,6 +31,9 @@ public final class WatcherClient {
         if (mc.level == null || mc.player == null || mc.level.dimension() != SeaEvents.SEA || mc.isPaused()) return;
         ppx = px;
         ppy = py;
+        openO = open;
+        if (openT > 0) openT--;
+        open = Mth.approach(open, openT > 0 ? 1f : 0f, openT > 0 ? 0.025f : 0.04f);
         pupilO = pupil;
         stareO = stare;
         blinkO = blinkT;

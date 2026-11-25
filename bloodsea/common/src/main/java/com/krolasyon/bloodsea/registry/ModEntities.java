@@ -29,12 +29,24 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<RaftEntity>> RAFT = ENTITIES.register("raft", () -> EntityType.Builder.<RaftEntity>of(RaftEntity::new, MobCategory.MISC)
             .sized(5f, 0.55f).clientTrackingRange(16).updateInterval(1).fireImmune().build("raft"));
 
+    public static final RegistryObject<EntityType<PipEntity>> PIP = ENTITIES.register("pip", () -> EntityType.Builder.<PipEntity>of(PipEntity::new, MobCategory.MISC)
+            .sized(0.55f, 0.6f).clientTrackingRange(10).updateInterval(2).build("pip"));
+    public static final RegistryObject<EntityType<ActorEntity>> ACTOR = ENTITIES.register("elias", () -> EntityType.Builder.<ActorEntity>of(ActorEntity::new, MobCategory.MISC)
+            .sized(0.6f, 1.8f).clientTrackingRange(10).updateInterval(1).build("elias"));
+    public static final RegistryObject<EntityType<RescuerEntity>> RESCUER = ENTITIES.register("rescuer", () -> EntityType.Builder.<RescuerEntity>of(RescuerEntity::new, MobCategory.MISC)
+            .sized(0.6f, 1.8f).clientTrackingRange(10).updateInterval(1).build("rescuer"));
+    public static final RegistryObject<EntityType<CrateEntity>> CRATE = ENTITIES.register("crate", () -> EntityType.Builder.<CrateEntity>of(CrateEntity::new, MobCategory.MISC)
+            .sized(1.4f, 1.0f).clientTrackingRange(10).updateInterval(5).build("crate"));
+
     public static void attributes(net.minecraftforge.event.entity.EntityAttributeCreationEvent e) {
         e.put(WAKE.get(), WakeEntity.attributes(200, 0.3).build());
         e.put(GATHERER.get(), GathererEntity.attributes(300, 0.25).build());
         e.put(CALLER.get(), CallerEntity.attributes(200, 0.25).build());
         e.put(CHANGER.get(), ChangerEntity.attributes(20, 0.32).build());
         e.put(LEVIATHAN.get(), LeviathanEntity.attributes(2000, 0.2).build());
+        e.put(PIP.get(), PipEntity.attributes(20, 0.32).build());
+        e.put(ACTOR.get(), ActorEntity.attributes(20, 0.2).build());
+        e.put(RESCUER.get(), ActorEntity.attributes(20, 0.2).build());
     }
 
     private ModEntities() {}

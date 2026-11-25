@@ -33,6 +33,10 @@ public final class Creatures {
 
     /** called every 20 ticks for a player in the sea */
     public static void tick(ServerPlayer p, ServerLevel lvl, Regions.Region r) {
+        if (com.krolasyon.bloodsea.story.Story.active(p)) {
+            storyTick(p, lvl, r);
+            return;
+        }
         boolean day = SeaTime.isDay(lvl);
         UUID id = p.getUUID();
         double dist = Regions.dist(p.getX(), p.getZ());
@@ -61,6 +65,17 @@ public final class Creatures {
                 if (spawn(lvl, p, "leviathan")) LEV_COOLDOWN.put(id, 240);
             }
         }
+    }
+
+    /** during the story only what the story allows comes, and less often */
+    private static void storyTick(ServerPlayer p, ServerLevel lvl, Regions.Region r) {
+        boolean day = SeaTime.isDay(lvl);
+        boolean onBlood = p.getVehicle() != null;
+        if (!day && onBlood && com.krolasyon.bloodsea.story.Story.allows(p, "wake") && none(lvl, p, ModEntities.WAKE.get(), 110) && lvl.random.nextInt(40) == 0) spawn(lvl, p, "wake");
+        if (com.krolasyon.bloodsea.story.Story.allows(p, "changer") && Regions.dist(p.getX(), p.getZ()) > 0 && p.getVehicle() == null
+                && none(lvl, p, ModEntities.CHANGER.get(), 40) && lvl.random.nextInt(day ? 240 : 120) == 0) spawn(lvl, p, "changer");
+        if (r == Regions.Region.BONES && com.krolasyon.bloodsea.story.Story.allows(p, "gatherer") && none(lvl, p, ModEntities.GATHERER.get(), 110) && lvl.random.nextInt(60) == 0) spawn(lvl, p, "gatherer");
+        if (r == Regions.Region.MIRAGE && com.krolasyon.bloodsea.story.Story.allows(p, "caller") && none(lvl, p, ModEntities.CALLER.get(), 120) && lvl.random.nextInt(60) == 0) spawn(lvl, p, "caller");
     }
 
     private static boolean none(ServerLevel lvl, ServerPlayer p, EntityType<?> t, double r) {

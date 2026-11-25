@@ -33,10 +33,24 @@ public final class ClientSetup {
                 e.setPitch(e.getPitch() + s[0]);
                 e.setRoll(e.getRoll() + s[1]);
             }
+            float[] k = StoryHud.shake((float) e.getPartialTick());
+            if (k != null) {
+                e.setPitch(e.getPitch() + k[0]);
+                e.setYaw(e.getYaw() + k[1]);
+                e.setRoll(e.getRoll() + k[2]);
+            }
         });
+        MinecraftForge.EVENT_BUS.addListener((ViewportEvent.ComputeFov e) -> {
+            if (CutScreen.fov > 0 && Minecraft.getInstance().screen instanceof CutScreen) e.setFOV(CutScreen.fov);
+        });
+        com.krolasyon.bloodsea.item.SeaMapItem.OPEN = () -> Minecraft.getInstance().setScreen(new MapScreen());
         bus.addListener((net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> {
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GIANT.get(), GiantRenderer::new);
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.RAFT.get(), RaftRenderer::new);
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.PIP.get(), c -> new CreatureRenderer<>(c, "pip", 0.25f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.ACTOR.get(), c -> new CreatureRenderer<>(c, "elias", 0.4f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.RESCUER.get(), c -> new CreatureRenderer<>(c, "rescuer", 0.4f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.CRATE.get(), CrateRenderer::new);
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.WAKE.get(), c -> new CreatureRenderer<>(c, "wake", 0f));
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GATHERER.get(), c -> new CreatureRenderer<>(c, "gatherer", 0f));
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.CALLER.get(), c -> new CreatureRenderer<>(c, "caller", 0f));

@@ -20,6 +20,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /** GeckoLib and synched data plumbing for the living things of the Blood Sea (Forge 1.20.1 / GeckoLib 4.4). */
 public abstract class CreatureBase extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Integer> STATE = SynchedEntityData.defineId(CreatureBase.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> ANIM = SynchedEntityData.defineId(CreatureBase.class, EntityDataSerializers.STRING);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     protected CreatureBase(EntityType<? extends PathfinderMob> type, Level level) {
@@ -36,10 +37,15 @@ public abstract class CreatureBase extends PathfinderMob implements GeoEntity {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(STATE, 0);
+        this.entityData.define(ANIM, "");
     }
 
     public int getState() { return this.entityData.get(STATE); }
     public void setState(int s) { this.entityData.set(STATE, s); }
+
+    /** an animation forced on it by a cutscene ("" for none): it wins over the creature's own choice */
+    public String getAnim() { return this.entityData.get(ANIM); }
+    public void setAnim(String a) { this.entityData.set(ANIM, a == null ? "" : a); }
 
     /** the creature's name in its animation file: animation.KIND.name */
     public abstract String kind();
@@ -59,7 +65,7 @@ public abstract class CreatureBase extends PathfinderMob implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar reg) {
         reg.add(new AnimationController<>(this, "move", 6, st -> {
-            String a = loopAnim();
+            String a = getAnim().isEmpty() ? loopAnim() : getAnim();
             String full = "animation." + kind() + "." + a;
             return st.setAndContinue(holds(a) ? RawAnimation.begin().thenPlayAndHold(full) : RawAnimation.begin().thenLoop(full));
         }));
