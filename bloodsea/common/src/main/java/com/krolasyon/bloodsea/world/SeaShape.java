@@ -306,12 +306,16 @@ public final class SeaShape {
 
     // ================================================================== the raft at the start
     private static void raft(int x, int z, BlockState[] col) {
-        if (Math.abs(x) <= 2 && Math.abs(z) <= 2) {
+        if (Math.abs(x) <= 3 && Math.abs(z) <= 3) {
             put(col, SEA, Blocks.SPRUCE_PLANKS.defaultBlockState());
-            if (x == 0 && z == -2) {
+            if (x == 0 && z == -3) {
                 fill(col, SEA + 1, SEA + 4, Blocks.SPRUCE_FENCE.defaultBlockState());
                 put(col, SEA + 5, Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, false));
             }
+            // the cargo: barrels lashed at the corners. One of them, some nights, is not a barrel.
+            BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(net.minecraft.world.level.block.BarrelBlock.FACING, Direction.UP);
+            if ((x == 3 && z == 3) || (x == 2 && z == 3) || (x == -3 && z == 3) || (x == -3 && z == -2)) put(col, SEA + 1, barrel);
+            if (x == 3 && z == 3) put(col, SEA + 2, barrel);
         }
     }
 

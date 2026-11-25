@@ -32,6 +32,10 @@ public final class ClientCompat {
     static final ResourceLocation SUN = Compat.rl("textures/environment/pale_sun.png");
     static final ResourceLocation MOON = Compat.rl("textures/environment/blood_moon.png");
     static final ResourceLocation GLOW = Compat.rl("textures/environment/glow.png");
+    static final ResourceLocation EYE = Compat.rl("textures/environment/watcher_eye.png");
+    static final ResourceLocation PUPIL = Compat.rl("textures/environment/watcher_pupil.png");
+    static final ResourceLocation LID = Compat.rl("textures/environment/watcher_lid.png");
+    static final ResourceLocation VEINS = Compat.rl("textures/environment/watcher_veins.png");
 
     public static class SeaSky extends DimensionSpecialEffects {
         public SeaSky() { super(Float.NaN, true, SkyType.NORMAL, false, false); }
@@ -63,14 +67,37 @@ public final class ClientCompat {
             Matrix4f m = ps.last().pose();
             RenderSystem.enableBlend();
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            // the Pale Sun: white, too big, too bright - a halo first, then the disc
+            // the Pale Sun is the Watcher: veins across the sky, a halo, and an eye that blinks and looks about
+            float blink = com.krolasyon.bloodsea.client.WatcherClient.blink(pt), stare = com.krolasyon.bloodsea.client.WatcherClient.stare(pt);
+            float pu = com.krolasyon.bloodsea.client.WatcherClient.pupil(pt);
+            float lx = com.krolasyon.bloodsea.client.WatcherClient.lookX(pt), ly = com.krolasyon.bloodsea.client.WatcherClient.lookY(pt);
+            final float E = 44f;
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShaderTexture(0, VEINS);
+            float up = (float) Math.max(0, Math.cos(level.getSunAngle(pt)) + 0.15);
+            RenderSystem.setShaderColor(1f, 1f, 1f, Math.min(1f, up * 2f) * (0.5f + 0.45f * stare));
+            rect(m, 0, 0, 250, 250, 100);
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
             RenderSystem.setShaderTexture(0, GLOW);
-            RenderSystem.setShaderColor(1f, 0.97f, 0.95f, 0.55f);
-            quad(m, 95, 100, true, false);
+            RenderSystem.setShaderColor(1f, 0.96f, 0.93f, 0.5f + 0.2f * stare);
+            quad(m, 110, 100, true, false);
+            RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            RenderSystem.setShaderTexture(0, SUN);
-            quad(m, 38, 100, true, false);
+            RenderSystem.setShaderTexture(0, LID);
+            rect(m, 0, 0, E * 1.04f, E * 1.04f, 100);
+            float open = 1f - blink;
+            if (open > 0.02f) {
+                RenderSystem.setShaderTexture(0, EYE);
+                rect(m, 0, 0, E, E * open, 100);
+                // the iris glows
+                RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+                RenderSystem.setShaderColor(1f, 1f, 1f, 0.2f + 0.2f * stare);
+                rect(m, 0, 0, E, E * open, 100);
+                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderTexture(0, PUPIL);
+                rect(m, lx * E, ly * E * open, E * 0.42f * (0.5f + 0.5f * pu), E * 0.62f * open, 100);
+            }
             // the Blood Moon: a red halo and a red face
             RenderSystem.setShaderTexture(0, GLOW);
             RenderSystem.setShaderColor(0.9f, 0.05f, 0.02f, 0.65f);
@@ -84,6 +111,16 @@ public final class ClientCompat {
             RenderSystem.enableCull();
             RenderSystem.depthMask(true);
             return true;
+        }
+
+        /** a textured rectangle centred at (cx, cz) on the plane y, half sizes hx, hz */
+        private static void rect(Matrix4f m, float cx, float cz, float hx, float hz, float y) {
+            BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            bb.addVertex(m, cx - hx, y, cz - hz).setUv(0, 0);
+            bb.addVertex(m, cx + hx, y, cz - hz).setUv(1, 0);
+            bb.addVertex(m, cx + hx, y, cz + hz).setUv(1, 1);
+            bb.addVertex(m, cx - hx, y, cz + hz).setUv(0, 1);
+            BufferUploader.drawWithShader(bb.buildOrThrow());
         }
 
         private static void quad(Matrix4f m, float s, float y, boolean tex, boolean flip) {

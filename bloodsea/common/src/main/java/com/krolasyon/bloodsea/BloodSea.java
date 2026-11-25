@@ -32,6 +32,8 @@ public class BloodSea {
         ModItems.ITEMS.register(bus);
         ModItems.TABS.register(bus);
         com.krolasyon.bloodsea.registry.ModEntities.ENTITIES.register(bus);
+        com.krolasyon.bloodsea.registry.ModSounds.SOUNDS.register(bus);
+        bus.addListener(com.krolasyon.bloodsea.registry.ModEntities::attributes);
         WorldCompat.register(bus);
         bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(Compat::initNetwork));
         ServerCompat.init();

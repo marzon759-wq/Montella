@@ -53,6 +53,24 @@ public final class SeaEvents {
         LiteralArgumentBuilder<CommandSourceStack> c = Commands.literal("bloodsea");
         c.then(Commands.literal("enter").executes(ctx -> { enter(ctx.getSource().getPlayerOrException()); return 1; }));
         c.then(Commands.literal("leave").executes(ctx -> { leave(ctx.getSource().getPlayerOrException()); return 1; }));
+        c.then(Commands.literal("summon").requires(s -> s.hasPermission(2))
+                .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .suggests((ctx, b) -> net.minecraft.commands.SharedSuggestionProvider.suggest(new String[]{"wake", "gatherer", "caller", "changer", "leviathan"}, b))
+                        .executes(ctx -> {
+                            ServerPlayer p = ctx.getSource().getPlayerOrException();
+                            boolean ok = Creatures.spawn(p.serverLevel(), p, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind"));
+                            return ok ? 1 : 0;
+                        })));
+        c.then(Commands.literal("debug").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("freeze").then(Commands.argument("on", com.mojang.brigadier.arguments.BoolArgumentType.bool()).executes(ctx -> {
+                    com.krolasyon.bloodsea.entity.SeaCreature.FROZEN = com.mojang.brigadier.arguments.BoolArgumentType.getBool(ctx, "on");
+                    return 1;
+                })))
+                .then(Commands.literal("state").then(Commands.argument("s", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0))
+                        .executes(ctx -> debugState(ctx.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "s"), null))
+                        .then(Commands.argument("action", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
+                                debugState(ctx.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "s"),
+                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "action")))))));
         c.then(Commands.literal("where").executes(ctx -> {
             ServerPlayer p = ctx.getSource().getPlayerOrException();
             Regions.Region r = Regions.at(p.getX(), p.getZ());
@@ -60,6 +78,14 @@ public final class SeaEvents {
             return 1;
         }));
         e.getDispatcher().register(c);
+    }
+
+    private static int debugState(ServerPlayer p, int state, String action) {
+        for (com.krolasyon.bloodsea.entity.SeaCreature c : p.serverLevel().getEntitiesOfClass(com.krolasyon.bloodsea.entity.SeaCreature.class, p.getBoundingBox().inflate(120))) {
+            c.go(state);
+            if (action != null) c.playAction(action);
+        }
+        return 1;
     }
 
     public static void enter(ServerPlayer p) {
@@ -128,6 +154,7 @@ public final class SeaEvents {
             }
         }
         if (p.tickCount % 20 != 0) return;
+        if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
         boolean inBlood = p.isInFluidType(ModFluids.BLOOD_TYPE.get());
         boolean open = lvl.canSeeSky(BlockPos.containing(p.getEyePosition()));
         if (day) {
@@ -138,7 +165,10 @@ public final class SeaEvents {
             int s = STARE.getOrDefault(id, 0);
             if (open && p.getViewVector(1f).dot(sun) > 0.985) {
                 s++;
+                if (s == 1) lvl.playSound(null, p.blockPosition(), com.krolasyon.bloodsea.registry.ModSounds.get("watcher_stare"), SoundSource.AMBIENT, 1.2f, 1f);
                 if (s >= 2) {
+                    for (com.krolasyon.bloodsea.entity.SeaCreature c : lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.SeaCreature.class, p.getBoundingBox().inflate(120)))
+                        c.alert(p);
                     p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0, false, false));
                     p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 0, false, false));
                     actionBar(p, "msg.bloodsea.stare");

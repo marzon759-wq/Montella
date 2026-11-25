@@ -23,8 +23,14 @@ public final class ClientSetup {
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.MIRAGE_LEAVES.get(), RenderType.cutoutMipped());
         }));
         ClientCompat.init(bus);
-        bus.addListener((net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
-                e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GIANT.get(), GiantRenderer::new));
+        bus.addListener((net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> {
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GIANT.get(), GiantRenderer::new);
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.WAKE.get(), c -> new CreatureRenderer<>(c, "wake", 0f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GATHERER.get(), c -> new CreatureRenderer<>(c, "gatherer", 0f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.CALLER.get(), c -> new CreatureRenderer<>(c, "caller", 0f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.CHANGER.get(), c -> new CreatureRenderer<>(c, "changer", 0.6f));
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.LEVIATHAN.get(), c -> new CreatureRenderer<>(c, "leviathan", 0f));
+        });
         // each region has its own air: the Mirage is a haze, the Deep is close and dark, the Edge is white and far
         MinecraftForge.EVENT_BUS.addListener((ViewportEvent.RenderFog e) -> {
             Minecraft mc = Minecraft.getInstance();

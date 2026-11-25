@@ -624,10 +624,14 @@ TR = {
 
 
 def gen_lang():
-    W(f"assets/{NS}/lang/en_us.json", EN)
+    """written over what is there, keeping keys other tools added (the creatures' names and subtitles)"""
     missing = [k for k in EN if k not in TR]
     assert not missing, missing
-    W(f"assets/{NS}/lang/tr_tr.json", TR)
+    for f, d in (("en_us", EN), ("tr_tr", TR)):
+        p = os.path.join(R, f"assets/{NS}/lang/{f}.json")
+        old = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+        old.update(d)
+        W(f"assets/{NS}/lang/{f}.json", old)
 
 
 def gen_textures():

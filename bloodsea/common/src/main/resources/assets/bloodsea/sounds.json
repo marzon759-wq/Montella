@@ -1,0 +1,156 @@
+{
+ "wake_swim": {
+  "sounds": [
+   "bloodsea:wake_swim0",
+   "bloodsea:wake_swim1"
+  ],
+  "subtitle": "subtitles.bloodsea.wake_swim"
+ },
+ "wake_surface": {
+  "sounds": [
+   "bloodsea:wake_surface"
+  ],
+  "subtitle": "subtitles.bloodsea.wake_surface"
+ },
+ "wake_lunge": {
+  "sounds": [
+   "bloodsea:wake_lunge"
+  ],
+  "subtitle": "subtitles.bloodsea.wake_lunge"
+ },
+ "gatherer_rattle": {
+  "sounds": [
+   "bloodsea:gatherer_rattle0",
+   "bloodsea:gatherer_rattle1",
+   "bloodsea:gatherer_rattle2"
+  ],
+  "subtitle": "subtitles.bloodsea.gatherer_rattle"
+ },
+ "gatherer_step": {
+  "sounds": [
+   "bloodsea:gatherer_step0",
+   "bloodsea:gatherer_step1",
+   "bloodsea:gatherer_step2"
+  ],
+  "subtitle": "subtitles.bloodsea.gatherer_step"
+ },
+ "gatherer_roar": {
+  "sounds": [
+   "bloodsea:gatherer_roar"
+  ],
+  "subtitle": "subtitles.bloodsea.gatherer_roar"
+ },
+ "gatherer_assemble": {
+  "sounds": [
+   "bloodsea:gatherer_assemble"
+  ],
+  "subtitle": "subtitles.bloodsea.gatherer_assemble"
+ },
+ "gatherer_swipe": {
+  "sounds": [
+   "bloodsea:gatherer_swipe"
+  ],
+  "subtitle": "subtitles.bloodsea.gatherer_swipe"
+ },
+ "caller_whisper": {
+  "sounds": [
+   "bloodsea:caller_whisper0",
+   "bloodsea:caller_whisper1",
+   "bloodsea:caller_whisper2",
+   "bloodsea:caller_whisper3",
+   "bloodsea:caller_whisper4",
+   "bloodsea:caller_whisper5",
+   "bloodsea:caller_whisper6"
+  ],
+  "subtitle": "subtitles.bloodsea.caller_whisper"
+ },
+ "caller_call": {
+  "sounds": [
+   "bloodsea:caller_call0",
+   "bloodsea:caller_call1",
+   "bloodsea:caller_call2",
+   "bloodsea:caller_call3",
+   "bloodsea:caller_call4",
+   "bloodsea:caller_call5"
+  ],
+  "subtitle": "subtitles.bloodsea.caller_call"
+ },
+ "caller_scream": {
+  "sounds": [
+   "bloodsea:caller_scream"
+  ],
+  "subtitle": "subtitles.bloodsea.caller_scream"
+ },
+ "caller_wade": {
+  "sounds": [
+   "bloodsea:caller_wade0",
+   "bloodsea:caller_wade1",
+   "bloodsea:caller_wade2"
+  ],
+  "subtitle": "subtitles.bloodsea.caller_wade"
+ },
+ "caller_lunge": {
+  "sounds": [
+   "bloodsea:caller_lunge"
+  ],
+  "subtitle": "subtitles.bloodsea.caller_lunge"
+ },
+ "changer_blink": {
+  "sounds": [
+   "bloodsea:changer_blink0",
+   "bloodsea:changer_blink1"
+  ],
+  "subtitle": "subtitles.bloodsea.changer_blink"
+ },
+ "changer_scuttle": {
+  "sounds": [
+   "bloodsea:changer_scuttle0",
+   "bloodsea:changer_scuttle1",
+   "bloodsea:changer_scuttle2"
+  ],
+  "subtitle": "subtitles.bloodsea.changer_scuttle"
+ },
+ "changer_bite": {
+  "sounds": [
+   "bloodsea:changer_bite"
+  ],
+  "subtitle": "subtitles.bloodsea.changer_bite"
+ },
+ "changer_squelch": {
+  "sounds": [
+   "bloodsea:changer_squelch0",
+   "bloodsea:changer_squelch1"
+  ],
+  "subtitle": "subtitles.bloodsea.changer_squelch"
+ },
+ "lev_heartbeat": {
+  "sounds": [
+   "bloodsea:lev_heartbeat"
+  ],
+  "subtitle": "subtitles.bloodsea.lev_heartbeat"
+ },
+ "lev_roar": {
+  "sounds": [
+   "bloodsea:lev_roar"
+  ],
+  "subtitle": "subtitles.bloodsea.lev_roar"
+ },
+ "lev_rise": {
+  "sounds": [
+   "bloodsea:lev_rise"
+  ],
+  "subtitle": "subtitles.bloodsea.lev_rise"
+ },
+ "lev_bite": {
+  "sounds": [
+   "bloodsea:lev_bite"
+  ],
+  "subtitle": "subtitles.bloodsea.lev_bite"
+ },
+ "watcher_stare": {
+  "sounds": [
+   "bloodsea:watcher_stare"
+  ],
+  "subtitle": "subtitles.bloodsea.watcher_stare"
+ }
+}

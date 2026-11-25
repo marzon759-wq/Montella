@@ -74,8 +74,57 @@ public final class AutoTest {
         cue(60, () -> {});
     }
 
+    /** a creature in front of the camera, held in a state, then an action, pictures of both */
+    static void creature(String name, String kind, double x, double z, float yaw, double cx, double cy, double cz, float cyaw, float cpitch, int state, String action, int actionWait, int time) {
+        cue(5, () -> cmd("kill @e[type=!player]"));
+        cue(5, () -> cmd("time set " + time));
+        cue(5, () -> cmd("execute in bloodsea:blood_sea run tp @s " + cx + " " + cy + " " + cz + " " + cyaw + " " + cpitch));
+        cue(60, () -> cmd("execute in bloodsea:blood_sea run summon bloodsea:" + kind + " " + x + (kind.equals("changer") ? " 63 " : " 62.9 ") + z + " {Rotation:[" + yaw + "f,0f]}"));
+        cue(5, () -> cmd("bloodsea debug state " + state));
+        cue(100, () -> shot("c_" + name));
+        if (action != null) {
+            cue(5, () -> cmd("bloodsea debug state " + state + " " + action));
+            cue(actionWait, () -> shot("c_" + name + "_" + action));
+        }
+    }
+
     private static void build() {
         at = 60;
+        if (mode.contains("creatures")) {
+            cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("gamerule doMobSpawning false"); cmd("bloodsea enter"); cmd("gamemode spectator"); });
+            cue(80, () -> { cmd("bloodsea debug freeze true"); Minecraft.getInstance().options.hideGui = true; });
+            // the Watcher: the sun by day
+            view("c_watcher", 0.5, 64.6, 0.5, -90, -50, 2500);
+            creature("caller", "caller", 0.5, -14.5, 0, 3.5, 68.5, -4.5, 160, -16, 1, "scream", 18, 6000);
+            creature("caller_side", "caller", 0.5, -14.5, 0, 12.5, 66.5, -10.5, 110, -14, 2, "lunge", 9, 6000);
+            creature("caller_night", "caller", 0.5, -14.5, 0, 4.5, 67.5, -2.5, 160, -16, 3, null, 0, 18000);
+            creature("gatherer", "gatherer", 0.5, -18.5, 0, 3.5, 70, -6.5, 165, -14, 1, "swipe", 12, 6000);
+            creature("gatherer_head", "gatherer", 0.5, -18.5, 0, 1.5, 71.5, -12.5, 170, -8, 1, "roar", 20, 6000);
+            creature("gatherer_night", "gatherer", 0.5, -18.5, 0, 8.5, 67, -9.5, 130, -16, 0, null, 0, 17000);
+            creature("wake", "wake", 0.5, -20.5, -60, 8.5, 69, -8.5, 140, 26, 1, "lunge", 14, 6000);
+            creature("changer", "changer", 2.5, 2.5, 200, 1.2, 64.2, 0.4, 330, 26, 0, null, 0, 6000);
+            creature("changer_peek", "changer", 2.5, 2.5, 200, 1.2, 64.2, 0.4, 330, 26, 1, "reveal", 20, 6000);
+            creature("changer_run", "changer", 2.5, 2.5, 200, 1.2, 64.2, 0.4, 330, 26, 2, "bite", 6, 6000);
+            creature("leviathan", "leviathan", 0.5, -36.5, 0, 0.5, 70, 2.5, 180, -10, 1, "roar", 30, 6000);
+            creature("leviathan_side", "leviathan", 0.5, -36.5, 0, 46.5, 72, -30.5, 100, -4, 1, "bite", 20, 6000);
+            creature("leviathan_night", "leviathan", 0.5, -36.5, 0, 20.5, 70, 0.5, 145, -8, 1, "roar", 30, 17000);
+            // the real thing: no freezing, the director and the brains; does it come for you?
+            cue(5, () -> { cmd("kill @e[type=!player]"); cmd("bloodsea debug freeze false"); cmd("gamemode survival"); cmd("time set 16000"); });
+            cue(5, () -> cmd("execute in bloodsea:blood_sea run tp @s 0.5 63 0.5 0 0"));
+            cue(20, () -> cmd("bloodsea summon changer"));
+            cue(300, () -> { shot("c_ai_changer"); BloodSea.LOG.info("[AITEST] health after changer {}", Minecraft.getInstance().player.getHealth()); });
+            cue(5, () -> { cmd("kill @e[type=!player]"); cmd("effect give @s minecraft:instant_health 1 5"); cmd("bloodsea summon gatherer"); });
+            cue(400, () -> { shot("c_ai_gatherer"); BloodSea.LOG.info("[AITEST] health after gatherer {}", Minecraft.getInstance().player.getHealth()); });
+            cue(5, () -> { cmd("kill @e[type=!player]"); cmd("effect give @s minecraft:instant_health 1 5"); cmd("bloodsea summon caller"); });
+            cue(400, () -> { shot("c_ai_caller"); BloodSea.LOG.info("[AITEST] health after caller {}", Minecraft.getInstance().player.getHealth()); });
+            cue(5, () -> { cmd("kill @e[type=!player]"); cmd("effect give @s minecraft:instant_health 1 5"); cmd("bloodsea summon wake"); });
+            cue(300, () -> { shot("c_ai_wake"); BloodSea.LOG.info("[AITEST] health after wake {}", Minecraft.getInstance().player.getHealth()); });
+            cue(5, () -> { cmd("kill @e[type=!player]"); cmd("effect give @s minecraft:instant_health 1 5"); cmd("bloodsea summon leviathan"); });
+            cue(160, () -> shot("c_ai_leviathan_rise"));
+            cue(140, () -> { shot("c_ai_leviathan"); BloodSea.LOG.info("[AITEST] health after leviathan {} alive {}", Minecraft.getInstance().player.getHealth(), Minecraft.getInstance().player.isAlive()); });
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("endings")) {
             cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("time set 6000"); cmd("bloodsea enter"); cmd("gamemode adventure"); });
             cue(80, () -> {});
