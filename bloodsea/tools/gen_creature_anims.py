@@ -502,6 +502,696 @@ def raft_row(t):
     return P
 
 
+# ============================================================================ Pip
+def pip_base(P, t, blink_seed=0, eyes=1.0, fish=False):
+    """breath, ear flicks, blinks; eyes 0 shut .. 1 open"""
+    b = math.sin(t * math.tau * 0.45)
+    P.r("body", 0.8 * b).s("body", 1, 1 + 0.01 * b, 1)
+    blink = math.exp(-(((t * 0.23 + blink_seed) % 1.0 - 0.5) * 30) ** 2)
+    shut = max(0.0, min(1.0, 1 - eyes + blink))
+    P.r("lid_l", 75 * shut).r("lid_r", 75 * shut)
+    for side, sg in SIDES:
+        f = max(0.0, twitch(t, 3 + sg, 0.29, 40))
+        P.r(f"ear_{side}", 0, sg * -25 * f, sg * 12 * f)
+    if not fish:
+        P.s("fish", 0.01, 0.01, 0.01)
+    return b
+
+
+def tail_curl(P, t, up=1.0, sway=1.0, puff=1.0):
+    for i in range(6):
+        P.r(f"tail{i}", noise(t, i * 1.3, 0.5) * 4 * sway - (1 - up) * (14 if i < 2 else 4), math.sin(t * 1.6 - i * 0.5) * 6 * sway * (0.3 + i * 0.15), 0)
+        if puff != 1.0:
+            P.s(f"tail{i}", puff, puff, 1)
+
+
+def legs_stand(P):
+    pass
+
+
+def legs_walk(P, ph, stride=1.0, lift=1.0):
+    order = {"fl_l": 0.0, "hl_r": 0.0, "fl_r": 0.5, "hl_l": 0.5}
+    for leg, off in order.items():
+        a = (ph + off) * math.tau
+        sw = math.sin(a)
+        up = max(0.0, math.cos(a))
+        side = leg[-1]
+        if leg.startswith("fl"):
+            P.r(leg, -22 * sw * stride)
+            P.r(f"flp_{side}", 28 * up * lift)
+        else:
+            P.r(leg, -20 * sw * stride)
+            P.r(f"hll_{side}", -24 * up * lift)
+
+
+def sit_pose(P, k=1.0):
+    """haunches down, chest up, front legs straight under the chest, tail round the feet"""
+    P.p("root", 0, -2.0 * k, 0.6 * k)
+    P.r("body", -34 * k)
+    P.r("neck", 18 * k).r("head", 14 * k)
+    for side, sg in SIDES:
+        P.r(f"fl_{side}", 34 * k).r(f"flp_{side}", 0)
+        P.r(f"hl_{side}", -60 * k).r(f"hll_{side}", 85 * k)
+    for i in range(6):
+        P.r(f"tail{i}", (40 if i == 0 else 8) * k, (22 + i * 10) * k, 0)
+
+
+@anim("pip", "stand", 6.0)
+def pip_stand(t):
+    P = Pose()
+    pip_base(P, t)
+    tail_curl(P, t)
+    P.r("head", noise(t, 2, 0.25) * 6, noise(t, 3, 0.2) * 18, noise(t, 4, 0.2) * 5)
+    return P
+
+
+@anim("pip", "walk", 0.9)
+def pip_walk(t):
+    P = Pose()
+    ph = t / 0.9
+    pip_base(P, t, 0.3)
+    legs_walk(P, ph)
+    P.p("root", 0, abs(math.sin(ph * math.tau)) * 0.25, 0)
+    P.r("body", 0, math.sin(ph * math.tau) * 3, 0)
+    P.r("head", 2 * math.sin(ph * math.tau * 2), -math.sin(ph * math.tau) * 3, 0)
+    tail_curl(P, t, 1.0, 0.6)
+    return P
+
+
+@anim("pip", "run", 0.45)
+def pip_run(t):
+    P = Pose()
+    ph = t / 0.45
+    pip_base(P, t, 0.5)
+    a = ph * math.tau
+    for side in "lr":
+        P.r(f"fl_{side}", -40 * math.sin(a + (0.15 if side == "l" else 0))).r(f"flp_{side}", 40 * max(0, math.cos(a)))
+        P.r(f"hl_{side}", 38 * math.sin(a + (0.15 if side == "l" else 0))).r(f"hll_{side}", -40 * max(0, -math.cos(a)))
+    P.r("body", 6 * math.sin(a)).p("root", 0, 0.6 * abs(math.sin(a)), 0)
+    P.r("head", -6 * math.sin(a))
+    tail_curl(P, t, 0.4, 0.3)
+    return P
+
+
+@anim("pip", "sit", 8.0)
+def pip_sit(t):
+    P = Pose()
+    sit_pose(P)
+    pip_base(P, t, 0.1)
+    P.r("head", noise(t, 5, 0.2) * 5, noise(t, 6, 0.15) * 20, noise(t, 7, 0.2) * 6)
+    # the tip of the tail flicks now and then
+    P.r("tail5", 0, 25 * twitch(t, 1, 0.4, 20), 0).r("tail4", 0, 10 * twitch(t, 1, 0.4, 20), 0)
+    return P
+
+
+@anim("pip", "sleep", 6.0)
+def pip_sleep(t):
+    """curled up: legs tucked under, head down on the paws, tail wrapped round the nose, breathing slow"""
+    P = Pose()
+    b = math.sin(t * math.tau / 3.0)
+    P.p("root", 0, -3.6, 0)
+    P.r("body", 0.6 * b, 0, 3).s("body", 1 + 0.015 * b, 1 + 0.02 * b, 1)
+    P.r("neck", 34).r("head", 26, -22, -8)
+    for side, sg in SIDES:
+        P.r(f"fl_{side}", 82).r(f"flp_{side}", -12)
+        P.r(f"hl_{side}", -62).r(f"hll_{side}", 110)
+    for i in range(6):
+        P.r(f"tail{i}", 50 if i == 0 else 4, -(25 + i * 14), 0)
+    P.r("lid_l", 75).r("lid_r", 75)
+    P.s("fish", 0.01, 0.01, 0.01)
+    for side, sg in SIDES:
+        P.r(f"ear_{side}", 0, 0, sg * 6 * max(0, twitch(t, 2 + sg, 0.17, 40)))
+    return P
+
+
+@anim("pip", "groom", 4.0)
+def pip_groom(t):
+    """licking a raised front paw, then wiping it over the ear"""
+    P = Pose()
+    sit_pose(P)
+    pip_base(P, t, 0.7, eyes=0.5)
+    lick = math.sin(t * math.tau * 1.6)
+    wipe = ramp(t, 2.4, 2.8) * (1 - ramp(t, 3.5, 3.9))
+    P.r("fl_l", -30 - 30 * wipe).r("flp_l", 75 - 20 * wipe)
+    P.r("head", 22 + 6 * lick - 30 * wipe, 22, 10 * wipe)
+    P.r("jaw", 8 + 6 * max(0, lick))
+    return P
+
+
+@anim("pip", "stretch", 3.0, loop=False)
+def pip_stretch(t):
+    """front paws out, chest down, rear up, a long yawn"""
+    P = Pose()
+    k = ramp(t, 0.2, 0.9) * (1 - ramp(t, 2.2, 2.9))
+    pip_base(P, t, 0, eyes=1 - 0.8 * k)
+    P.r("body", 20 * k).p("root", 0, -1.0 * k, 0)
+    for side in "lr":
+        P.r(f"fl_{side}", -55 * k).r(f"flp_{side}", -10 * k)
+        P.r(f"hl_{side}", -12 * k)
+    P.r("neck", -10 * k).r("head", -20 * k).r("jaw", 32 * ramp(t, 0.6, 1.0) * (1 - ramp(t, 1.8, 2.2)))
+    tail_curl(P, t, 1.0, 0.4)
+    return P
+
+
+@anim("pip", "meow", 1.4, loop=False)
+def pip_meow(t):
+    P = Pose()
+    o = ramp(t, 0.15, 0.35) * (1 - ramp(t, 0.8, 1.1))
+    pip_base(P, t)
+    P.r("head", -18 * o).r("jaw", 26 * o)
+    tail_curl(P, t)
+    return P
+
+
+@anim("pip", "rub", 2.4)
+def pip_rub(t):
+    """pressing the side of its head along your legs, tail high and quivering"""
+    P = Pose()
+    pip_base(P, t, eyes=0.4)
+    w = math.sin(t / 2.4 * math.tau)
+    P.r("head", 6, 30 * w, 26 * w).r("neck", 0, 12 * w, 10 * w)
+    P.r("body", 0, 6 * w, 8 * w)
+    P.p("root", 0, 0.3 * abs(w), 0)
+    tail_curl(P, t * 4, 1.0, 0.25)
+    return P
+
+
+@anim("pip", "knead", 1.2)
+def pip_knead(t):
+    P = Pose()
+    P.p("root", 0, -3.2, 0)
+    for side, sg in SIDES:
+        P.r(f"hl_{side}", -62).r(f"hll_{side}", 110)
+    a = t / 1.2 * math.tau
+    P.r("fl_l", -40 + 22 * max(0, math.sin(a))).r("flp_l", 50 - 30 * max(0, math.sin(a)))
+    P.r("fl_r", -40 + 22 * max(0, -math.sin(a))).r("flp_r", 50 - 30 * max(0, -math.sin(a)))
+    pip_base(P, t, eyes=0.25)
+    P.r("head", 8, 0, 0)
+    for i in range(6):
+        P.r(f"tail{i}", 40 if i == 0 else 4, -(20 + i * 8), 0)
+    return P
+
+
+@anim("pip", "hiss", 1.6)
+def pip_hiss(t):
+    """back arched, every hair up, ears flat, teeth bared"""
+    P = Pose()
+    pip_base(P, t, eyes=1.0)
+    j = math.sin(t * 50) * 0.5
+    P.p("root", 0, 1.2, 0).s("body", 1.1, 1.15, 1.05)
+    P.r("body", 0, 0, j)
+    P.r("neck", 20).r("head", -12).r("jaw", 30 + j * 4)
+    for side, sg in SIDES:
+        P.r(f"ear_{side}", 50, sg * 30, 0)
+        P.r(f"fl_{side}", 8).r(f"hl_{side}", -6)
+    for i in range(6):
+        P.r(f"tail{i}", -6 if i < 3 else 2, 0, 0).s(f"tail{i}", 1.3, 1.3, 1.3)
+    return P
+
+
+@anim("pip", "eat", 2.0)
+def pip_eat(t):
+    P = Pose()
+    pip_base(P, t, eyes=0.6)
+    chew = max(0.0, math.sin(t * math.tau * 2.5))
+    P.r("neck", 42).r("head", 18 + 4 * chew).r("jaw", 14 * chew)
+    for side in "lr":
+        P.r(f"fl_{side}", 14).r(f"flp_{side}", 18)
+    tail_curl(P, t, 0.8, 0.5)
+    return P
+
+
+@anim("pip", "carry", 0.9)
+def pip_carry(t):
+    """trotting back with a fish in its mouth, head high, very proud"""
+    P = pip_walk(t)
+    P.scales.pop("fish", None)
+    P.r("head", -12).r("jaw", 8)
+    return P
+
+
+@anim("pip", "drop", 1.6, loop=False)
+def pip_drop(t):
+    """lays the fish at your feet and looks up at you"""
+    P = Pose()
+    k = ramp(t, 0.1, 0.5)
+    pip_base(P, t, fish=t < 0.7)
+    P.r("neck", 40 * k * (1 - ramp(t, 0.8, 1.2))).r("jaw", 14 * ramp(t, 0.5, 0.7))
+    P.r("head", -20 * ramp(t, 1.0, 1.4))
+    tail_curl(P, t)
+    return P
+
+
+@anim("pip", "look_up", 5.0)
+def pip_look_up(t):
+    """sitting, staring at the sky, the pupils wide"""
+    P = Pose()
+    sit_pose(P)
+    pip_base(P, t, eyes=1.0)
+    P.r("neck", -8).r("head", -38, noise(t, 1, 0.1) * 6, 0)
+    for side, sg in SIDES:
+        P.r(f"ear_{side}", -10, sg * -8, 0)
+    return P
+
+
+@anim("pip", "scared", 1.0)
+def pip_scared(t):
+    """flat to the deck, trembling, tail tucked"""
+    P = Pose()
+    pip_base(P, t, eyes=1.0)
+    j = math.sin(t * 70) * 0.6
+    P.p("root", 0, -2.2, 0.5).r("body", 3, 0, j)
+    for side, sg in SIDES:
+        P.r(f"fl_{side}", -30).r(f"flp_{side}", 60)
+        P.r(f"hl_{side}", -40).r(f"hll_{side}", 70)
+        P.r(f"ear_{side}", 55, sg * 35, 0)
+    P.r("neck", 15).r("head", 5)
+    for i in range(6):
+        P.r(f"tail{i}", 60 if i == 0 else 12, 0, 0)
+    return P
+
+
+@anim("pip", "petted", 3.0)
+def pip_petted(t):
+    """eyes shut, pushing its head up into the hand, purring"""
+    P = Pose()
+    sit_pose(P)
+    pip_base(P, t, eyes=0.0)
+    w = math.sin(t / 3.0 * math.tau)
+    P.r("head", -14 + 6 * w, 10 * w, 12 * w).r("neck", -6)
+    for side, sg in SIDES:
+        P.r(f"ear_{side}", 14, sg * 10, 0)
+    P.s("body", 1, 1 + 0.01 * math.sin(t * 60), 1)
+    return P
+
+
+@anim("pip", "swipe", 1.8, loop=False)
+def pip_swipe(t):
+    """crouched at the edge, one paw strikes down into the blood and hooks something out"""
+    P = Pose()
+    pip_base(P, t, fish=t > 1.0)
+    crouch = ramp(t, 0, 0.4)
+    hit = ramp(t, 0.55, 0.7) * (1 - ramp(t, 0.9, 1.3))
+    P.p("root", 0, -1.5 * crouch, 0).r("body", 12 * crouch)
+    P.r("fl_r", -30 * crouch - 60 * hit).r("flp_r", 40 * crouch - 30 * hit)
+    P.r("neck", 30 * crouch).r("head", 10 * crouch)
+    tail_curl(P, t, 0.5, 0.2)
+    return P
+
+
+@anim("pip", "struggle", 0.5)
+def pip_struggle(t):
+    """caught: every leg clawing at the air, twisting, screaming"""
+    P = Pose()
+    pip_base(P, t, eyes=1.0)
+    a = t / 0.5 * math.tau
+    for side, sg in SIDES:
+        P.r(f"fl_{side}", -50 + 40 * math.sin(a * 2 + sg), 0, sg * 20 * math.sin(a * 3))
+        P.r(f"hl_{side}", 30 + 40 * math.sin(a * 2 - sg)).r(f"hll_{side}", 30 * math.sin(a * 3))
+        P.r(f"ear_{side}", 50, sg * 30, 0)
+    P.r("body", 10 * math.sin(a), 15 * math.sin(a * 1.5), 25 * math.sin(a))
+    P.r("head", -25 + 10 * math.sin(a * 2), 20 * math.sin(a * 1.3)).r("jaw", 32)
+    for i in range(6):
+        P.r(f"tail{i}", 20 * math.sin(a * 2 - i), 25 * math.sin(a * 1.5 - i), 0).s(f"tail{i}", 1.25, 1.25, 1.25)
+    return P
+
+
+@anim("pip", "jump", 1.0, loop=False)
+def pip_jump(t):
+    P = Pose()
+    pip_base(P, t)
+    c = ramp(t, 0, 0.25) * (1 - ramp(t, 0.25, 0.35))
+    air = ramp(t, 0.3, 0.45) * (1 - ramp(t, 0.7, 0.85))
+    P.p("root", 0, -1.2 * c + 6 * air, -4 * air)
+    for side in "lr":
+        P.r(f"fl_{side}", 30 * c - 50 * air).r(f"hl_{side}", -20 * c + 40 * air)
+    P.r("body", 10 * c - 15 * air)
+    tail_curl(P, t, 1.0, 0.2)
+    return P
+
+
+# ============================================================================ Elias
+# poses are dicts: bone -> (rx, ry, rz), plus "@root" -> position (x, y, z); blended with ease
+E_STAND = {"arm_l": (0, 0, 4), "arm_r": (0, 0, -4), "fore_l": (-6, 0, 0), "fore_r": (-6, 0, 0)}
+E_LYING = {"root": (90, 0, 0), "@root": (0, 2.4, 0), "head": (-20, 30, 0), "neck": (-10, 0, 0),
+           "arm_l": (-20, 0, 30), "arm_r": (-150, 0, -20), "fore_l": (-40, 0, 0), "fore_r": (-30, 0, 0),
+           "thigh_l": (0, 0, 6), "thigh_r": (-10, 0, -4), "shin_r": (20, 0, 0), "foot_l": (30, 0, 0), "foot_r": (40, 0, 0)}
+E_PUSH = {"root": (70, 0, 0), "@root": (0, 4.5, 0), "head": (-45, 0, 0), "neck": (-20, 0, 0),
+          "arm_l": (-70, 0, 10), "arm_r": (-70, 0, -10), "fore_l": (-20, 0, 0), "fore_r": (-20, 0, 0),
+          "hand_l": (60, 0, 0), "hand_r": (60, 0, 0), "foot_l": (30, 0, 0), "foot_r": (30, 0, 0)}
+E_FOURS = {"@root": (0, -6.6, 0), "hips": (75, 0, 0), "thigh_l": (-75, 0, 0), "thigh_r": (-75, 0, 0), "shin_l": (90, 0, 0), "shin_r": (90, 0, 0),
+           "foot_l": (10, 0, 0), "foot_r": (10, 0, 0), "chest": (5, 0, 0), "neck": (-30, 0, 0), "head": (-15, 0, 0),
+           "arm_l": (-80, 0, 6), "arm_r": (-80, 0, -6), "fore_l": (0, 0, 0), "fore_r": (0, 0, 0), "hand_l": (70, 0, 0), "hand_r": (70, 0, 0)}
+E_KNEELSIT = {"@root": (0, -9.6, 2.5), "thigh_l": (-88, 0, 4), "thigh_r": (-88, 0, -4), "shin_l": (170, 0, 0), "shin_r": (170, 0, 0),
+              "foot_l": (-60, 0, 0), "foot_r": (-60, 0, 0), "torso": (6, 0, 0), "chest": (8, 0, 0), "neck": (10, 0, 0), "head": (10, 0, 0),
+              "arm_l": (-10, 0, 8), "arm_r": (-10, 0, -8), "fore_l": (-30, 0, 0), "fore_r": (-30, 0, 0)}
+E_HANDS = dict(E_KNEELSIT, **{"arm_l": (-45, 0, 12), "arm_r": (-45, 0, -12), "fore_l": (-70, 20, 0), "fore_r": (-70, -20, 0),
+                              "hand_l": (0, 0, -60), "hand_r": (0, 0, 60), "neck": (25, 0, 0), "head": (20, 0, 0)})
+E_HOLDHEAD = dict(E_KNEELSIT, **{"arm_r": (-150, 0, -30), "fore_r": (-80, 0, 0), "hand_r": (0, 40, 0), "neck": (18, 0, 0), "head": (14, 10, -8)})
+E_KNEEL = {"@root": (0, -6.2, 0), "thigh_l": (-90, 0, 0), "shin_l": (90, 0, 0), "foot_l": (0, 0, 0),
+           "thigh_r": (0, 0, 0), "shin_r": (90, 0, 0), "foot_r": (-60, 0, 0), "chest": (10, 0, 0), "neck": (12, 0, 0)}
+E_SIT_LEGS = {"@root": (0, -12.6, 0), "thigh_l": (-90, 0, 3), "thigh_r": (-90, 0, -3), "shin_l": (0, 0, 0), "shin_r": (0, 0, 0),
+              "arm_l": (8, 0, 10), "arm_r": (8, 0, -10), "fore_l": (-20, 0, 0), "fore_r": (-20, 0, 0)}
+E_LIE_BACK = dict(E_SIT_LEGS, **{"torso": (-86, 0, 0), "chest": (-4, 0, 0), "head": (6, 0, 0), "arm_l": (-6, 0, 10), "arm_r": (-6, 0, -10)})
+
+
+def epose(P, pose, k=1.0):
+    for b, v in pose.items():
+        if b.startswith("@"):
+            P.p(b[1:], v[0] * k, v[1] * k, v[2] * k)
+        else:
+            P.r(b, v[0] * k, v[1] * k, v[2] * k)
+
+
+def eblend(P, a, b, k):
+    """ease from pose a to pose b"""
+    k = sm(k)
+    keys = set(a) | set(b)
+    for key in keys:
+        va, vb = a.get(key, (0, 0, 0)), b.get(key, (0, 0, 0))
+        v = [va[i] + (vb[i] - va[i]) * k for i in range(3)]
+        if key.startswith("@"):
+            P.p(key[1:], *v)
+        else:
+            P.r(key, *v)
+
+
+def eseq(P, t, keys):
+    """keys: [(time, pose)], eased between neighbours"""
+    for (t0, a), (t1, b) in zip(keys, keys[1:]):
+        if t <= t1:
+            eblend(P, a, b, (t - t0) / (t1 - t0) if t1 > t0 else 1)
+            return
+    eblend(P, keys[-1][1], keys[-1][1], 1)
+
+
+def e_life(P, t, eyes=1.0, breath=1.0, seed=0):
+    b = math.sin(t * math.tau * 0.28)
+    P.r("chest", -1.3 * b * breath).r("torso", 0.5 * b * breath)
+    blink = math.exp(-(((t * 0.27 + seed) % 1.0 - 0.5) * 34) ** 2)
+    shut = max(0.0, min(1.0, 1 - eyes + blink))
+    P.r("lid_l", 70 * shut).r("lid_r", 70 * shut)
+
+
+def e_talk(P, t, amt=1.0):
+    P.r("jaw", amt * 6 * max(0.0, math.sin(t * 13) * math.sin(t * 3.1 + 1)))
+
+
+@anim("elias", "stand", 6.0)
+def e_stand(t):
+    P = Pose()
+    epose(P, E_STAND)
+    e_life(P, t)
+    P.r("head", noise(t, 1, 0.2) * 3, noise(t, 2, 0.15) * 8, 0)
+    P.r("hips", 0, 0, noise(t, 3, 0.2) * 1.2)
+    return P
+
+
+@anim("elias", "talk", 4.0)
+def e_talk_a(t):
+    P = e_stand(t)
+    e_talk(P, t)
+    P.r("arm_r", -20 - 10 * max(0, math.sin(t * 1.7)), 0, -10).r("fore_r", -45)
+    return P
+
+
+@anim("elias", "lie", 6.0)
+def e_lie(t):
+    P = Pose()
+    epose(P, E_LYING)
+    e_life(P, t, eyes=0.0, breath=0.6)
+    return P
+
+
+@anim("elias", "wake", 16.0, loop=False, hold=True)
+def e_wake(t):
+    """face down on the logs; a finger moves; he coughs, pushes himself up, kneels back on his heels, looks at his hands
+    - they are red - holds his head, gets up, staggers, and looks round at the sea"""
+    P = Pose()
+    stand_look = dict(E_STAND, **{"head": (-6, 0, 0)})
+    eseq(P, t, [(0, E_LYING), (3.2, E_LYING), (4.6, E_PUSH), (5.8, E_FOURS), (7.2, E_KNEELSIT), (8.0, E_HANDS), (10.0, E_HANDS),
+                (10.8, E_HOLDHEAD), (12.0, E_HOLDHEAD), (13.4, E_KNEEL), (14.6, stand_look), (16, stand_look)])
+    eyes = ramp(t, 3.0, 3.6)
+    e_life(P, t, eyes=eyes, breath=1.4)
+    # a finger twitches, then the hand clenches
+    tw = max(0.0, twitch(t, 1, 0.8, 30)) * (1 - ramp(t, 3, 3.2))
+    P.r("hand_r", 30 * tw)
+    # the cough as he comes up
+    cough = math.exp(-((t - 4.0) * 5) ** 2) + math.exp(-((t - 4.5) * 5) ** 2)
+    P.r("chest", 8 * cough).r("jaw", 14 * cough)
+    # he sways getting up
+    P.r("hips", 0, 0, 4 * math.sin(t * 2.3) * ramp(t, 13.4, 14) * (1 - ramp(t, 15.3, 16)))
+    P.r("head", 0, 25 * math.sin((t - 14.4) * 1.4) * ramp(t, 14.4, 14.8), 0)
+    return P
+
+
+@anim("elias", "look_around", 8.0)
+def e_look_around(t):
+    P = Pose()
+    epose(P, E_STAND)
+    e_life(P, t)
+    P.r("head", -4 + 6 * math.sin(t * 0.5), 50 * math.sin(t / 8 * math.tau), 0).r("chest", 0, 14 * math.sin(t / 8 * math.tau), 0)
+    return P
+
+
+@anim("elias", "walk", 1.2)
+def e_walk(t):
+    P = Pose()
+    epose(P, E_STAND)
+    e_life(P, t)
+    a = t / 1.2 * math.tau
+    for side, sg in SIDES:
+        s = math.sin(a + (0 if sg > 0 else math.pi))
+        up = max(0.0, math.cos(a + (0 if sg > 0 else math.pi)))
+        P.r(f"thigh_{side}", -24 * s).r(f"shin_{side}", 30 * up).r(f"foot_{side}", -8 * s)
+        P.r(f"arm_{side}", 18 * s)
+    P.p("root", 0, -0.4 * abs(math.cos(a)), 0)
+    P.r("hips", 0, 6 * math.sin(a), 0).r("chest", 2, -8 * math.sin(a), 0)
+    return P
+
+
+@anim("elias", "stagger", 1.8)
+def e_stagger(t):
+    P = e_walk(t * 1.2 / 1.8)
+    P.r("hips", 0, 0, 5 * math.sin(t / 1.8 * math.tau * 0.5)).r("chest", 10, 0, -6 * math.sin(t / 1.8 * math.tau * 0.5))
+    P.r("head", 12, 0, 8 * math.sin(t * 1.2))
+    return P
+
+
+@anim("elias", "kneel_reach", 6.0)
+def e_kneel_reach(t):
+    """down on one knee, a hand held out low and slow, the way you hold a hand out to a frightened cat"""
+    P = Pose()
+    epose(P, E_KNEEL)
+    e_life(P, t)
+    P.r("arm_r", -60 + 4 * math.sin(t * 0.8), 0, -6).r("fore_r", -10).r("hand_r", 20, 0, 0)
+    P.r("arm_l", -10, 0, 8).r("fore_l", -60)
+    P.r("neck", 14).r("head", 12, 8 * math.sin(t * 0.4), 0)
+    return P
+
+
+@anim("elias", "pet", 2.4)
+def e_pet(t):
+    """kneeling, stroking the cat from its head down its back"""
+    P = Pose()
+    epose(P, E_KNEEL)
+    e_life(P, t, eyes=0.8)
+    k = (t / 2.4) % 1.0
+    stroke = math.sin(k * math.pi)
+    P.r("arm_r", -55 + 20 * k, 0, -4).r("fore_r", -30 + 25 * stroke).r("hand_r", 30 - 20 * stroke)
+    P.r("neck", 18).r("head", 18, 0, 6)
+    return P
+
+
+@anim("elias", "hold_head", 5.0)
+def e_hold_head(t):
+    P = Pose()
+    epose(P, E_STAND)
+    e_life(P, t, eyes=0.5)
+    P.r("arm_l", -150, 0, 30).r("fore_l", -85).r("arm_r", -150, 0, -30).r("fore_r", -85)
+    P.r("neck", 20).r("head", 16, 10 * math.sin(t * 0.9), 0).r("chest", 10)
+    return P
+
+
+@anim("elias", "look_up", 6.0)
+def e_look_up(t):
+    P = Pose()
+    epose(P, E_STAND)
+    e_life(P, t, eyes=1.0)
+    P.r("neck", -20).r("head", -30, 4 * math.sin(t * 0.5), 0).r("chest", -6)
+    P.r("arm_r", -20, 0, -10).r("fore_r", -40)
+    return P
+
+
+@anim("elias", "recoil", 1.6, loop=False, hold=True)
+def e_recoil(t):
+    """a step back, arms up, the breath caught"""
+    P = Pose()
+    epose(P, E_STAND)
+    k = ramp(t, 0, 0.35)
+    e_life(P, t, eyes=1.0)
+    P.p("root", 0, 0, 6 * k)
+    P.r("thigh_r", 20 * k).r("shin_r", 20 * k).r("chest", -12 * k).r("head", -10 * k)
+    P.r("arm_l", -60 * k, 0, 20 * k).r("fore_l", -70 * k).r("arm_r", -60 * k, 0, -20 * k).r("fore_r", -70 * k)
+    return P
+
+
+@anim("elias", "sit_row", 6.0)
+def e_sit_row(t):
+    """sitting at the stern with the oar, the arms working it from side to side"""
+    P = Pose()
+    epose(P, E_SIT_LEGS)
+    e_life(P, t)
+    a = t / 2.0 * math.tau
+    P.r("chest", 6 + 4 * math.sin(a), 14 * math.sin(a), 0)
+    P.r("arm_l", -60, 20 * math.sin(a), 10).r("fore_l", -40).r("arm_r", -60, 20 * math.sin(a), -10).r("fore_r", -40)
+    return P
+
+
+@anim("elias", "sit", 6.0)
+def e_sit(t):
+    P = Pose()
+    epose(P, E_SIT_LEGS)
+    e_life(P, t)
+    P.r("chest", 12).r("neck", 10).r("arm_l", -30, 0, 10).r("arm_r", -30, 0, -10).r("fore_l", -50).r("fore_r", -50)
+    P.r("head", 6, noise(t, 1, 0.2) * 10, 0)
+    return P
+
+
+@anim("elias", "sob", 3.0)
+def e_sob(t):
+    """on his knees at the edge, bent double, shoulders shaking"""
+    P = Pose()
+    epose(P, E_KNEELSIT)
+    e_life(P, t, eyes=0.1)
+    sh = math.sin(t * 9) * (0.5 + 0.5 * math.sin(t * 1.3)) ** 2
+    P.r("torso", 25).r("chest", 25 + 4 * sh).r("neck", 30).r("head", 15 + 3 * sh)
+    P.r("arm_l", -40, 0, 20).r("fore_l", -110).r("arm_r", -40, 0, -20).r("fore_r", -110)
+    P.r("jaw", 10 + 6 * sh)
+    return P
+
+
+@anim("elias", "reach_scream", 2.0)
+def e_reach_scream(t):
+    """thrown down at the edge, an arm stretched out over the blood toward what is gone"""
+    P = Pose()
+    epose(P, E_KNEEL)
+    e_life(P, t, eyes=1.0)
+    j = math.sin(t * 25) * 0.5
+    P.r("chest", 30 + j).r("torso", 18)
+    P.r("arm_r", -110 + 6 * math.sin(t * 2), 0, -6).r("fore_r", -5).r("hand_r", -20)
+    P.r("arm_l", -30, 0, 20).r("fore_l", -30)
+    P.r("head", -20).r("jaw", 26 + 4 * j)
+    return P
+
+
+@anim("elias", "collapse", 2.4, loop=False, hold=True)
+def e_collapse(t):
+    """the knees go, then the rest of him, onto his side"""
+    P = Pose()
+    k1 = ramp(t, 0, 0.6)
+    k2 = ramp(t, 0.6, 1.4)
+    eblend(P, E_STAND, E_KNEELSIT, k1)
+    P.r("root", 0, 0, -85 * sm(k2)).p("root", 0, 3 * k2, 0)
+    e_life(P, t, eyes=1 - ramp(t, 0.3, 1.0))
+    P.r("head", 0, 0, 20 * k2).r("arm_r", -20 * k2, 0, -40 * k2)
+    return P
+
+
+@anim("elias", "lie_back", 6.0)
+def e_lie_back(t):
+    P = Pose()
+    epose(P, E_LIE_BACK)
+    e_life(P, t, eyes=0.0, breath=0.5)
+    return P
+
+
+@anim("elias", "sit_up_bed", 6.0, loop=False, hold=True)
+def e_sit_up_bed(t):
+    """eyes open on a white ceiling; he pushes himself up to sit, slowly"""
+    P = Pose()
+    eseq(P, t, [(0, E_LIE_BACK), (2.0, E_LIE_BACK), (2.6, dict(E_LIE_BACK, **{"arm_l": (40, 0, 20), "arm_r": (40, 0, -20)})),
+                (5.0, E_SIT_LEGS), (6, E_SIT_LEGS)])
+    e_life(P, t, eyes=ramp(t, 0.8, 1.8))
+    P.r("head", 0, 30 * math.sin((t - 4.5) * 1.2) * ramp(t, 4.5, 5.0), 0)
+    return P
+
+
+@anim("elias", "bed_talk", 4.0)
+def e_bed_talk(t):
+    """sitting up in bed, a hand on the cat in his lap, talking"""
+    P = Pose()
+    epose(P, E_SIT_LEGS)
+    e_life(P, t)
+    e_talk(P, t)
+    P.r("chest", 8).r("arm_r", -40, 0, -6).r("fore_r", -50 + 10 * math.sin(t * 1.5)).r("hand_r", 20)
+    P.r("arm_l", -20, 0, 20).r("fore_l", -60)
+    P.r("head", 10 + 4 * math.sin(t * 0.7), 10 * math.sin(t * 0.5), 0)
+    return P
+
+
+@anim("elias", "cradle", 4.0)
+def e_cradle(t):
+    """sitting, holding something in his arms against his chest, rocking"""
+    P = Pose()
+    epose(P, E_SIT_LEGS)
+    e_life(P, t, eyes=0.4)
+    r = math.sin(t / 4.0 * math.tau)
+    P.r("chest", 14 + 4 * r).r("neck", 18).r("head", 16)
+    P.r("arm_l", -50, -30, 10).r("fore_l", -90, 0, 0).r("arm_r", -50, 30, -10).r("fore_r", -90, 0, 0)
+    e_talk(P, t, 0.4)
+    return P
+
+
+@anim("elias", "sit_throne", 6.0)
+def e_sit_throne(t):
+    P = Pose()
+    epose(P, {"@root": (0, -6.8, 2.0), "thigh_l": (-88, 0, 6), "thigh_r": (-88, 0, -6), "shin_l": (88, 0, 0), "shin_r": (88, 0, 0),
+              "arm_l": (-40, 0, 14), "arm_r": (-40, 0, -14), "fore_l": (-40, 0, 0), "fore_r": (-40, 0, 0), "chest": (-4, 0, 0)})
+    e_life(P, t, eyes=0.6, breath=0.6)
+    P.r("head", 8, 0, 6)
+    return P
+
+
+@anim("elias", "fall", 1.2)
+def e_fall(t):
+    """falling: arms and legs thrown about, turning slowly"""
+    P = Pose()
+    a = t / 1.2 * math.tau
+    e_life(P, t, eyes=1.0)
+    P.r("root", -30 + 10 * math.sin(a * 0.5), 0, 15 * math.sin(a * 0.5))
+    for side, sg in SIDES:
+        P.r(f"arm_{side}", -120 + 30 * math.sin(a + sg), 0, sg * (50 + 20 * math.sin(a * 2)))
+        P.r(f"thigh_{side}", -20 + 25 * math.sin(a * 1.5 + sg)).r(f"shin_{side}", 30 + 20 * math.sin(a * 2))
+    P.r("head", -20).r("jaw", 20)
+    return P
+
+
+@anim("elias", "jump", 1.6, loop=False, hold=True)
+def e_jump(t):
+    """a crouch at the edge, then off"""
+    P = Pose()
+    c = ramp(t, 0, 0.5) * (1 - ramp(t, 0.6, 0.8))
+    air = ramp(t, 0.6, 1.0)
+    epose(P, E_STAND)
+    P.p("root", 0, -3 * c + 6 * air - 30 * ramp(t, 1.0, 1.6), -18 * air)
+    for side, sg in SIDES:
+        P.r(f"thigh_{side}", -50 * c + 20 * air).r(f"shin_{side}", 80 * c).r(f"arm_{side}", 30 * c - 150 * air, 0, sg * 20 * air)
+    P.r("chest", 20 * c - 10 * air)
+    e_life(P, t, eyes=1 - ramp(t, 0.4, 0.6))
+    return P
+
+
+@anim("elias", "float", 6.0)
+def e_float(t):
+    """on his back in grey water, arms out"""
+    P = Pose()
+    epose(P, {"root": (-90, 0, 0), "@root": (0, 1.5, 0), "arm_l": (0, 0, 70), "arm_r": (0, 0, -70), "head": (10, 0, 0)})
+    e_life(P, t, eyes=0.2, breath=0.6)
+    P.r("root", 2 * math.sin(t), 0, 3 * math.sin(t * 0.7))
+    return P
+
+
 # ============================================================================ writer
 def build(creature):
     out = {"format_version": "1.8.0", "animations": {}}

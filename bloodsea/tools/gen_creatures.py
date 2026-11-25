@@ -1223,6 +1223,425 @@ def raft():
 CREATURES["raft"] = raft
 
 
+# ============================================================================ Pip, the cat
+def pip():
+    """a black short-haired cat with yellow-green eyes, tail held up with a crook at the tip. Every part that moves is
+    a bone: head, jaw, ears, eyelids, four legs in two pieces, a tail in six, and a fish it can carry in its mouth."""
+    K = 0.8          # design units -> model px (the cat is drawn a little larger than life so it reads in game)
+
+    def S(s):
+        return s.moved(scale=K)
+
+    def P(v):
+        return tuple(np.array(v, float) * K)
+
+    EYE = {1: np.array([1.55, 13.2, -12.15]), -1: np.array([-1.55, 13.2, -12.15])}
+
+    def paint(mat, Pp, ao, N, tag):
+        x, y, z = Pp[:, 0] / K, Pp[:, 1] / K, Pp[:, 2] / K
+        fur_n = vnoise(x * 2.2, y * 2.2, z * 0.6, 1.0, 141) * 0.5 + vnoise(x, y, z, 0.6, 142) * 0.5
+        v = 0.25 + 0.5 * fur_n
+        fur = ramp(v, [(0, "#060607"), (0.5, "#111114"), (0.8, "#1e1e24"), (1, "#2e2e38")])
+        # a blue-grey sheen where the light falls on the fur
+        sheen = np.clip(N[:, 1] * 0.7 + 0.3, 0, 1) * np.clip(fur_n - 0.45, 0, 1) * 70
+        fur = fur + sheen[:, None] * np.array([0.55, 0.6, 0.8])
+        fur = fur * (0.55 + 0.45 * np.clip(ao, 0, 1.1))[:, None]
+        out = fur
+        skin = ramp(fur_n, [(0, "#2a1a1e"), (1, "#4a2e34")])          # inside the ears, the nose, the pads
+        out = np.where((mat == 2)[:, None], skin, out)
+        # the eyes: yellow-green iris with a darker rim, a slit pupil, a wet glint
+        side = np.where(x > 0, 1, -1)
+        ex = np.where(side > 0, EYE[1][0], EYE[-1][0])
+        ey, ez = EYE[1][1], EYE[1][2]
+        dx, dy = x - ex, y - ey
+        rr = np.sqrt((dx / 0.92) ** 2 + (dy / 0.8) ** 2)
+        iris = ramp(np.clip(rr / 1.0, 0, 1), [(0, "#e2e86a"), (0.55, "#c8cc3c"), (0.85, "#8a8a1e"), (1, "#2a2a08")])
+        eye = np.where((np.abs(dx) < 0.1 + 0.07 * np.clip(1 - np.abs(dy) / 0.8, 0, 1))[:, None] & (np.abs(dy) < 0.78)[:, None], np.array([[4, 4, 4]]), iris)
+        glint = (np.abs(dx - 0.3 * side * -1) < 0.18) & (np.abs(dy - 0.4) < 0.18)
+        eye = np.where(glint[:, None], np.array([[240, 240, 220]]), eye)
+        out = np.where((mat == 3)[:, None], eye, out)
+        whisk = ramp(fur_n, [(0, "#8a8a90"), (1, "#d0d0d8")])
+        out = np.where((mat == 4)[:, None], whisk, out)
+        fish = ramp(np.clip((y - 11) / 3, 0, 1) * 0.6 + fur_n * 0.4, [(0, "#6a7280"), (0.5, "#a8b0bc"), (1, "#d8dee6")])
+        out = np.where((mat == 5)[:, None], fish * (0.6 + 0.4 * np.clip(ao, 0, 1))[:, None], out)
+        mouth = ramp(fur_n, [(0, "#3a0e14"), (1, "#7a2a34")])
+        out = np.where((mat == 6)[:, None], mouth, out)
+        tooth = np.array([[220, 214, 200]])
+        out = np.where((mat == 7)[:, None], tooth, out)
+        return out
+
+    c = Creature("pip", paint, 1024)
+    c.bone("root", (0, 0, 0))
+    c.bone("body", P((0, 8, 0)), "root")
+    c.bone("neck", P((0, 9.5, -5.5)), "body")
+    c.bone("head", P((0, 12, -9)), "neck")
+    c.bone("jaw", P((0, 11.4, -11)), "head")
+    c.bone("ear_l", P((1.9, 15.2, -9.6)), "head")
+    c.bone("ear_r", P((-1.9, 15.2, -9.6)), "head")
+    c.bone("lid_l", P(EYE[1] + [0, 0, 0.2]), "head", rotation=[-75, 0, 0])
+    c.bone("lid_r", P(EYE[-1] + [0, 0, 0.2]), "head", rotation=[-75, 0, 0])
+    c.bone("fish", P((0, 11.2, -13.2)), "jaw")
+
+    def fz(s):
+        return fbm(s.X, s.Y, s.Z, 0.9, 143)
+
+    def body(s):
+        u = S(s)
+        X, Y, Z = P3(u)
+        d = ellipsoid(u, (0, 7.6, 0.5), (3.3, 3.1, 7.2))
+        d = smin(d, ellipsoid(u, (0, 8.2, -4.2), (3.0, 3.3, 3.2)), 1.5)      # chest
+        d = smin(d, ellipsoid(u, (0, 8.0, 5.2), (3.4, 3.3, 3.2)), 1.5)      # haunches
+        d = ssub(d, ellipsoid(u, (0, 3.6, 0.5), (3.6, 1.2, 5)), 1.2)        # tucked belly
+        d = d + (fz(u) - 0.5) * 0.25
+        return d * K, 1
+
+    def neck(s):
+        u = S(s)
+        d = capsule(u, (0, 9.2, -5), (0, 11.6, -8.4), 2.2, 2.0)
+        return (d + (fz(u) - 0.5) * 0.2) * K, 1
+
+    def head_d(u):
+        X, Y, Z = P3(u)
+        d = ellipsoid(u, (0, 12.6, -9.9), (3.0, 2.7, 2.8))
+        d = smin(d, union(ellipsoid(u, (1.7, 11.9, -10.8), (1.5, 1.3, 1.4)), ellipsoid(u, (-1.7, 11.9, -10.8), (1.5, 1.3, 1.4))), 0.8)  # cheeks
+        d = smin(d, ellipsoid(u, (0, 11.85, -12.0), (1.25, 1.0, 1.1)), 0.7)   # muzzle
+        d = smin(d, ellipsoid(u, (0, 12.6, -12.4), (0.55, 0.5, 0.7)), 0.3)    # nose bridge
+        for sx in (1, -1):    # sockets so the eyes sit in, not on
+            d = ssub(d, ellipsoid(u, tuple(EYE[sx] + [0, 0, -0.25]), (1.05, 0.95, 0.6)), 0.3)
+        return d
+
+    def head(s):
+        u = S(s)
+        X, Y, Z = P3(u)
+        d = head_d(u)
+        d = np.where(Y < 11.3, np.where(Z < -10.4, 50.0, d), d)    # the lower jaw is its own bone
+        d = d + (fz(u) - 0.5) * 0.12
+        eyes = union(*[ellipsoid(u, tuple(EYE[sx]), (0.92, 0.8, 0.5)) for sx in (1, -1)])
+        nose = ellipsoid(u, (0, 12.15, -12.95), (0.45, 0.32, 0.25))
+        whisk = None
+        for sx in (1, -1):
+            for k in range(3):
+                w = capsule(u, (sx * 0.9, 11.75 - k * 0.3, -12.6), (sx * 5.2, 12.2 - k * 0.9, -11.2 + k * 0.4), 0.09, 0.05)
+                whisk = w if whisk is None else union(whisk, w)
+        d2 = union(d, eyes, nose, whisk)
+        mat = np.where(eyes <= d2 + 0.01, 3, 1)
+        mat = np.where(nose <= d2 + 0.01, 2, mat)
+        mat = np.where((whisk <= d2 + 0.01) & (mat == 1), 4, mat)
+        return d2 * K, mat
+
+    def jaw(s):
+        u = S(s)
+        X, Y, Z = P3(u)
+        d = head_d(u)
+        d = np.where((Y < 11.3) & (Z < -10.4), d, 50.0)
+        inner = ellipsoid(u, (0, 11.25, -11.6), (0.9, 0.35, 0.9))
+        teeth = union(capsule(u, (0.55, 11.1, -12.5), (0.5, 11.55, -12.5), 0.12, 0.04), capsule(u, (-0.55, 11.1, -12.5), (-0.5, 11.55, -12.5), 0.12, 0.04))
+        d = cut(d, inner)
+        d2 = union(d, teeth)
+        mat = np.where(teeth <= d2 + 0.01, 7, np.where(Y > 11.05, 6, 1))
+        return d2 * K, mat
+
+    def ear(sx):
+        def f(s):
+            u = S(s)
+            X, Y, Z = P3(u)
+            # a triangle of fur, hollow at the front
+            base = np.array([sx * 1.9, 14.6, -9.6])
+            tip = np.array([sx * 2.6, 17.4, -9.3])
+            d = capsule(u, tuple(base), tuple(tip), 1.25, 0.15)
+            d = np.maximum(d, np.abs(Z - (-9.5 + (Y - 14.6) * 0.08)) - 0.55)
+            hollow = np.maximum(capsule(u, tuple(base + [0, 0.3, -0.25]), tuple(tip + [0, -0.4, -0.25]), 0.85, 0.05), -(-9.7 - Z))
+            mat = np.where((Z < -9.65) & (capsule(u, tuple(base), tuple(tip), 0.95, 0.05) < 0), 2, 1)
+            return d * K, mat
+        return f
+
+    def lid(sx):
+        def f(s):
+            u = S(s)
+            e = EYE[sx]
+            d = np.maximum(ellipsoid(u, tuple(e), (1.12, 1.04, 0.66)), -ellipsoid(u, tuple(e), (1.0, 0.92, 0.55)))
+            d = np.maximum(d, (u.Y - e[1]) * -1 - 0.0)   # the upper half: it closes down over the eye
+            d = np.maximum(d, u.Z - e[2] + 0.05)
+            return d * K, 1
+        return f
+
+    def fish(s):
+        u = S(s)
+        X, Y, Z = P3(u)
+        d = ellipsoid(u, (2.2, 11.2, -13.2), (3.0, 0.9, 0.45))
+        d = smin(d, np.maximum(ellipsoid(u, (5.8, 11.2, -13.2), (1.2, 1.3, 0.25)), -ellipsoid(u, (6.8, 11.2, -13.2), (0.9, 0.7, 1))), 0.4)
+        d = union(d, ellipsoid(u, (-1.0, 11.0, -13.2), (1.2, 0.8, 0.4)))
+        return d * K, 5
+
+    c.part("body", P((-4, 3, -8)), P((4, 12, 9)), 0.32, body)
+    c.part("neck", P((-3, 7, -11)), P((3, 14, -3)), 0.32, neck)
+    c.part("head", P((-6, 9, -14)), P((6, 16, -6.5)), 0.2, head)
+    c.part("jaw", P((-2, 10, -14)), P((2, 12, -10)), 0.2, jaw)
+    c.part("ear_l", P((0.4, 13.8, -11)), P((4, 18, -8.4)), 0.2, ear(1))
+    c.part("ear_r", P((-4, 13.8, -11)), P((-0.4, 18, -8.4)), 0.2, ear(-1))
+    c.part("lid_l", P(EYE[1] - 1.4), P(EYE[1] + 1.4), 0.12, lid(1))
+    c.part("lid_r", P(EYE[-1] - 1.4), P(EYE[-1] + 1.4), 0.12, lid(-1))
+    c.part("fish", P((-3, 9.5, -14.5)), P((8, 13, -12)), 0.25, fish)
+
+    # legs: front legs straight and slender, hind legs with the hock bent back; each in two bones
+    for side, sx in (("l", 1), ("r", -1)):
+        sh, el, pf = np.array([sx * 2.1, 8.0, -4.6]), np.array([sx * 2.0, 4.2, -4.9]), np.array([sx * 2.0, 0.7, -5.3])
+        hp_, kn, hk, ph = np.array([sx * 2.3, 8.2, 5.0]), np.array([sx * 2.6, 5.0, 3.6]), np.array([sx * 2.3, 2.6, 7.3]), np.array([sx * 2.3, 0.7, 6.4])
+        c.bone(f"fl_{side}", P(sh), "body")
+        c.bone(f"flp_{side}", P(el), f"fl_{side}")
+        c.bone(f"hl_{side}", P(hp_), "body")
+        c.bone(f"hll_{side}", P(hk), f"hl_{side}")
+
+        def upper_f(s, sh=sh, el=el):
+            u = S(s)
+            d = smin(capsule(u, tuple(sh), tuple(el), 1.25, 0.9), ellipsoid(u, tuple(sh + [0, -0.6, 0.2]), (1.4, 2.0, 1.6)), 0.8)
+            return (d + (fz(u) - 0.5) * 0.15) * K, 1
+
+        def lower_f(s, el=el, pf=pf):
+            u = S(s)
+            d = capsule(u, tuple(el), tuple(pf + [0, 0.4, 0]), 0.85, 0.7)
+            paw = ellipsoid(u, tuple(pf + [0, 0, -0.5]), (0.95, 0.65, 1.2))
+            d = smin(d, paw, 0.4)
+            pads = ellipsoid(u, tuple(pf + [0, -0.55, -0.5]), (0.7, 0.2, 0.9))
+            return d * K, np.where(pads < 0.05, 2, 1)
+
+        def upper_h(s, hp_=hp_, kn=kn, hk=hk):
+            u = S(s)
+            d = smin(ellipsoid(u, tuple(hp_ + [0, -0.8, -0.2]), (1.6, 2.6, 2.2)), capsule(u, tuple(kn), tuple(hk), 1.0, 0.75), 0.9)
+            d = smin(d, capsule(u, tuple(hp_), tuple(kn), 1.4, 1.1), 0.6)
+            return (d + (fz(u) - 0.5) * 0.15) * K, 1
+
+        def lower_h(s, hk=hk, ph=ph):
+            u = S(s)
+            d = capsule(u, tuple(hk), tuple(ph + [0, 0.4, 0]), 0.7, 0.65)
+            paw = ellipsoid(u, tuple(ph + [0, 0, -0.6]), (0.95, 0.62, 1.3))
+            pads = ellipsoid(u, tuple(ph + [0, -0.55, -0.6]), (0.7, 0.2, 1.0))
+            return smin(d, paw, 0.4) * K, np.where(pads < 0.05, 2, 1)
+
+        lo = lambda *pts: P(np.min(pts, 0) - 2.2)
+        hi = lambda *pts: P(np.max(pts, 0) + 2.2)
+        c.part(f"fl_{side}", lo(sh, el), hi(sh, el), 0.3, upper_f)
+        c.part(f"flp_{side}", lo(el, pf), hi(el, pf), 0.25, lower_f)
+        c.part(f"hl_{side}", lo(hp_, kn, hk), hi(hp_, kn, hk), 0.3, upper_h)
+        c.part(f"hll_{side}", lo(hk, ph), hi(hk, ph), 0.25, lower_h)
+
+    # the tail: six bones from the base, rising up and back with a crook at the end
+    pts = [np.array([0, 9.3, 7.6])]
+    ang = [-30, 10, 40, 60, 75, 110, 150]     # degrees from straight back, rising
+    for i in range(6):
+        a = math.radians(ang[i])
+        pts.append(pts[-1] + np.array([0, math.sin(a), math.cos(a)]) * 2.9)
+    parent = "body"
+    for i in range(6):
+        n = f"tail{i}"
+        c.bone(n, P(pts[i]), parent)
+        parent = n
+
+        def tail(s, a=pts[i], b=pts[i + 1], i=i):
+            u = S(s)
+            r0 = 1.05 - i * 0.08
+            d = capsule(u, tuple(a), tuple(b), r0, r0 - 0.08)
+            if i == 5:
+                d = smin(d, sphere(u, tuple(b), r0 - 0.05), 0.3)
+            return (d + (fz(u) - 0.5) * 0.2) * K, 1
+        c.part(n, P(np.minimum(pts[i], pts[i + 1]) - 1.6), P(np.maximum(pts[i], pts[i + 1]) + 1.6), 0.25, tail)
+    return c
+
+
+CREATURES["pip"] = pip
+
+
+# ============================================================================ Elias, the man on the raft (cutscene actor)
+def elias():
+    """a fisherman in his thirties: a dark wool sweater torn at one sleeve, oilskin trousers, boots, a week of beard,
+    hair stiff with dried blood. Rigged like a person: hips, spine, chest, neck, head, jaw, eyelids, arms and legs in
+    three pieces each."""
+    EYE = {1: np.array([0.95, 28.45, -2.25]), -1: np.array([-0.95, 28.45, -2.25])}
+
+    def paint(mat, P, ao, N, tag):
+        x, y, z = P[:, 0], P[:, 1], P[:, 2]
+        n1 = fbm(x, y, z, 2.0, 161)
+        n2 = vnoise(x, y, z, 0.35, 162)
+        skin = ramp(0.6 * n1 + 0.4 * n2, [(0, "#7a5444"), (0.5, "#a87a62"), (1, "#c89a80")])
+        # stubble on the jaw and the upper lip
+        beard = (y < 27.6) & (z < 0.5)
+        skin = np.where(beard[:, None], skin * 0.55 + np.array([40, 30, 24]) * 0.45, skin)
+        hair = ramp(0.5 * n1 + 0.5 * n2, [(0, "#120c08"), (0.6, "#2a1c12"), (1, "#3e2a1c")])
+        knit = vnoise(x * 3, y * 6, z * 3, 1.0, 163)
+        sweater = ramp(0.4 * n1 + 0.6 * knit, [(0, "#14181e"), (0.5, "#222a36"), (1, "#323e4e")])
+        trousers = ramp(0.5 * n1 + 0.5 * n2, [(0, "#1e1a14"), (0.5, "#3a3226"), (1, "#54483a")])
+        boots = ramp(n2, [(0, "#0c0a08"), (1, "#2a221c")])
+        belt = ramp(n2, [(0, "#1a120c"), (1, "#4a3420")])
+        out = skin
+        for m_, col in ((2, hair), (3, sweater), (4, trousers), (5, boots), (6, belt)):
+            out = np.where((mat == m_)[:, None], col, out)
+        # eyes: white, a grey-blue iris, a pupil
+        side = np.where(x > 0, 1, -1)
+        ex = np.where(side > 0, EYE[1][0], EYE[-1][0])
+        r = np.sqrt((x - ex) ** 2 + (y - EYE[1][1]) ** 2)
+        eye = np.where((r < 0.33)[:, None], ramp(r / 0.33, [(0, "#0a0a0a"), (0.45, "#0a0a0a"), (0.5, "#4a5a6a"), (1, "#2a3440")]), np.array([[176, 164, 150]]))
+        out = np.where((mat == 7)[:, None], eye, out)
+        lip = ramp(n2, [(0, "#6a3a34"), (1, "#8a4a44")])
+        out = np.where((mat == 8)[:, None], lip, out)
+        blood = ramp(n2, [(0, "#2a0405"), (1, "#5e0a0c")])
+        drip = blood_drips(P * 1.6, 164, 0.45)[:, None]
+        stain = np.clip((fbm(x, y, z, 5, 165) - 0.55) * 3, 0, 0.8)[:, None]
+        k = np.clip(drip * 0.7 + stain, 0, 0.85)
+        k = np.where((mat == 7)[:, None], 0, k)
+        out = out * (1 - k) + blood * k
+        return out * (0.5 + 0.5 * np.clip(ao, 0, 1.1))[:, None]
+
+    c = Creature("elias", paint, 1024)
+    c.bone("root", (0, 0, 0))
+    c.bone("hips", (0, 14.6, 0), "root")
+    c.bone("torso", (0, 17.2, 0), "hips")
+    c.bone("chest", (0, 21.0, 0), "torso")
+    c.bone("neck", (0, 25.4, 0.2), "chest")
+    c.bone("head", (0, 26.6, 0), "neck")
+    c.bone("jaw", (0, 27.2, 0.6), "head")
+    c.bone("lid_l", tuple(EYE[1]), "head", rotation=[-70, 0, 0])
+    c.bone("lid_r", tuple(EYE[-1]), "head", rotation=[-70, 0, 0])
+
+    def hips(s):
+        X, Y, Z = P3(s)
+        d = ellipsoid(s, (0, 14.4, 0.2), (3.3, 2.2, 2.2))
+        d = d + (fbm(X, Y, Z, 1.5, 166) - 0.5) * 0.25
+        bl = np.where(np.abs(Y - 15.9) < 0.55, d - 0.15, 50.0)
+        d2 = union(d, bl)
+        return d2, np.where(bl <= d2 + 0.01, 6, 4)
+
+    def torso(s):
+        X, Y, Z = P3(s)
+        d = ellipsoid(s, (0, 18.6, 0.2), (3.0, 2.6, 1.9))
+        d = d + (fbm(X, Y, Z, 1.2, 167) - 0.5) * 0.3
+        return d, 3
+
+    def chest(s):
+        X, Y, Z = P3(s)
+        d = ellipsoid(s, (0, 22.4, 0.1), (3.6, 2.9, 2.15))
+        d = smin(d, capsule(s, (-3.6, 24.0, 0.2), (3.6, 24.0, 0.2), 1.55), 1.2)
+        d = d + (fbm(X, Y, Z, 1.0, 168) - 0.5) * 0.35
+        # the collar of the sweater, rolled
+        col = np.maximum(capsule(s, (0, 25.0, 0.2), (0, 25.5, 0.2), 1.55), -capsule(s, (0, 24.6, 0.2), (0, 26.0, 0.2), 1.05))
+        d2 = union(d, col)
+        return d2, 3
+
+    def neck(s):
+        return capsule(s, (0, 24.6, 0.3), (0, 26.9, 0.1), 0.95, 0.9), 1
+
+    def skull(s):
+        X, Y, Z = P3(s)
+        d = ellipsoid(s, (0, 29.0, 0.35), (2.05, 2.55, 2.4))
+        jaw = ellipsoid(s, (0, 27.4, -0.5), (1.6, 1.5, 1.7))
+        d = smin(d, jaw, 0.9)
+        d = smin(d, ellipsoid(s, (0, 26.55, -1.5), (0.75, 0.55, 0.65)), 0.5)          # chin
+        d = smin(d, capsule(s, (0, 28.9, -2.35), (0, 28.0, -2.75), 0.32, 0.4), 0.35)    # nose
+        d = smin(d, union(capsule(s, (0.4, 29.15, -2.15), (1.55, 29.1, -1.85), 0.3), capsule(s, (-0.4, 29.15, -2.15), (-1.55, 29.1, -1.85), 0.3)), 0.4)  # brows
+        d = union(d, ellipsoid(s, (2.05, 28.6, 0.4), (0.3, 0.65, 0.45)), ellipsoid(s, (-2.05, 28.6, 0.4), (0.3, 0.65, 0.45)))  # ears
+        for sx in (1, -1):
+            d = ssub(d, ellipsoid(s, tuple(EYE[sx] + [0, 0, -0.15]), (0.6, 0.4, 0.35)), 0.2)
+        return d
+
+    def head(s):
+        X, Y, Z = P3(s)
+        d = skull(s)
+        d = np.where((Y < 27.25) & (Z < 0.2), 50.0, d)     # the jaw moves on its own
+        eyes = union(*[ellipsoid(s, tuple(EYE[sx]), (0.45, 0.33, 0.25)) for sx in (1, -1)])
+        # hair: a rough cap over the top and back, falling in clumps over the forehead
+        hair = ellipsoid(s, (0, 29.6, 0.6), (2.25, 2.25, 2.45)) - (vnoise(X, Y, Z, 0.55, 169) - 0.3) * 0.7
+        hair = np.maximum(hair, -(Y - 28.9 + np.clip(Z + 0.5, 0, 9) * 0.55 - np.clip(-Z - 1.5, 0, 9) * 0.1))
+        hair = np.maximum(hair, -(Y - 29.6 + 1.4 * (Z < -1.4)))
+        d2 = union(d, eyes, hair)
+        mat = np.where(eyes <= d2 + 0.01, 7, np.where(hair <= d2 + 0.01, 2, 1))
+        return d2, mat
+
+    def jaw(s):
+        X, Y, Z = P3(s)
+        d = skull(s)
+        d = np.where((Y < 27.25) & (Z < 0.2), d, 50.0)
+        lipz = ellipsoid(s, (0, 27.25, -2.2), (0.75, 0.22, 0.3))
+        d2 = union(d, lipz)
+        return d2, np.where(lipz <= d2 + 0.01, 8, 1)
+
+    def lid(sx):
+        def f(s):
+            e = EYE[sx]
+            d = np.maximum(ellipsoid(s, tuple(e), (0.55, 0.43, 0.33)), -ellipsoid(s, tuple(e), (0.46, 0.34, 0.26)))
+            d = np.maximum(d, -(s.Y - e[1]))
+            d = np.maximum(d, s.Z - e[2] + 0.02)
+            return d, 1
+        return f
+
+    c.part("hips", (-4, 11.6, -2.5), (4, 17, 3), 0.33, hips)
+    c.part("torso", (-3.6, 15.5, -2.5), (3.6, 21.5, 2.8), 0.33, torso)
+    c.part("chest", (-5.5, 19, -2.6), (5.5, 26.5, 2.8), 0.33, chest)
+    c.part("neck", (-1.4, 24.2, -1.2), (1.4, 27.4, 1.6), 0.25, neck)
+    c.part("head", (-2.8, 25.8, -3.3), (2.8, 32.4, 3.3), 0.2, head)
+    c.part("jaw", (-2.2, 25.6, -3.3), (2.2, 27.6, 0.4), 0.2, jaw)
+    c.part("lid_l", tuple(EYE[1] - 0.7), tuple(EYE[1] + 0.7), 0.1, lid(1))
+    c.part("lid_r", tuple(EYE[-1] - 0.7), tuple(EYE[-1] + 0.7), 0.1, lid(-1))
+
+    for side, sx in (("l", 1), ("r", -1)):
+        S_, E_, W_ = np.array([sx * 4.3, 24.0, 0.2]), np.array([sx * 4.7, 19.6, 0.4]), np.array([sx * 4.6, 15.4, 0.0])
+        H_, K_, A_ = np.array([sx * 1.75, 14.2, 0.1]), np.array([sx * 1.85, 8.0, -0.2]), np.array([sx * 1.85, 1.6, 0.4])
+        c.bone(f"arm_{side}", tuple(S_), "chest")
+        c.bone(f"fore_{side}", tuple(E_), f"arm_{side}")
+        c.bone(f"hand_{side}", tuple(W_), f"fore_{side}")
+        c.bone(f"thigh_{side}", tuple(H_), "hips")
+        c.bone(f"shin_{side}", tuple(K_), f"thigh_{side}")
+        c.bone(f"foot_{side}", tuple(A_), f"shin_{side}")
+        torn = sx < 0      # the right sleeve torn off below the elbow
+
+        def arm(s, S_=S_, E_=E_):
+            X, Y, Z = P3(s)
+            d = smin(capsule(s, tuple(S_), tuple(E_), 1.35, 1.1), sphere(s, tuple(S_), 1.5), 0.6)
+            return d + (fbm(X, Y, Z, 1.0, 170) - 0.5) * 0.3, 3
+
+        def fore(s, E_=E_, W_=W_, torn=torn):
+            X, Y, Z = P3(s)
+            d = capsule(s, tuple(E_), tuple(W_), 1.05, 0.8)
+            sleeve = np.where(Y > (E_[1] - 1.6 if torn else W_[1] + 0.6), d - 0.18 + (vnoise(X, Y, Z, 0.5, 171) - 0.5) * 0.25, 50.0)
+            d2 = union(d, sleeve)
+            return d2, np.where(sleeve <= d2 + 0.01, 3, 1)
+
+        def hand(s, W_=W_, sx=sx):
+            X, Y, Z = P3(s)
+            palm = ellipsoid(s, tuple(W_ + [0, -1.1, -0.1]), (0.42, 1.0, 0.75))
+            fing = capsule(s, tuple(W_ + [0, -1.6, -0.1]), tuple(W_ + [0, -2.9, -0.35]), 0.4, 0.3)
+            thumb = capsule(s, tuple(W_ + [0, -0.7, -0.6]), tuple(W_ + [-sx * 0.1, -1.6, -1.15]), 0.27, 0.22)
+            d = smin(smin(palm, fing, 0.3), thumb, 0.2)
+            d = d + np.where((np.abs(Z + 0.1 - 0.1) < 0.7) & (Y < W_[1] - 1.7), np.clip(0.06 - np.abs(np.sin((Z + 0.75) * 7.5)) * 0.06, 0, 1) * 1.5, 0)
+            return d, 1
+
+        def thigh(s, H_=H_, K_=K_):
+            X, Y, Z = P3(s)
+            d = smin(capsule(s, tuple(H_), tuple(K_), 1.75, 1.3), sphere(s, tuple(H_ + [0, 0.3, 0]), 1.9), 0.8)
+            return d + (fbm(X, Y, Z, 1.0, 172) - 0.5) * 0.3, 4
+
+        def shin(s, K_=K_, A_=A_):
+            X, Y, Z = P3(s)
+            d = smin(capsule(s, tuple(K_), tuple(A_), 1.3, 1.05), sphere(s, tuple(K_), 1.35), 0.4)
+            boot = np.where(Y < 5.2, d - 0.2, 50.0)
+            d2 = union(d, boot)
+            return d2 + (fbm(X, Y, Z, 1.0, 173) - 0.5) * 0.25, np.where(boot <= d2 + 0.01, 5, 4)
+
+        def foot(s, A_=A_):
+            X, Y, Z = P3(s)
+            d = smin(ellipsoid(s, tuple(A_ + [0, -0.6, -1.4]), (1.15, 0.9, 2.5)), capsule(s, tuple(A_ + [0, 0.6, 0]), tuple(A_ + [0, -0.4, 0.2]), 1.15), 0.5)
+            d = np.maximum(d, -Y)
+            return d, 5
+        c.part(f"arm_{side}", tuple(np.minimum(S_, E_) - 2), tuple(np.maximum(S_, E_) + 2), 0.33, arm)
+        c.part(f"fore_{side}", tuple(np.minimum(E_, W_) - 1.6), tuple(np.maximum(E_, W_) + 1.6), 0.3, fore)
+        c.part(f"hand_{side}", tuple(W_ - [1.2, 3.8, 1.8]), tuple(W_ + [1.2, 0.4, 1.2]), 0.18, hand)
+        c.part(f"thigh_{side}", tuple(np.minimum(H_, K_) - 2.2), tuple(np.maximum(H_, K_) + 2.2), 0.33, thigh)
+        c.part(f"shin_{side}", tuple(np.minimum(K_, A_) - 1.8), tuple(np.maximum(K_, A_) + 1.8), 0.33, shin)
+        c.part(f"foot_{side}", tuple(A_ - [1.6, 1.8, 4.4]), tuple(A_ + [1.6, 1.6, 1.6]), 0.3, foot)
+    return c
+
+
+CREATURES["elias"] = elias
+
+
 if __name__ == "__main__":
     names = sys.argv[1:] or [k for k in CREATURES]
     for n in names:
