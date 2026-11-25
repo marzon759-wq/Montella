@@ -38,6 +38,10 @@ public final class SeaSurface {
         lx /= ll; ly /= ll; lz /= ll;
         float lightK = day ? (float) Math.min(1, 0.35 + sy) : 0.35f;
         float[] specC = day ? new float[]{1.0f, 0.82f, 0.74f} : new float[]{0.9f, 0.12f, 0.08f};
+        // the raft breaks the swell: around it the blood lies almost flat, so nothing on its deck seems to slide
+        java.util.List<double[]> calm = new java.util.ArrayList<>();
+        for (com.krolasyon.bloodsea.entity.RaftEntity r : mc.level.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, new net.minecraft.world.phys.AABB(c, c).inflate(reach)))
+            calm.add(new double[]{r.getX(), r.getZ()});
         // the grid: 1 block near the eye, coarser further out, snapped to the world so it never swims
         int snap = 8;
         double ox = Math.floor(c.x / snap) * snap, oz = Math.floor(c.z / snap) * snap;
@@ -51,8 +55,15 @@ public final class SeaSurface {
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < nz; j++) {
                 double x = xs[i], z = zs[j];
-                double h = Waves.height(x, z, t);
+                double damp = 1;
+                for (double[] cr : calm) {
+                    double dd = Math.max(Math.abs(x - cr[0]), Math.abs(z - cr[1])) - 2.5;
+                    damp = Math.min(damp, Math.max(0.12, Math.min(1, dd / 7.0)));
+                }
+                double h = Waves.height(x, z, t) * damp - (1 - damp) * 0.25;
                 double[] s = Waves.slope(x, z, t);
+                s[0] *= damp;
+                s[1] *= damp;
                 double nxv = -s[0], nyv = 1, nzv = -s[1];
                 double nl = Math.sqrt(nxv * nxv + nyv * nyv + nzv * nzv);
                 nxv /= nl; nyv /= nl; nzv /= nl;

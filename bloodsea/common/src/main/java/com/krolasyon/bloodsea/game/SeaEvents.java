@@ -74,6 +74,8 @@ public final class SeaEvents {
                         .then(Commands.argument("action", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(ctx ->
                                 debugState(ctx.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "s"),
                                         com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "action")))))));
+        c.then(Commands.literal("cut").requires(s -> s.hasPermission(2)).then(Commands.argument("id", com.mojang.brigadier.arguments.StringArgumentType.word())
+                .executes(ctx -> { com.krolasyon.bloodsea.story.Story.play(ctx.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id"), () -> {}); return 1; })));
         c.then(Commands.literal("moveraft").requires(s -> s.hasPermission(2)).then(Commands.argument("x", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg())
                 .then(Commands.argument("z", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg()).executes(ctx -> {
                     ServerPlayer p = ctx.getSource().getPlayerOrException();
@@ -115,16 +117,17 @@ public final class SeaEvents {
         return 1;
     }
 
-    public static void enter(ServerPlayer p) {
+    public static com.krolasyon.bloodsea.entity.RaftEntity enter(ServerPlayer p) {
         ServerLevel sea = p.server.getLevel(SEA);
         if (sea == null) {
             p.sendSystemMessage(Component.literal("The Blood Sea is missing (datapack not loaded)."));
-            return;
+            return null;
         }
         com.krolasyon.bloodsea.entity.RaftEntity raft = raftFor(sea, p);
         p.teleportTo(sea, raft.getX(), raft.getY() + com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, raft.getZ() + 1.5, 180f, 0f);
         REGION.remove(p.getUUID());
         DAY.remove(p.getUUID());
+        return raft;
     }
 
     /** the raft: the one already afloat near the middle, or a new one */
@@ -142,6 +145,20 @@ public final class SeaEvents {
         }
         d.putUUID("bloodsea_raft", r.getUUID());
         return r;
+    }
+
+    /** only ever one raft: any other found near the player (a double made while the world was still loading) goes */
+    static void oneRaft(ServerPlayer p, ServerLevel lvl) {
+        var rafts = lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, p.getBoundingBox().inflate(96));
+        if (rafts.size() < 2) return;
+        net.minecraft.nbt.CompoundTag d = p.getPersistentData();
+        com.krolasyon.bloodsea.entity.RaftEntity keep = null;
+        for (var r : rafts) if (r.getControllingPassenger() == p) keep = r;
+        if (keep == null && d.hasUUID("bloodsea_raft")) for (var r : rafts) if (r.getUUID().equals(d.getUUID("bloodsea_raft"))) keep = r;
+        if (keep == null) keep = rafts.get(0);
+        for (var r : rafts) if (r != keep) { r.ejectPassengers(); r.discard(); }
+        d.putUUID("bloodsea_raft", keep.getUUID());
+        log("[RAFT] removed {} extra raft(s)", rafts.size() - 1);
     }
 
     // ================================================================== the blood: touch it and it kills you
@@ -222,6 +239,7 @@ public final class SeaEvents {
             }
         }
         if (now % 20 != 0) return;
+        if (now % 100 == 0) oneRaft(p, lvl);
         if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
         com.krolasyon.bloodsea.story.Story.tick(p);
         boolean inBlood = p.isInFluidType(ModFluids.BLOOD_TYPE.get());

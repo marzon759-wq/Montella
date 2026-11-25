@@ -67,8 +67,8 @@ public final class SeaClient {
         double[] s = Waves.slope(p.getX(), p.getZ(), t);
         double a = Math.toRadians(p.getYRot());
         double fx = -Math.sin(a), fz = Math.cos(a);
-        float pitch = (float) Math.toDegrees(Math.atan(s[0] * fx + s[1] * fz)) * 0.6f;
-        float roll = (float) Math.toDegrees(Math.atan(s[0] * -fz + s[1] * fx)) * 0.6f;
+        float pitch = (float) Math.toDegrees(Math.atan(s[0] * fx + s[1] * fz)) * 0.25f;
+        float roll = (float) Math.toDegrees(Math.atan(s[0] * -fz + s[1] * fx)) * 0.25f;
         return new float[]{pitch, roll};
     }
 }

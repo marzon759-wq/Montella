@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * you can stand on agree. It rides the swell - the drawing of it, and whoever sits on it.
  */
 public class RaftEntity extends RaftBase {
-    public static final double Y = Waves.MEAN - 0.05;
+    public static final double Y = Waves.MEAN + 0.05;
     public static final float HALF = 2.5f, TOP = 0.55f;
     /** the client's steering keys: {forward, strafe} - set by the client setup */
     public static Supplier<float[]> INPUT = () -> new float[]{0, 0};
@@ -60,7 +60,9 @@ public class RaftEntity extends RaftBase {
     }
 
     /** the swell under the middle of the raft, on the client only (the server keeps it flat) */
-    public double bob(float pt) { return level().isClientSide ? Waves.height(getX(), getZ(), Waves.time(level(), pt)) * 0.8 : 0; }
+    /** the raft is heavy: it does not rise and fall with the swell (whatever stands on it would seem to slide), it
+     * only rocks a little; see RaftRenderer */
+    public double bob(float pt) { return 0; }
 
     @Override
     protected void positionRider(Entity e, Entity.MoveFunction f) {

@@ -24,14 +24,14 @@ public final class Cuts {
         cut("wake")
                 .at(0, s -> { s.actorAt(0, 0.02, -1.4, 0); s.actor("wake"); s.pipAt(-6, -20, 0, 0); s.time(1000, 1000, 1); })
                 // the raft alone on the blood, the camera coming down out of the sky
-                .shot(90, v(26, 22, 22), v(0, 0, 0), v(9, 5, 7), v(0, 0, 0), 55, 60)
+                .shot(90, v(26, 22, 22), v(0, 0.6, 0), v(9, 5, 7), v(0, 0.6, 0), 55, 60)
                 // close on him, face down on the logs; a finger moves
-                .shot(60, v(1.1, 0.45, 0.9), v(0, 0.2, 0.3), v(0.9, 0.5, 0.7), v(0, 0.25, 0.3), 50, 46)
+                .shot(60, v(-1.1, 0.6, 0.9), v(0, 0.2, 0.2), v(-0.9, 0.62, 0.7), v(0, 0.25, 0.2), 50, 46)
                 // he pushes himself up, coughing
-                .shot(80, v(2.8, 1.1, -0.5), v(0, 0.6, -0.4), v(2.6, 1.3, -0.9), v(0, 0.8, -0.6))
+                .shot(80, v(-2.3, 1.9, 0.8), v(0, 0.6, -0.8), v(-2.1, 2.0, 0.3), v(0, 0.8, -1.0))
                 .say(100, "wake.1")
                 // on his knees, looking at his hands
-                .shot(80, v(0.1, 1.05, 0.6), v(0, 0.9, -1.4), v(0.2, 1.0, 0.45), v(0, 0.85, -1.4), 55, 48)
+                .shot(80, v(-0.9, 1.25, 0.3), v(0, 0.85, -1.3), v(-0.75, 1.2, 0.2), v(0, 0.8, -1.3), 55, 48)
                 .say(168, "wake.2")
                 // the hand to the head; he gets up and looks out at the sea
                 .shot(90, v(-1.2, 2.3, -3.8), v(1.5, 1.2, 6), v(-0.8, 2.2, -3.6), v(2.5, 1.3, 8))
@@ -40,7 +40,7 @@ public final class Cuts {
                 // a meow behind him: Pip
                 .at(388, s -> { s.pipAt(-1.4, 0.02, -1.45, 60); s.pip("stand"); s.pipMeow(); })
                 .at(392, s -> { s.actorAt(0, 0.02, -1.4, 90); s.actor("look_around"); })
-                .shot(80, v(-0.3, 0.55, -0.5), v(-1.4, 0.3, -1.45), v(-0.2, 0.5, -0.6), v(-1.4, 0.35, -1.45), 50, 44)
+                .shot(80, v(0.6, 0.8, 0.2), v(-1.4, 0.3, -1.45), v(0.5, 0.75, 0.0), v(-1.4, 0.35, -1.45), 50, 44)
                 .at(415, s -> s.actor("kneel_reach"))
                 .say(420, "wake.3")
                 .at(450, s -> { s.pipWalk(-0.7, 0.02, -1.4, 90, 30); s.pip("walk"); })
@@ -52,24 +52,24 @@ public final class Cuts {
                 .shot(90, v(-0.2, 0.7, 0.4), v(-0.4, 0.6, -1.4), v(-0.3, 0.6, 0.2), v(-0.5, 0.55, -1.4), 48, 42)
                 // the map tied to the mast
                 .at(620, s -> { s.actorAt(0.2, 0.02, 0.6, 0); s.actor("talk"); s.pip("sit"); })
-                .shot(90, v(1.5, 1.7, 0.4), v(0.1, 1.4, 1.3), v(1.3, 1.6, 0.6), v(0.1, 1.35, 1.3))
+                .shot(90, v(1.0, 1.9, -0.6), v(0.1, 1.45, 1.6), v(0.8, 1.85, -0.5), v(0.05, 1.4, 1.7))
                 .say(625, "wake.6")
-                .shot(90, v(0, 1.8, 4.2), v(0, 1.3, 0.4), v(0.4, 1.7, 3.8), v(0, 1.3, 0.4))
+                .shot(90, v(-1.7, 1.9, 4.0), v(0.2, 1.3, 0.6), v(-1.6, 1.8, 3.6), v(0.2, 1.3, 0.6))
                 .say(735, "wake.7")
                 .len(830);
 
         // ============================================================== the rule: the blood eats what it touches
         cut("rule")
-                .at(0, s -> { s.actorAt(0, 0.02, -1.4, 0); s.actor("stand"); s.pipAt(1.0, 0.02, 0.4, -90); s.pip("walk");
-                    s.pipWalk(2.0, 0.02, 0.6, -90, 30); s.drop(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD), 2.3, 0.1, 0.9); })
+                .at(0, s -> { s.actorAt(0, 0.02, -1.4, 0); s.actor("stand"); s.pipAt(-1.0, 0.02, 0.4, 90); s.pip("walk");
+                    s.pipWalk(-2.0, 0.02, 0.5, 90, 30); s.drop(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD), -2.3, 0.1, 0.5); })
                 .at(32, s -> s.pip("swipe"))
-                .hold(70, v(1.2, 0.6, -0.8), v(2.3, 0.2, 0.9))
+                .hold(70, v(0.4, 0.9, -0.9), v(-2.2, 0.2, 0.5))
                 .say(30, "rule.1")
                 .at(40, s -> { s.actor("recoil"); })
-                .at(70, s -> { s.splash(3.1, -0.3, 1.0); s.puff(3.1, -0.2, 1.0, 20); s.sound("blood_splash", 1.2f, 1.3f); })
+                .at(70, s -> { s.splash(-3.1, -0.3, 0.5); s.puff(-3.1, -0.2, 0.5, 20); s.sound("blood_splash", 1.2f, 1.3f); })
                 .at(72, s -> s.lvl().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, s.p.getBoundingBox().inflate(12)).forEach(e -> e.discard()))
-                .shot(80, v(1.6, 1.4, 0.2), v(3.2, -0.3, 1.0), v(1.7, 1.2, 0.3), v(3.2, -0.3, 1.0), 50, 40)
-                .at(90, s -> { s.puff(3.1, -0.1, 1.0, 30); s.pip("hiss"); })
+                .shot(80, v(-1.0, 2.0, -1.4), v(-3.2, -0.3, 0.6), v(-1.1, 1.8, -1.2), v(-3.2, -0.3, 0.6), 50, 40)
+                .at(90, s -> { s.puff(-3.1, -0.1, 0.5, 30); s.pip("hiss"); })
                 .say(130, "rule.2")
                 .at(150, s -> { s.pipWalk(-1.4, 0.02, -1.45, 180, 30); s.pip("walk"); })
                 .shot(110, v(0.6, 1.75, 0.8), v(-0.1, 1.55, -1.4), v(0.4, 1.7, 0.5), v(-0.1, 1.55, -1.4), 50, 44)
@@ -79,17 +79,17 @@ public final class Cuts {
 
         // ============================================================== Pip's gift
         cut("gift")
-                .at(0, s -> { s.actorAt(0, 0.02, -1.0, 0); s.actor("stand"); s.pipAt(2.0, 0.02, 1.4, 150); s.pip("carry"); s.pipWalk(0.15, 0.02, -0.1, 180, 70); })
-                .shot(80, v(1.2, 0.35, -0.4), v(1.4, 0.3, 1.0), v(0.9, 0.35, -0.5), v(0.3, 0.3, 0.1), 55, 50)
+                .at(0, s -> { s.actorAt(0, 0.02, -1.0, 0); s.actor("stand"); s.pipAt(-2.0, 0.02, 1.0, -117); s.pip("carry"); s.pipWalk(0.55, 0.02, -0.15, -150, 70); })
+                .shot(80, v(1.0, 0.5, -0.2), v(-1.6, 0.3, 0.8), v(1.1, 0.55, -0.8), v(0.4, 0.3, -0.1), 55, 50)
                 .say(20, "gift.1")
                 .at(72, s -> s.pip("drop"))
                 .at(80, s -> s.actor("kneel_reach"))
                 .at(86, s -> s.drop(com.krolasyon.bloodsea.compat.Compat.named(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COD),
-                        net.minecraft.network.chat.Component.translatable("item.bloodsea.pip_fish")), 0.1, 0.2, -0.4))
-                .shot(90, v(-0.7, 0.55, 0.7), v(0.1, 0.3, -0.3), v(-0.6, 0.5, 0.6), v(0.1, 0.35, -0.3), 46, 40)
+                        net.minecraft.network.chat.Component.translatable("item.bloodsea.pip_fish")), 0.1, 0.2, -0.45))
+                .shot(90, v(-0.9, 0.95, 0.9), v(0.1, 0.3, -0.4), v(-0.8, 0.9, 0.8), v(0.1, 0.35, -0.4), 46, 40)
                 .say(110, "gift.2")
                 .at(170, s -> { s.actor("pet"); s.pip("petted"); s.sound("pip_purr", 1f, 1f); })
-                .shot(100, v(1.6, 1.3, 0.8), v(0, 0.6, -0.6), v(1.4, 1.2, 0.5), v(0, 0.6, -0.6))
+                .shot(100, v(-1.6, 1.4, 0.6), v(0, 0.6, -0.6), v(-1.4, 1.3, 0.4), v(0, 0.6, -0.6))
                 .say(195, "gift.3")
                 .len(280);
 
@@ -108,12 +108,12 @@ public final class Cuts {
         // ============================================================== something under the raft
         cut("bump")
                 .at(0, s -> { s.actorAt(0, 0.02, -1.0, 0); s.actor("sit"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("sleep"); })
-                .hold(40, v(3, 1.2, 3), v(0, 0.6, -0.8))
+                .hold(40, v(-2.6, 1.5, 2.4), v(0, 0.6, -0.9))
                 .at(25, s -> { s.shake(18); s.sound("blood_splash", 2f, 0.5f); s.splash(2.8, -0.3, 0.5); })
                 .at(32, s -> { s.pip("hiss"); s.actor("recoil"); s.sound("pip_hiss", 1.4f, 1f); })
                 .shot(70, v(-0.5, 0.45, 0.4), v(-1.4, 0.35, -1.45), v(-0.5, 0.45, 0.2), v(-1.4, 0.35, -1.45), 48, 44)
                 .say(60, "bump.1")
-                .shot(90, v(1.0, 0.6, 3.6), v(2.6, -0.3, 0.5), v(1.6, 0.4, 3.4), v(3.2, -0.3, -1.5), 50, 50)
+                .shot(90, v(0.6, 1.3, -1.6), v(3.0, -0.3, 0.2), v(1.0, 1.2, -1.9), v(3.4, -0.3, -1.2), 50, 50)
                 .at(120, s -> { s.shake(10); s.sound("wake_swim", 2f, 0.6f); })
                 .len(200);
 
@@ -154,28 +154,28 @@ public final class Cuts {
 
         // ============================================================== the Bone Reach, and what gets up out of it
         cut("bones")
-                .at(0, s -> { s.actorAt(0, 0.02, 1.4, 0); s.actor("look_around"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("hiss"); })
-                .shot(110, v(-0.6, 2.4, -1.5), v(0, 1, 30), v(0.4, 2.4, -1.0), v(-8, 2, 30))
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.4, 0); s.actor("look_around"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("hiss"); })
+                .shot(110, v(-1.2, 2.5, -0.8), v(-1, 2.0, 30), v(-1.5, 2.5, -0.4), v(-4, 2.0, 30))
                 .say(30, "bones.1")
-                .shot(80, v(0.8, 1.6, 3.0), v(0, 1.6, 1.4), v(0.6, 1.6, 2.8), v(0, 1.6, 1.4))
+                .shot(80, v(-0.6, 1.75, 3.9), v(-0.75, 1.6, 1.4), v(-0.85, 1.7, 3.5), v(-0.75, 1.6, 1.4))
                 .say(115, "bones.2")
                 .at(180, s -> { s.spawn("gatherer", 3, -1.0, 24, 180); s.anim("gatherer", "assemble"); s.keep("gatherer"); })
-                .shot(150, v(0.8, 2.2, 1.0), v(3, 4, 24), v(0.5, 2.0, 0.6), v(3, 6, 24), 50, 42)
+                .shot(150, v(1.9, 2.2, 2.8), v(3, 3, 24), v(1.7, 2.1, 2.5), v(3, 4.5, 24), 50, 42)
                 .at(300, s -> { s.anim("gatherer", "walk"); s.act("gatherer", "roar"); s.actor("recoil"); })
-                .shot(80, v(-2.5, 1.0, -3.0), v(2, 3, 20), v(-2.8, 1.2, -3.4), v(2, 3, 18))
+                .shot(80, v(-3.4, 1.1, -2.2), v(1.5, 3, 20), v(-3.7, 1.3, -2.6), v(1.5, 3, 18))
                 .say(320, "bones.3")
                 .len(430);
 
         // ============================================================== the Leviathan rises
         cut("lev")
-                .at(0, s -> { s.actorAt(0, 0.02, 0.6, 0); s.actor("stand"); s.pipAt(-0.7, 0.02, 0.2, 0); s.pip("scared"); s.sound("lev_heartbeat", 3f, 0.8f); })
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 0.9, 0); s.actor("stand"); s.pipAt(-1.3, 0.02, 0.0, 0); s.pip("scared"); s.sound("lev_heartbeat", 3f, 0.8f); })
                 .at(10, s -> { s.spawn("leviathan", 0, -0.2, 34, 180); s.anim("leviathan", "rise"); s.sound("lev_rise", 6f, 0.8f); s.shake(80); })
                 .shot(130, v(-2.5, 1.0, -4.0), v(0, 6, 30), v(-3.0, 1.4, -5.5), v(0, 9, 30), 60, 70)
                 .say(140, "lev.1")
                 .at(160, s -> { s.act("leviathan", "roar"); s.sound("lev_roar", 8f, 0.85f); s.shake(60); s.actor("recoil"); })
-                .shot(100, v(0.9, 1.7, 2.4), v(0, 1.6, 0.6), v(0.7, 1.6, 2.2), v(0, 1.6, 0.6), 50, 44)
-                .at(260, s -> { s.actorAt(-0.3, 0.02, 0.4, 0); s.actor("kneel_reach"); })
-                .shot(110, v(-1.8, 0.7, -0.4), v(0, 7, 30), v(-1.5, 0.6, -0.6), v(0, 8, 30), 55, 50)
+                .shot(100, v(-0.6, 1.75, 3.6), v(-0.75, 1.6, 0.9), v(-0.85, 1.7, 3.2), v(-0.75, 1.6, 0.9), 50, 44)
+                .at(260, s -> { s.actorAt(-0.9, 0.02, 0.7, 0); s.actor("kneel_reach"); })
+                .shot(110, v(-1.5, 0.6, -0.9), v(0.5, 8, 30), v(-1.3, 0.55, -1.1), v(0.5, 9, 30), 55, 50)
                 .say(270, "lev.2")
                 .len(380);
 
@@ -194,56 +194,56 @@ public final class Cuts {
 
         // ============================================================== the voice in the fog
         cut("voice")
-                .at(0, s -> { s.actorAt(0, 0.02, 0.8, 0); s.actor("look_around"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("look_up");
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.0, 0); s.actor("look_around"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("look_up");
                     s.spawn("caller", -9, -0.2, 30, 180); s.anim("caller", "whisper"); })
-                .shot(120, v(0.5, 1.7, -0.6), v(-9, 4, 30), v(0.4, 1.7, -0.3), v(-9, 5, 30), 60, 48)
+                .shot(120, v(0.1, 1.9, -0.8), v(-9, 4, 30), v(0.1, 1.9, -0.5), v(-9, 5, 30), 60, 48)
                 .say(30, "voice.1")
-                .shot(110, v(0.7, 1.7, 2.6), v(0, 1.65, 0.8), v(0.6, 1.65, 2.3), v(0, 1.65, 0.8))
+                .shot(110, v(-0.6, 1.75, 3.5), v(-0.75, 1.65, 1.0), v(-0.85, 1.7, 3.1), v(-0.75, 1.65, 1.0))
                 .say(125, "voice.2")
                 .at(200, s -> s.actor("stand"))
-                .shot(90, v(-1.2, 1.0, -1.0), v(-9, 4, 30), v(-1.1, 1.0, -0.6), v(-9, 4, 30), 45, 35)
+                .shot(90, v(-2.3, 1.1, -1.4), v(-7, 4, 30), v(-2.2, 1.1, -1.0), v(-7, 4, 30), 45, 35)
                 .say(235, "voice.3")
                 .len(320);
 
         // ============================================================== Pip is taken
         cut("taken")
                 .at(0, s -> { s.actorAt(0, 0.02, -1.3, 0); s.actor("sit"); s.pipAt(-1.4, 0.02, -1.45, 0); s.pip("sit");
-                    s.spawn("caller", 3.6, -7.5, 2.2, -90); s.anim("caller", "idle"); })
+                    s.spawn("caller", -3.6, -7.5, 0.4, 90); s.anim("caller", "idle"); })
                 .shot(90, v(-3.5, 2.0, 3.5), v(-0.6, 0.5, -1.2), v(-3.2, 2.1, 3.0), v(-0.6, 0.5, -1.2))
                 .say(20, "taken.1")
                 .at(80, s -> { s.pip("stand"); })
-                .at(100, s -> { s.pip("walk"); s.pipWalk(1.9, 0.02, 1.8, -60, 70); })
-                .shot(90, v(-0.6, 0.35, -0.4), v(0.8, 0.3, 0.6), v(-0.2, 0.35, -0.2), v(1.9, 0.3, 1.8), 48, 44)
+                .at(100, s -> { s.pip("walk"); s.pipWalk(-2.15, 0.02, 0.4, 60, 70); })
+                .shot(90, v(-0.2, 0.45, -0.4), v(-1.5, 0.3, -0.8), v(-0.1, 0.45, -0.2), v(-2.1, 0.3, 0.4), 48, 44)
                 .at(150, s -> { s.actor("kneel_reach"); s.pip("look_up"); })
                 .say(160, "taken.2")
-                .shot(80, v(2.4, 0.5, 2.6), v(0, 0.8, -1.1), v(2.3, 0.5, 2.4), v(0, 0.8, -1.1), 50, 46)
+                .shot(80, v(0.9, 0.7, 0.3), v(-0.3, 0.8, -1.2), v(0.85, 0.7, 0.1), v(-0.3, 0.8, -1.2), 50, 46)
                 // the hand
-                .at(240, s -> { s.moveThing("caller", 3.4, -1.0, 2.2, -90, 14); s.act("caller", "lunge"); s.sound("caller_lunge", 3f, 0.9f); s.splash(3, -0.2, 2); })
-                .at(252, s -> { s.pip("struggle"); s.sound("pip_scream", 1.6f, 1f); s.pipWalk(2.9, 1.0, 2.2, -90, 8); })
-                .at(256, s -> { s.actorWalk(1.4, 0.02, 1.0, 40, 12); s.actor("reach_scream"); })
+                .at(240, s -> { s.moveThing("caller", -3.4, -1.0, 0.4, 90, 14); s.act("caller", "lunge"); s.sound("caller_lunge", 3f, 0.9f); s.splash(-3, -0.2, 0.4); })
+                .at(252, s -> { s.pip("struggle"); s.sound("pip_scream", 1.6f, 1f); s.pipWalk(-2.9, 1.0, 0.4, 90, 8); })
+                .at(256, s -> { s.actorWalk(-1.3, 0.02, 0.0, 70, 12); s.actor("reach_scream"); })
                 .say(258, "taken.3")
-                .shot(80, v(-1.5, 2.6, -1.8), v(2.4, 0.4, 2.0), v(-1.3, 2.5, -1.4), v(2.6, 0.2, 2.1), 58, 52)
-                .at(276, s -> { s.pipWalk(3.4, -3.0, 2.3, -90, 30); s.moveThing("caller", 3.6, -8, 2.2, -90, 34); })
-                .at(300, s -> { s.splash(3.2, -0.2, 2.2); s.sound("blood_splash", 2f, 0.6f); })
+                .shot(80, v(1.4, 2.6, -1.6), v(-2.5, 0.5, 0.3), v(1.2, 2.5, -1.2), v(-2.7, 0.3, 0.4), 58, 52)
+                .at(276, s -> { s.pipWalk(-3.4, -3.0, 0.5, 90, 30); s.moveThing("caller", -3.6, -8, 0.4, 90, 34); })
+                .at(300, s -> { s.splash(-3.2, -0.2, 0.4); s.sound("blood_splash", 2f, 0.6f); })
                 .at(318, s -> { s.pipGone(); s.gone("caller"); })
-                .shot(70, v(2.0, 1.2, 1.1), v(3.2, -0.3, 2.3), v(2.0, 1.0, 1.2), v(3.2, -0.3, 2.3), 45, 38)
-                .at(330, s -> { s.actorAt(1.3, 0.02, 0.9, 40); s.actor("sob"); })
-                .shot(130, v(0.1, 0.6, 1.9), v(1.3, 0.7, 0.9), v(0.2, 0.55, 1.8), v(1.3, 0.65, 0.9), 50, 42)
+                .shot(70, v(-1.2, 1.4, -1.9), v(-3.2, -0.3, 0.4), v(-1.3, 1.3, -1.7), v(-3.2, -0.3, 0.4), 45, 38)
+                .at(330, s -> { s.actorAt(-1.3, 0.02, 0.0, 70); s.actor("sob"); })
+                .shot(130, v(-2.9, 0.9, 0.9), v(-1.3, 0.7, 0.0), v(-2.8, 0.85, 0.7), v(-1.3, 0.65, 0.0), 50, 42)
                 .say(380, "taken.4")
-                .shot(180, v(1.6, 2.2, 0.0), v(1.3, 0.4, 0.9), v(2, 14, -2), v(1.3, 0.4, 0.9), 50, 60)
+                .shot(180, v(-0.4, 2.2, -1.0), v(-1.3, 0.4, 0.0), v(-0.5, 14, -2.5), v(-1.3, 0.4, 0.0), 50, 60)
                 .say(500, "taken.5")
                 .len(660);
 
         // ============================================================== ending: the lighthouse (the light, the fall)
         cut("mirage")
-                .at(0, s -> { s.actorAt(0, 0.02, 1.6, 0); s.actor("stand"); })
-                .shot(120, v(0.8, 1.8, -2.0), v(0, 6, 40), v(0.5, 1.8, -1.0), v(0, 8, 40))
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.4, 0); s.actor("stand"); })
+                .shot(120, v(-1.1, 2.0, -0.6), v(-1.5, 6, 40), v(-1.0, 2.0, 0.2), v(-1.5, 8, 40))
                 .say(30, "mirage.1")
                 .at(110, s -> s.actor("talk"))
-                .shot(100, v(0.8, 1.7, 3.4), v(0, 1.6, 1.6), v(0.6, 1.7, 3.0), v(0, 1.6, 1.6))
+                .shot(100, v(-0.6, 1.75, 3.9), v(-0.75, 1.6, 1.4), v(-0.85, 1.7, 3.5), v(-0.75, 1.6, 1.4))
                 .say(120, "mirage.2")
                 .at(220, s -> s.actor("hold_head"))
-                .shot(90, v(0.4, 1.7, 2.6), v(0, 1.65, 1.6), v(0.3, 1.7, 2.3), v(0, 1.65, 1.6), 50, 40)
+                .shot(90, v(-0.7, 1.7, 3.2), v(-0.75, 1.65, 1.4), v(-0.75, 1.7, 2.9), v(-0.75, 1.65, 1.4), 50, 40)
                 .say(225, "mirage.3")
                 .white(250)
                 .at(290, s -> s.actor("collapse"))
@@ -287,27 +287,27 @@ public final class Cuts {
 
         // ============================================================== ending: the throne of bones
         cut("throne")
-                .at(0, s -> { s.actorAt(0, 0.02, 1.8, 0); s.actor("stand"); })
-                .shot(120, v(1.2, 1.8, -1.5), v(0, 8, 60), v(0.8, 2.2, -0.6), v(0, 10, 60))
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.4, 0); s.actor("stand"); })
+                .shot(120, v(-1.1, 2.0, -0.6), v(-1.5, 8, 60), v(-1.0, 2.2, 0.2), v(-1.5, 10, 60))
                 .say(30, "throne.1")
-                .shot(120, v(0.8, 1.7, 3.6), v(0, 1.6, 1.8), v(0.6, 1.7, 3.2), v(0, 1.6, 1.8), 50, 44)
+                .shot(120, v(-0.6, 1.75, 3.9), v(-0.75, 1.6, 1.4), v(-0.85, 1.7, 3.5), v(-0.75, 1.6, 1.4), 50, 44)
                 .say(130, "throne.2")
                 .at(250, s -> { s.spawn("gatherer", 6, -0.5, 14, 200); s.anim("gatherer", "idle"); s.act("gatherer", "roar"); })
                 .shot(130, v(-2.2, 1.4, -1.0), v(4, 4, 14), v(-2.0, 1.6, -0.6), v(3, 5, 12))
                 .say(255, "throne.3")
                 .at(380, s -> { s.actor("kneel_reach"); s.moveThing("gatherer", 1.5, -0.5, 4.5, 200, 120); })
-                .shot(160, v(1.6, 2.0, 0.4), v(0, 1.2, 1.8), v(4, 6, -4), v(0, 1.2, 1.8), 50, 62)
+                .shot(160, v(1.6, 2.0, 0.4), v(-0.75, 1.2, 1.4), v(4, 6, -4), v(-0.75, 1.2, 1.4), 50, 62)
                 .say(400, "throne.4")
                 .len(560);
 
         // ============================================================== ending: into the Maw
         cut("maw")
-                .at(0, s -> { s.actorAt(0, 0.02, 1.6, 0); s.actor("stand"); s.sound("lev_heartbeat", 4f, 0.7f); })
-                .shot(130, v(0.6, 1.8, -2.4), v(0, 4, 60), v(0.4, 1.8, -1.0), v(0, 3, 60))
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.4, 0); s.actor("stand"); s.sound("lev_heartbeat", 4f, 0.7f); })
+                .shot(130, v(-1.1, 2.0, -0.8), v(-1.5, 4, 60), v(-1.0, 2.0, 0.2), v(-1.5, 3, 60))
                 .say(40, "maw.1")
                 .at(140, s -> s.sound("lev_roar", 6f, 0.7f))
                 .black(170, 260)
-                .hold(130, v(0.8, 1.7, 3.0), v(0, 1.6, 1.6))
+                .hold(130, v(-0.7, 1.7, 3.6), v(-0.75, 1.6, 1.4))
                 .len(260);
 
         // ============================================================== ending: the grey sea, and the boat that comes
@@ -334,14 +334,14 @@ public final class Cuts {
 
         // ============================================================== ending: the edge of the world
         cut("edge")
-                .at(0, s -> { s.actorAt(0, 0.02, 1.8, 0); s.actor("stand"); })
-                .shot(130, v(0.8, 2.0, -1.8), v(0, -6, 40), v(0.5, 2.2, -0.8), v(0, -10, 40))
+                .at(0, s -> { s.actorAt(-0.75, 0.02, 1.4, 0); s.actor("stand"); })
+                .shot(130, v(-1.1, 2.2, -0.6), v(-1.5, -6, 40), v(-1.0, 2.4, 0.2), v(-1.5, -10, 40))
                 .say(30, "edge.1")
-                .shot(110, v(0.9, 1.7, 3.6), v(0, 1.6, 1.8), v(0.7, 1.7, 3.3), v(0, 1.6, 1.8), 50, 44)
+                .shot(110, v(-0.6, 1.75, 3.9), v(-0.75, 1.6, 1.4), v(-0.85, 1.7, 3.5), v(-0.75, 1.6, 1.4), 50, 44)
                 .say(140, "edge.2")
                 .at(240, s -> s.actor("jump"))
-                .at(268, s -> { s.actor("fall"); s.actorWalk(0, -70, 12, 0, 220); })
-                .shot(260, v(1.0, 2.4, 1.0), v(0, 0.5, 4.0), v(1.5, -60, 9), v(0, -70, 12), 55, 70)
+                .at(268, s -> { s.actor("fall"); s.actorWalk(-0.75, -70, 12, 0, 220); })
+                .shot(260, v(-1.0, 2.6, 0.0), v(-0.75, 0.5, 4.0), v(-0.5, -60, 9), v(-0.75, -70, 12), 55, 70)
                 .say(330, "edge.3")
                 .len(500);
     }

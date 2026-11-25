@@ -23,7 +23,12 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     private final double ox, oy, oz;
     private final float yaw;
     private int t, skipHold;
-    private boolean sent;
+    private boolean sent, onRaft;
+    /** what stands on the raft's deck, in the cut's local frame (x0, x1, y0, y1, z0, z1): the camera keeps out of it */
+    private static final double[][] PROPS = {
+            {-0.2, 0.2, -0.5, 4.2, 1.8, 2.2}, {-1.7, 1.7, 4.2, 4.5, 1.85, 2.15}, {-1.5, 1.5, 2.6, 3.9, 1.8, 2.3},
+            {-2.05, -1.8, -0.5, 2.4, 1.8, 2.1}, {-1.8, -1.3, 1.4, 2.3, 1.7, 2.2},
+            {1.2, 2.2, -0.5, 1.15, 1.2, 2.2}, {1.2, 2.2, -0.5, 1.15, 0.33, 1.3}, {0.35, 1.15, -0.5, 0.8, 1.45, 2.3}};
 
     public CutScreen(String id, double ox, double oy, double oz, float yaw) {
         this.cut = Cuts.ALL.get(id);
@@ -34,6 +39,8 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     protected void init() {
         Minecraft mc = Minecraft.getInstance();
         if (cam == null && mc.level != null) cam = new Marker(EntityType.MARKER, mc.level);
+        onRaft = mc.level != null && !mc.level.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class,
+                new net.minecraft.world.phys.AABB(ox - 2, oy - 3, oz - 2, ox + 2, oy + 3, oz + 2)).isEmpty();
         SeaClient.cinematic = true;
         mc.options.setCameraType(CameraType.FIRST_PERSON);
         mc.options.hideGui = true;
@@ -45,6 +52,35 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
         return new Vec3(ox + l[0] * c - l[2] * s, oy + l[1], oz + l[0] * s + l[2] * c);
     }
 
+    private static boolean inProp(double x, double y, double z, double pad) {
+        for (double[] b : PROPS)
+            if (x > b[0] - pad && x < b[1] + pad && y > b[2] - pad && y < b[3] + pad && z > b[4] - pad && z < b[5] + pad) return true;
+        return false;
+    }
+
+    /** like a third-person spring arm: if a mast, barrel or crate stands between the subject and the lens, the lens comes in front of it */
+    static double[] clear(double[] c, double[] t) {
+        double dx = c[0] - t[0], dy = c[1] - t[1], dz = c[2] - t[2];
+        double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double[] out = c.clone();
+        // wide shots of the whole raft keep their distance; only the close work needs the arm
+        if (d > 0.5 && d < 8) {
+            int n = (int) (d / 0.04);
+            for (int i = 1; i <= n; i++) {
+                double f = i / (double) n;
+                if (d * f < 0.4) continue;
+                if (inProp(t[0] + dx * f, t[1] + dy * f, t[2] + dz * f, 0.12)) {
+                    double g = Math.max(0.6 / d, f - 0.1 / d);
+                    out = new double[]{t[0] + dx * g, t[1] + dy * g, t[2] + dz * g};
+                    break;
+                }
+            }
+        }
+        // never under the logs
+        if (Math.abs(out[0]) < 2.6 && Math.abs(out[2]) < 2.6 && out[1] < 0.15) out[1] = 0.15;
+        return out;
+    }
+
     public void camera(float pt) {
         if (cut == null || cam == null) return;
         float tt = t + pt;
@@ -52,8 +88,10 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
         if (s == null) return;
         float k = Mth.clamp((tt - s.t0) / (float) Math.max(1, s.t1 - s.t0), 0, 1);
         k = k * 0.55f + (k * k * (3 - 2 * k)) * 0.45f;
-        Vec3 p0 = at(s.p0), p1 = at(s.p1), l0 = at(s.l0), l1 = at(s.l1);
-        Vec3 p = p0.lerp(p1, k), l = l0.lerp(l1, k);
+        double[] pl = new double[3], ll = new double[3];
+        for (int i = 0; i < 3; i++) { pl[i] = Mth.lerp(k, s.p0[i], s.p1[i]); ll[i] = Mth.lerp(k, s.l0[i], s.l1[i]); }
+        if (onRaft) pl = clear(pl, ll);
+        Vec3 p = at(pl), l = at(ll);
         // a hand-held breath in the camera
         p = p.add(Math.sin(tt * 0.05) * 0.02, Math.sin(tt * 0.07) * 0.015, 0);
         Vec3 d = l.subtract(p);
@@ -72,7 +110,6 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     @Override
     public void tick() {
         if (cut == null) { finish(); return; }
-        for (Cut.Say l : cut.lines) if (l.t() == t) StoryHud.voice(l.key());
         t++;
         if (t >= cut.length) finish();
         long win = Minecraft.getInstance().getWindow().getWindow();

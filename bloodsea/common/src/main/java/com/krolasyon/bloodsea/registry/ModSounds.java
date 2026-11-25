@@ -25,10 +25,7 @@ public final class ModSounds {
 
     static {
         for (String n : NAMES) MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
-        for (String k : com.krolasyon.bloodsea.story.Lines.ALL.keySet()) {
-            String n = com.krolasyon.bloodsea.story.Lines.sound(k);
-            MAP.put(n, SOUNDS.register(n, () -> SoundEvent.createVariableRangeEvent(Compat.rl(n))));
-        }
+
     }
 
     public static SoundEvent get(String n) { return MAP.get(n).get(); }

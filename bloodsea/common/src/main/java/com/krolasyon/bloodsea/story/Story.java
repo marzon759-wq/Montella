@@ -103,8 +103,8 @@ public final class Story {
         p.server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, p.server);
         p.server.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, p.server);
         sea.setDayTime(1000);
-        SeaEvents.enter(p);
-        RaftEntity r = SeaEvents.raftFor(sea, p);
+        RaftEntity r = SeaEvents.enter(p);
+        if (r == null) return;
         pip(sea, r);
         p.getFoodData().setFoodLevel(14);
         stage(p, "wake");
@@ -641,9 +641,19 @@ public final class Story {
     record Mover(Entity e, Vec3 a, Vec3 b, float ya, float yb, int t0, int dur) {
         boolean step(int t) {
             float k = Mth.clamp((t - t0) / (float) dur, 0, 1);
-            float s = k * k * (3 - 2 * k);
+            // walking pace: a short ease in and out and an even stride between, so the feet keep up with the ground
+            final float r = 0.15f;
+            float s = k < r ? k * k / (2 * r * (1 - r)) : k > 1 - r ? 1 - (1 - k) * (1 - k) / (2 * r * (1 - r)) : (k - r / 2) / (1 - r);
             Vec3 v = a.lerp(b, s);
-            float y = ya + Mth.wrapDegrees(yb - ya) * s;
+            double dx = b.x - a.x, dz = b.z - a.z;
+            float y;
+            if (dx * dx + dz * dz > 0.25 && b.y - a.y > -1.5) {
+                // turn to face the way it goes, go, and only then turn to the last heading
+                float h = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90f;
+                if (k < 0.15f) y = ya + Mth.wrapDegrees(h - ya) * (k / 0.15f);
+                else if (k < 0.8f) y = h;
+                else y = h + Mth.wrapDegrees(yb - h) * ((k - 0.8f) / 0.2f);
+            } else y = ya + Mth.wrapDegrees(yb - ya) * s;
             e.moveTo(v.x, v.y, v.z, y, e.getXRot());
             e.setYHeadRot(y);
             e.setYBodyRot(y);

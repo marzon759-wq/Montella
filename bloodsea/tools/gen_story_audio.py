@@ -145,11 +145,7 @@ def misc():
             sf.write(os.path.join(out, fn + ".ogg"), G.norm(x, 0.8).astype(np.float32), SR, format="OGG", subtype="VORBIS")
             files.append(f"bloodsea:{fn}")
         made[name] = {"sounds": files, "subtitle": f"subtitles.bloodsea.{name}"}
-    save("pip_meow", meow(720, 0.7, 1), meow(640, 0.9, 2), meow(820, 0.55, 3), meow(560, 1.1, 4))
-    save("pip_chirp", meow(950, 0.18, 5), meow(1050, 0.22, 6))
-    save("pip_purr", purr(2.6), purr(3.4))
-    save("pip_hiss", hiss(0.9), hiss(1.3))
-    save("pip_scream", G.drive(G.mix((meow(900, 1.2, 7), 0, 1.0), (meow(1100, 1.0, 8), 0, 0.6)), 2.0))
+    # Pip's voice comes from real recordings: see gen_cat_sounds.py
     n = int(0.6 * SR)
     splash = G.lp(RNG.standard_normal(n), 1400) * np.exp(-np.arange(n) / (0.12 * SR))
     save("blood_splash", G.mix((splash, 0, 1.0), (G.slosh(0.8), 0.05, 0.4)))
@@ -243,7 +239,14 @@ def main():
             d[m.group(1)] = int(m.group(2))
         write_lang(d)
         return
-    sounds, durs = tts_all()
+    # the lines are not spoken any more (subtitles only); --voices makes the recordings again, for reference
+    if "--voices" in sys.argv:
+        sounds, durs = tts_all()
+    else:
+        import re as _re
+        sounds, durs = {}, {}
+        for m in _re.finditer(r'e\("([^"]+)", "[^"]+", (\d+)\)', open(os.path.join(J, "Lines.java")).read()):
+            durs[m.group(1)] = int(m.group(2))
     sounds.update(misc())
     p = os.path.join(A, "sounds.json")
     d = json.load(open(p))

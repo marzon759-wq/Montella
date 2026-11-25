@@ -45,7 +45,7 @@ where is this, and why are you here? Everything outside the cutscenes is played 
 - **Survival**: you get hungry. Food comes from floating crates of cargo (row into them or use them) and from Pip, who
   hooks fish out of the blood and brings them to you - more often the more you care for her. Stroke her (use, empty
   hand), feed her, and she purrs, rubs against you, sleeps on the blanket, hisses at what is in the water.
-- **18 cutscenes**, fully voiced (English, with English and Turkish subtitles), and **timed choices**. Every choice weighs
+- **18 cutscenes** with subtitled dialogue (English and Turkish, no spoken voice), and **timed choices**. Every choice weighs
   hope, acceptance, courage or fury; what weighs most decides where the voyage ends:
   - *The Stomach* (the lighthouse): a hospital bed, Pip alive in your lap... and what is really there.
   - *Acceptance* (the throne of bones), *Return* (through the Leviathan), *The Fall* (the edge of the sea).
@@ -69,3 +69,9 @@ None of them can be killed.
 Commands (op): `/bloodsea summon <wake|gatherer|caller|changer|leviathan>`, `/bloodsea debug freeze <bool>`, `/bloodsea debug state <n> [action]`.
 
 Build: `python3 tools/gen_creatures.py && python3 tools/gen_creature_anims.py && python3 tools/gen_assets.py && python3 tools/gen_props.py && python3 tools/gen_giants.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.
+
+## Sound credits
+Pip's meows, chirps, purrs, hisses and cries are cut from real cat recordings (tools/gen_cat_sounds.py):
+- "Cat purr & meow" by kerzoven (freesound.org), CC0
+- "Meow" by ignasd (freesound.org), CC0
+- "Cat SFX" by macro (freesound.org), CC-BY 3.0 - https://creativecommons.org/licenses/by/3.0/

@@ -23,16 +23,10 @@ public final class StoryHud {
     public static void say(String key) {
         sayKey = key;
         sayT = 0;
-        sayLen = Lines.ticks(key) + 20;
-        voice(key);
+        sayLen = Lines.ticks(key) + 30;
     }
 
     public static void shake(int t) { shakeT = Math.max(shakeT, t); }
-
-    static void voice(String key) {
-        var ev = com.krolasyon.bloodsea.registry.ModSounds.get(Lines.sound(key));
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(ev, 1f, 1f));
-    }
 
     public static void tick() {
         objT++;

@@ -116,6 +116,39 @@ public final class AutoTest {
 
     private static void build() {
         at = 60;
+        if (mode.contains("cuts")) {
+            // every cutscene played on the raft, a picture from the middle of every shot
+            cue(0, () -> { cmd("gamemode survival"); cmd("gamerule sendCommandFeedback false"); cmd("bloodsea start"); });
+            {
+                var w = com.krolasyon.bloodsea.story.Cuts.ALL.get("wake");
+                int prev = -2, k = 0;
+                for (var sh : w.shots) {
+                    int mid = (sh.t0 + sh.t1) / 2 + 1;
+                    int kk = k++;
+                    cue(Math.max(1, mid - prev), () -> shot("k_wake_" + kk));
+                    prev = mid;
+                }
+                cue(w.length - prev + 80, () -> {});
+            }
+            String only = System.getProperty("bloodsea.cuts", "");
+            String[] ids = only.isEmpty() ? new String[]{"rule", "gift", "moon", "bump", "dawn", "mem1", "eye", "bones", "lev", "mem2", "voice", "mirage", "throne", "maw", "edge", "taken"}
+                    : only.split(",");
+            for (String id : ids) {
+                waitFree();
+                cue(10, () -> cmd("bloodsea cut " + id));
+                var c = com.krolasyon.bloodsea.story.Cuts.ALL.get(id);
+                int prev = 0, k = 0;
+                for (var sh : c.shots) {
+                    int mid = (sh.t0 + sh.t1) / 2 + 1;
+                    int kk = k++;
+                    cue(Math.max(1, mid - prev), () -> shot("k_" + id + "_" + kk));
+                    prev = mid;
+                }
+                cue(c.length - prev + 60, () -> {});
+            }
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("story")) {
             // the whole story, stage by stage, with pictures through every cutscene
             String ending = mode.contains("bone") ? "accept" : mode.contains("lev") ? "courage" : mode.contains("edge") ? "fury" : "hope";
