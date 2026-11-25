@@ -10,7 +10,7 @@ public final class ServerCompat {
 
     public static void init() {
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent.Post e) -> {
-            for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) SeaEvents.playerTick(p);
+            for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) { SeaEvents.bloodTick(p); SeaEvents.playerTick(p); }
         });
     }
 }

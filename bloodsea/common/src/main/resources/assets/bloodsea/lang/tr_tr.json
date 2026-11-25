@@ -95,5 +95,8 @@
  "subtitles.bloodsea.lev_roar": "Leviathan kükrüyor",
  "subtitles.bloodsea.lev_rise": "Deniz yükseliyor",
  "subtitles.bloodsea.lev_bite": "Çeneler kapanıyor",
- "subtitles.bloodsea.watcher_stare": "Güneş sana bakıyor"
+ "subtitles.bloodsea.watcher_stare": "Güneş sana bakıyor",
+ "death.attack.bloodsea.blood": "%1$s kana dokundu",
+ "msg.bloodsea.blood_burn": "Kan yakıyor. Çık!",
+ "entity.bloodsea.raft": "Sal"
 }

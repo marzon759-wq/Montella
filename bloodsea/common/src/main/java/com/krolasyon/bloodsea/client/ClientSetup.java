@@ -23,8 +23,20 @@ public final class ClientSetup {
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.MIRAGE_LEAVES.get(), RenderType.cutoutMipped());
         }));
         ClientCompat.init(bus);
+        com.krolasyon.bloodsea.entity.RaftEntity.INPUT = () -> {
+            Minecraft mc = Minecraft.getInstance();
+            return mc.player == null ? new float[]{0, 0} : new float[]{mc.player.input.forwardImpulse, mc.player.input.leftImpulse};
+        };
+        MinecraftForge.EVENT_BUS.addListener((ViewportEvent.ComputeCameraAngles e) -> {
+            float[] s = SeaClient.sway((float) e.getPartialTick());
+            if (s != null) {
+                e.setPitch(e.getPitch() + s[0]);
+                e.setRoll(e.getRoll() + s[1]);
+            }
+        });
         bus.addListener((net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> {
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GIANT.get(), GiantRenderer::new);
+            e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.RAFT.get(), RaftRenderer::new);
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.WAKE.get(), c -> new CreatureRenderer<>(c, "wake", 0f));
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.GATHERER.get(), c -> new CreatureRenderer<>(c, "gatherer", 0f));
             e.registerEntityRenderer(com.krolasyon.bloodsea.registry.ModEntities.CALLER.get(), c -> new CreatureRenderer<>(c, "caller", 0f));

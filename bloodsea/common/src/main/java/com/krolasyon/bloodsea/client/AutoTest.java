@@ -90,6 +90,33 @@ public final class AutoTest {
 
     private static void build() {
         at = 60;
+        if (mode.contains("sea")) {
+            cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("gamerule doMobSpawning false"); cmd("time set 4000"); cmd("bloodsea enter"); cmd("gamemode survival"); });
+            cue(120, () -> { Minecraft.getInstance().options.hideGui = true; shot("w_deck"); });
+            cue(5, () -> { Minecraft mc = Minecraft.getInstance(); BloodSea.LOG.info("[SEATEST] on deck y={} vehicle={}", mc.player.getY(), mc.player.getVehicle()); });
+            // walk to the edge: the guard should hold
+            cue(5, () -> Minecraft.getInstance().options.keyUp.setDown(true));
+            cue(40, () -> { Minecraft.getInstance().options.keyUp.setDown(false); BloodSea.LOG.info("[SEATEST] after walking y={} z={}", Minecraft.getInstance().player.getY(), Minecraft.getInstance().player.getZ()); });
+            // sit at the oar and row
+            cue(5, () -> cmd("execute as @s at @s run ride @s mount @e[type=bloodsea:raft,limit=1,sort=nearest]"));
+            cue(20, () -> { com.krolasyon.bloodsea.entity.RaftEntity.INPUT = () -> new float[]{1f, 0.3f}; });
+            cue(160, () -> { shot("w_rowing"); BloodSea.LOG.info("[SEATEST] rowing at {}", Minecraft.getInstance().player.position()); });
+            cue(5, () -> { com.krolasyon.bloodsea.entity.RaftEntity.INPUT = () -> new float[]{0f, 0f}; cmd("ride @s dismount"); });
+            cue(60, () -> cmd("time set 13500"));
+            cue(80, () -> shot("w_dusk"));
+            cue(5, () -> { cmd("gamemode spectator"); cmd("time set 5000"); });
+            cue(5, () -> cmd("execute as @s at @e[type=bloodsea:raft,limit=1] run tp @s ~9 ~5 ~9 135 25"));
+            cue(80, () -> shot("w_raft_view"));
+            cue(5, () -> cmd("execute as @s at @e[type=bloodsea:raft,limit=1] run tp @s ~0 ~2.2 ~0 0 12"));
+            cue(80, () -> shot("w_sea_far"));
+            cue(5, () -> cmd("time set 17000"));
+            cue(80, () -> shot("w_sea_night"));
+            // into the blood
+            cue(5, () -> { cmd("gamemode survival"); cmd("execute as @s at @e[type=bloodsea:raft,limit=1] run tp @s ~6 ~ ~6"); });
+            cue(60, () -> BloodSea.LOG.info("[SEATEST] after blood alive={} health={}", Minecraft.getInstance().player.isAlive(), Minecraft.getInstance().player.getHealth()));
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("creatures")) {
             cue(0, () -> { cmd("gamerule doDaylightCycle false"); cmd("gamerule doMobSpawning false"); cmd("bloodsea enter"); cmd("gamemode spectator"); });
             cue(80, () -> { cmd("bloodsea debug freeze true"); Minecraft.getInstance().options.hideGui = true; });

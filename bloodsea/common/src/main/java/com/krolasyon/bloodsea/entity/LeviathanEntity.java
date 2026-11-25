@@ -47,13 +47,13 @@ public class LeviathanEntity extends SeaCreature {
     /** it comes on slowly while it looks at you, never closer than its jaws can reach */
     private void closeIn(ServerPlayer p) {
         double d = Math.hypot(p.getX() - getX(), p.getZ() - getZ());
-        if (d > 17) glide(p.getX(), p.getZ(), 0.07, Regions.SEA + 0.9);
+        if (d > 17) glide(p.getX(), p.getZ(), 0.07, com.krolasyon.bloodsea.world.Waves.MEAN - 0.1);
     }
 
     @Override
     protected void brain(ServerLevel lvl) {
         ServerPlayer p = nearest(260);
-        setPos(getX(), Regions.SEA + 0.9, getZ());
+        setPos(getX(), com.krolasyon.bloodsea.world.Waves.MEAN - 0.1, getZ());
         if (p == null) return;
         switch (getState()) {
             case RISE -> {

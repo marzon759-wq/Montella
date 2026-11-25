@@ -95,9 +95,42 @@ public final class SeaEvents {
             return;
         }
         if (!p.getInventory().contains(new ItemStack(Items.SPRUCE_BOAT))) p.getInventory().add(new ItemStack(Items.SPRUCE_BOAT));
-        p.teleportTo(sea, 0.5, Regions.SEA + 1, 0.5, 180f, 0f);
+        com.krolasyon.bloodsea.entity.RaftEntity raft = raftFor(sea, p);
+        p.teleportTo(sea, raft.getX(), raft.getY() + com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, raft.getZ() + 1.5, 180f, 0f);
         REGION.remove(p.getUUID());
         DAY.remove(p.getUUID());
+    }
+
+    /** the raft: the one already afloat near the middle, or a new one */
+    public static com.krolasyon.bloodsea.entity.RaftEntity raftFor(ServerLevel sea, ServerPlayer p) {
+        sea.getChunkAt(BlockPos.containing(0, Regions.SEA, 0));
+        var list = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000));
+        if (!list.isEmpty()) return list.get(0);
+        com.krolasyon.bloodsea.entity.RaftEntity r = com.krolasyon.bloodsea.registry.ModEntities.RAFT.get().create(sea);
+        r.moveTo(0.5, com.krolasyon.bloodsea.entity.RaftEntity.Y, 0.5, 0f, 0f);
+        sea.addFreshEntity(r);
+        return r;
+    }
+
+    // ================================================================== the blood: touch it and it kills you
+    private static final Map<UUID, Integer> BURN = new HashMap<>();
+
+    public static void bloodTick(ServerPlayer p) {
+        if (!inSea(p) || p.isCreative() || p.isSpectator() || !p.isAlive()) { BURN.remove(p.getUUID()); return; }
+        if (!p.isInFluidType(ModFluids.BLOOD_TYPE.get())) { BURN.remove(p.getUUID()); return; }
+        int t = BURN.merge(p.getUUID(), 1, Integer::sum);
+        if (t == 1) {
+            p.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 120, 0, false, false));
+            p.addEffect(new MobEffectInstance(MobEffects.POISON, 120, 3, false, false));
+            p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.LAVA_EXTINGUISH, SoundSource.PLAYERS, 1.2f, 0.5f);
+            actionBar(p, "msg.bloodsea.blood_burn");
+        }
+        if (t == 14) {
+            var type = p.serverLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
+                    .getHolderOrThrow(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Compat.rl("blood")));
+            p.hurt(new net.minecraft.world.damagesource.DamageSource(type), Float.MAX_VALUE);
+            BURN.remove(p.getUUID());
+        }
     }
 
     public static void leave(ServerPlayer p) {

@@ -95,5 +95,8 @@
  "subtitles.bloodsea.lev_roar": "The Leviathan roars",
  "subtitles.bloodsea.lev_rise": "The sea rises",
  "subtitles.bloodsea.lev_bite": "Jaws close",
- "subtitles.bloodsea.watcher_stare": "The sun is looking at you"
+ "subtitles.bloodsea.watcher_stare": "The sun is looking at you",
+ "death.attack.bloodsea.blood": "%1$s touched the blood",
+ "msg.bloodsea.blood_burn": "The blood burns. Get out!",
+ "entity.bloodsea.raft": "Raft"
 }

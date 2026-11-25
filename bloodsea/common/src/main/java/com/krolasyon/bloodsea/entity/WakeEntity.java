@@ -42,7 +42,7 @@ public class WakeEntity extends SeaCreature {
     @Override
     protected void brain(ServerLevel lvl) {
         ServerPlayer p = nearest(120);
-        double y = Regions.SEA + 0.9;
+        double y = com.krolasyon.bloodsea.world.Waves.MEAN - 0.1;
         if (p == null) return;
         if (SeaTime.isDay(lvl) && getState() != DIVE) go(DIVE);
         double x0 = getX(), z0 = getZ();

@@ -26,6 +26,9 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<LeviathanEntity>> LEVIATHAN = ENTITIES.register("leviathan", () -> EntityType.Builder.<LeviathanEntity>of(LeviathanEntity::new, MobCategory.MISC)
             .sized(10f, 10f).clientTrackingRange(32).updateInterval(2).fireImmune().build("leviathan"));
 
+    public static final RegistryObject<EntityType<RaftEntity>> RAFT = ENTITIES.register("raft", () -> EntityType.Builder.<RaftEntity>of(RaftEntity::new, MobCategory.MISC)
+            .sized(5f, 0.55f).clientTrackingRange(16).updateInterval(1).fireImmune().build("raft"));
+
     public static void attributes(net.minecraftforge.event.entity.EntityAttributeCreationEvent e) {
         e.put(WAKE.get(), WakeEntity.attributes(200, 0.3).build());
         e.put(GATHERER.get(), GathererEntity.attributes(300, 0.25).build());

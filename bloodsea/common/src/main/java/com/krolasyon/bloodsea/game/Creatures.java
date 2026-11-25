@@ -75,7 +75,7 @@ public final class Creatures {
     /** put one where it should come from; false if there was nowhere to put it */
     public static boolean spawn(ServerLevel lvl, ServerPlayer p, String kind) {
         Vec3 look = flat(p.getViewVector(1f));
-        double sea = Regions.SEA + 0.9;
+        double sea = com.krolasyon.bloodsea.world.Waves.MEAN - 0.1;
         switch (kind) {
             case "wake" -> {
                 Vec3 at = p.position().subtract(look.scale(34));

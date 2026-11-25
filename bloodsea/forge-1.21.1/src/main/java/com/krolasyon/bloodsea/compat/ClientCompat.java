@@ -26,7 +26,29 @@ public final class ClientCompat {
     public static void init(IEventBus bus) {
         bus.addListener((RegisterDimensionSpecialEffectsEvent e) -> e.register(Compat.rl("blood_sea"), new SeaSky()));
         com.krolasyon.bloodsea.client.AutoTest.init();
+        MinecraftForge.EVENT_BUS.addListener(ClientCompat::drawSea);
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent.Post e) -> com.krolasyon.bloodsea.client.AutoTest.tick());
+    }
+
+    /** the swell of the blood, drawn over the blood blocks before the entities so they sink into it */
+    private static void drawSea(net.minecraftforge.client.event.RenderLevelStageEvent e) {
+        if (e.getStage() != net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) return;
+        int n = com.krolasyon.bloodsea.client.SeaSurface.build(e.getCamera(), e.getPartialTick());
+        if (n == 0) return;
+        float[] d = com.krolasyon.bloodsea.client.SeaSurface.data();
+        Matrix4f m = e.getPoseStack();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableCull();
+        RenderSystem.disableBlend();
+        BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        for (int i = 0; i < n; i++) {
+            int o = i * 7;
+            bb.addVertex(m, d[o], d[o + 1], d[o + 2]).setColor(d[o + 3], d[o + 4], d[o + 5], 1f);
+        }
+        BufferUploader.drawWithShader(bb.buildOrThrow());
+        RenderSystem.enableCull();
     }
 
     static final ResourceLocation SUN = Compat.rl("textures/environment/pale_sun.png");

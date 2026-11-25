@@ -478,6 +478,30 @@ def lev_sink(t):
     return P
 
 
+# ============================================================================ the raft
+def raft_common(P, t, wind=1.0):
+    P.r("lantern", noise(t, 1, 0.7) * 6 * wind, 0, noise(t, 2, 0.6) * 8 * wind)
+    P.r("mast", 0, 0, noise(t, 3, 0.3) * 0.8 * wind)
+
+
+@anim("raft", "idle", 8.0)
+def raft_idle(t):
+    P = Pose()
+    raft_common(P, t, 0.6)
+    P.r("oar", 0, noise(t, 4, 0.2) * 3, 0)
+    return P
+
+
+@anim("raft", "row", 2.0)
+def raft_row(t):
+    """the steering oar swept from side to side over the stern"""
+    P = Pose()
+    raft_common(P, t, 1.0)
+    ph = t / 2.0 * math.tau
+    P.r("oar", 6 * max(0, math.sin(ph * 2)), 26 * math.sin(ph), 0)
+    return P
+
+
 # ============================================================================ writer
 def build(creature):
     out = {"format_version": "1.8.0", "animations": {}}

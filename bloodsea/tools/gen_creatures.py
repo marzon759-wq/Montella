@@ -996,11 +996,7 @@ def leviathan():
 
 CREATURES = {"leviathan": leviathan, "changer": changer, "wake": wake, "caller": caller, "gatherer": gatherer}
 
-if __name__ == "__main__":
-    names = sys.argv[1:] or list(CREATURES)
-    for n in names:
-        if n != "watcher":
-            CREATURES[n]().build(A)
+
 
 
 # ============================================================================ the Watcher: the Pale Sun is an eye
@@ -1092,5 +1088,145 @@ def watcher_textures():
 
 CREATURES["watcher"] = None
 
-if __name__ == "__main__" and "watcher" in (sys.argv[1:] or ["watcher"]):
-    watcher_textures()
+
+
+
+# ============================================================================ the raft
+def raft():
+    """five blocks of lashed logs: a stub of a mast with a torn sail, a lantern on a pole, cargo lashed at the front,
+    a blanket at the back where the cat sleeps, and a long steering oar over the stern"""
+    def paint(mat, P, ao, N, tag):
+        x, y, z = P[:, 0], P[:, 1], P[:, 2]
+        n1 = fbm(x, y, z, 6.0, 121)
+        n2 = vnoise(x, y, z, 1.2, 122)
+        grain = vnoise(x * 0.25, y * 1.5, z * 0.08, 1.0, 123)
+        bark = ramp(0.35 * n1 + 0.35 * grain + 0.3 * n2, [(0, "#1e140c"), (0.4, "#3a2a1a"), (0.7, "#58402a"), (1, "#74583c")])
+        cut = ramp(0.5 * grain + 0.5 * n2, [(0, "#5a4226"), (1, "#9a7a52")])
+        rope = ramp(n2, [(0, "#4a3a24"), (1, "#8a7650")])
+        cloth = ramp(0.6 * n1 + 0.4 * n2, [(0, "#4a4236"), (0.6, "#8a7e68"), (1, "#a89a80")])
+        wool = ramp(0.6 * n1 + 0.4 * n2, [(0, "#22262c"), (1, "#4a5260")])
+        metal = ramp(n2, [(0, "#16120e"), (0.6, "#3a2e24"), (1, "#6a5032")])
+        glass = ramp(n2, [(0, "#c89a40"), (1, "#ffe6a0")])
+        out = bark
+        for m_, col in ((2, cut), (3, rope), (4, cloth), (5, wool), (6, metal), (7, glass)):
+            out = np.where((mat == m_)[:, None], col, out)
+        blood = ramp(n2, [(0, "#2a0406"), (1, "#5a0c0c")])
+        wetk = np.clip((4 - y) / 6, 0, 1)[:, None] * 0.8 + blood_drips(P, 124, 0.25)[:, None] * 0.5
+        wetk = np.where((mat == 7)[:, None], 0, np.clip(wetk, 0, 0.85))
+        out = out * (1 - wetk) + blood * wetk
+        shade = np.where(mat == 7, 1.0, 0.4 + 0.6 * np.clip(ao, 0, 1.1))
+        return out * shade[:, None]
+
+    c = Creature("raft", paint, 1024)
+    c.bone("root", (0, 0, 0))
+    c.bone("deck", (0, 0, 0), "root")
+
+    def deck(s):
+        X, Y, Z = P3(s)
+        d = None
+        rng = np.random.default_rng(125)
+        for i in range(6):
+            xc = -33.5 + i * 13.4
+            z0, z1 = -40 + rng.uniform(-3, 1), 40 + rng.uniform(-1, 3)
+            r = 6.4 + rng.uniform(-0.5, 0.4)
+            lg = capsule(s, (xc, 2, z0 + r), (xc, 2, z1 - r), r)
+            lg = np.maximum(lg, np.maximum(z0 - Z, Z - z1))      # cut ends
+            lg = lg + (vnoise(X, Y, Z, 2.0, 126 + i) - 0.5) * 0.9
+            d = lg if d is None else union(d, lg)
+        mat = np.where((Z < -36.5) | (Z > 36.5), 2, 1)
+        # rope lashings round the logs at three places
+        rp = None
+        for zb in (-28, 0, 28):
+            band = np.abs(Z - zb) < 1.6
+            rr = np.where(band, d - 0.8, 50.0)
+            rp = rr if rp is None else np.minimum(rp, rr)
+        # cross beams on top
+        beams = union(box(s, (0, 8.6, -30), (38, 1.4, 2.6)), box(s, (0, 8.6, 30), (38, 1.4, 2.6)))
+        beams = beams + (vnoise(X, Y, Z, 1.5, 131) - 0.5) * 0.4
+        d2 = union(d, rp, beams)
+        mat = np.where(rp <= d2 + 0.01, 3, mat)
+        mat = np.where(beams <= d2 + 0.01, 2, mat)
+        # cargo: two barrels and a crate at the front right, a blanket at the back left
+        for (bx, bz) in ((27, -27), (27, -13)):
+            r = np.sqrt((X - bx) ** 2 + (Z - bz) ** 2)
+            yy = np.clip((Y - 8) / 18, 0, 1)
+            bd = np.maximum(r - (6.2 + 0.9 * np.sin(np.pi * yy)), np.maximum(8 - Y, Y - 26))
+            hoop = (np.abs(Y - 11) < 0.8) | (np.abs(Y - 23) < 0.8)
+            d2 = union(d2, bd)
+            mat = np.where((bd <= d2 + 0.01) & hoop, 6, np.where(bd <= d2 + 0.01, 2, mat))
+        cr = box(s, (12, 14.5, -30), (6, 6.5, 6))
+        d2 = union(d2, cr)
+        mat = np.where(cr <= d2 + 0.01, np.where((np.abs(X - 12) > 5) | (np.abs(Z + 30) > 5) | (Y > 20), 2, 1), mat)
+        bl = box(s, (-22, 9.6, 23), (11, 1.4 + (vnoise(X, Y, Z, 3, 132) * 1.2), 9)) - 0.6
+        d2 = union(d2, bl)
+        mat = np.where(bl <= d2 + 0.01, 5, mat)
+        return d2, mat
+    c.part("deck", (-42, -6, -44), (42, 28, 44), 1.0, deck)
+
+    # the mast and its torn sail
+    c.bone("mast", (0, 8, -22), "deck")
+
+    def mast(s):
+        X, Y, Z = P3(s)
+        d = capsule(s, (0, 6, -22), (0, 70, -22), 2.6, 2.0)
+        d = union(d, capsule(s, (-26, 66, -22), (26, 66, -22), 1.5))
+        d = d + (vnoise(X, Y, Z, 1.5, 133) - 0.5) * 0.4
+        mat = np.ones(d.shape, np.int16)
+        # the sail: a sheet hanging from the yard, torn ragged at the bottom, bellied slightly forward
+        tear = 34 + vnoise(X * 0.3, 0, 0, 1.0, 134) * 18 - 6
+        bell = -22 - 3.5 * np.sin(np.clip((66 - Y) / 40, 0, 1) * np.pi) * np.cos(X / 26 * np.pi / 2)
+        sh = np.maximum(np.abs(Z - bell) - 0.6, np.maximum(np.abs(X) - 24, np.maximum(Y - 65, (66 - tear) - Y)))
+        holes = vnoise(X, Y, 0, 4.0, 135) > 0.72
+        sh = np.where(holes, 50.0, sh)
+        d = union(d, sh)
+        mat = np.where(sh <= d + 0.01, 4, mat)
+        return d, mat
+    c.part("mast", (-28, 4, -30), (28, 74, -14), 1.0, mast)
+
+    # the lantern on its pole at the front left
+    c.bone("lantern", (-31, 44, -31), "deck")
+
+    def pole(s):
+        d = union(capsule(s, (-31, 8, -31), (-31, 46, -31), 1.4), capsule(s, (-31, 45, -31), (-25, 46, -31), 1.0))
+        return d, 2
+
+    def lantern(s):
+        X, Y, Z = P3(s)
+        frame = np.maximum(box(s, (-25, 38, -31), (3.2, 4.5, 3.2)), -box(s, (-25, 38, -31), (2.4, 3.6, 4.0)))
+        frame = np.minimum(frame, np.maximum(box(s, (-25, 38, -31), (3.2, 4.5, 3.2)), -box(s, (-25, 38, -31), (4.0, 3.6, 2.4))))
+        top = union(box(s, (-25, 43.2, -31), (3.6, 0.8, 3.6)), box(s, (-25, 33.2, -31), (3.6, 0.8, 3.6)), capsule(s, (-25, 44, -31), (-25, 46, -31), 0.6))
+        glass = box(s, (-25, 38, -31), (2.6, 3.8, 2.6))
+        d = union(frame, top, glass)
+        mat = np.where(glass <= d + 0.01, 7, 6)
+        return d, mat
+    c.part("deck", (-34, 6, -34), (-22, 48, -28), 1.0, pole)
+    c.part("lantern", (-30, 32, -36), (-20, 47, -26), 0.5, lantern)
+
+    # the steering oar over the stern, on an oarlock post
+    c.bone("oar", (0, 16, 38), "deck")
+
+    def oar(s):
+        X, Y, Z = P3(s)
+        shaft = capsule(s, (0, 22, 20), (0, -4, 74), 1.4)
+        blade = ellipsoid(s, (0, -8, 80), (1.0, 5.5, 9))
+        grip = capsule(s, (-3, 22, 20), (3, 22, 20), 1.1)
+        d = union(shaft, blade, grip)
+        return d, 2
+
+    def oarlock(s):
+        return union(box(s, (0, 12, 38), (2.2, 4, 2.2)), capsule(s, (-3, 16, 38), (3, 16, 38), 1.2)), 2
+    c.part("deck", (-5, 6, 33), (5, 20, 43), 1.0, oarlock)
+    c.part("oar", (-6, -16, 16), (6, 26, 92), 1.0, oar)
+    return c
+
+
+CREATURES["raft"] = raft
+
+
+if __name__ == "__main__":
+    names = sys.argv[1:] or [k for k in CREATURES]
+    for n in names:
+        if n == "watcher":
+            watcher_textures()
+        else:
+            CREATURES[n]().build(A)

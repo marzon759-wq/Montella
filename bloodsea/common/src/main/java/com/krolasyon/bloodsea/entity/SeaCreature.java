@@ -112,7 +112,7 @@ public abstract class SeaCreature extends CreatureBase {
     /** the top of the blood, or of the mud where there is land */
     protected double surfaceAt(double x, double z) {
         int floor = level().getHeight(Heightmap.Types.OCEAN_FLOOR, Mth.floor(x), Mth.floor(z));
-        return Math.max(Regions.SEA + 0.9, floor);
+        return Math.max(com.krolasyon.bloodsea.world.Waves.MEAN - 0.1, floor);
     }
 
     /** glide toward a point at a speed (blocks per tick), turning to face the way it goes; returns the distance left */
