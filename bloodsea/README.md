@@ -36,4 +36,20 @@ cages and skulls half sunk in the Bone Reach. They are solid: the generator lays
 (from the collision cells tools/gen_giants.py writes), so boats stop against ribs and fangs and you can climb a skull.
 Run the client with BLOODSEA_SHOWCOLL=1 to see those blocks as glass.
 
-Build: `python3 tools/gen_assets.py && python3 tools/gen_props.py && python3 tools/gen_giants.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.
+## The living
+Five creatures and the sky (tools/gen_creatures.py sculpts them as distance fields, one per bone, and paints every
+visible voxel face into its own texels; tools/gen_creature_anims.py animates them; tools/gen_creature_sounds.py voices them).
+None of them can be killed.
+
+| Creature | Where | What it does |
+|---|---|---|
+| Wake Follower | open blood, Blood Moon | swims 20 blocks behind you; stop rowing and it comes in and lunges |
+| Bone Gatherer | Bone Reach | assembles out of the blood, comes slowly while watched and fast while not; every skull turns to you |
+| Name Caller | Mirage fog, sometimes the Blood Moon | blind, hunts by sound (running, rowing, jumping; crouch to be silent), whispers |
+| The Changer | among the barrels on the raft | a barrel while you look; opens its eye and creeps closer when you don't; bites |
+| Leviathan | the eastern deep | heartbeat under the sea; rises in front of you, roars, then bites whatever is still in reach |
+| The Watcher | the sky by day | the Pale Sun is an eye: it looks about and blinks; stare and it stares back, and every creature learns where you are |
+
+Commands (op): `/bloodsea summon <wake|gatherer|caller|changer|leviathan>`, `/bloodsea debug freeze <bool>`, `/bloodsea debug state <n> [action]`.
+
+Build: `python3 tools/gen_creatures.py && python3 tools/gen_creature_anims.py && python3 tools/gen_assets.py && python3 tools/gen_props.py && python3 tools/gen_giants.py`, then `gradle build` in `forge-1.20.1` and `forge-1.21.1`.
