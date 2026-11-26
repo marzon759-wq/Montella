@@ -29,3 +29,4 @@ bloodsea/forge-*/run/
 bloodsea/forge-*/.gradle/
 bloodsea/tools/__pycache__/
 bloodsea/*.zip
+bloodsea/*.mp4

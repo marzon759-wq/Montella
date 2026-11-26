@@ -285,7 +285,7 @@ public final class SeaEvents {
     public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         String test = System.getProperty("bloodsea.autotest", "");
-        if (!test.isEmpty() && !test.contains("auto")) return;
+        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
         d.putBoolean("bloodsea_began", true);

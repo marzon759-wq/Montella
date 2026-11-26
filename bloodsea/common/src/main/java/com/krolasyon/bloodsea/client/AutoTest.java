@@ -118,6 +118,23 @@ public final class AutoTest {
 
     private static void build() {
         at = 60;
+        if (mode.contains("video")) {
+            // a two-minute look: the story starting by itself, a little rowing in first person, then scenes from later on
+            cue(120, () -> { cmd("gamerule sendCommandFeedback false"); });
+            waitFree();
+            cue(20, () -> cmd("ride @s mount @e[type=bloodsea:raft,limit=1,sort=nearest]"));
+            cue(10, () -> { Story2.saved = com.krolasyon.bloodsea.entity.RaftEntity.INPUT; com.krolasyon.bloodsea.entity.RaftEntity.INPUT = () -> new float[]{1f, 0.25f}; });
+            cue(260, () -> com.krolasyon.bloodsea.entity.RaftEntity.INPUT = Story2.saved);
+            cue(40, () -> {});
+            for (String id : new String[]{"gift", "eye", "taken"}) {
+                waitFree();
+                cue(10, () -> cmd("bloodsea cut " + id));
+                var c = com.krolasyon.bloodsea.story.Cuts.ALL.get(id);
+                cue(c.length + 40, () -> {});
+            }
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("auto")) {
             cue(200, () -> shot("a_start0"));
             cue(150, () -> shot("a_start1"));
