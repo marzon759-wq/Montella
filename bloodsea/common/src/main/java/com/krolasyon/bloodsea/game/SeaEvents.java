@@ -250,6 +250,10 @@ public final class SeaEvents {
         }
         if (now % 20 != 0) return;
         if (now % 100 == 0) oneRaft(p, lvl);
+        if (now % 100 == 0 && com.krolasyon.bloodsea.story.Story.active(p) && !com.krolasyon.bloodsea.story.Story.inCut(p)) {
+            var rr = com.krolasyon.bloodsea.story.Story.raftOf(p);
+            if (rr != null) p.setRespawnPosition(SEA, BlockPos.containing(rr.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.1, -1.2)), rr.getYRot(), true, false);
+        }
         if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
         com.krolasyon.bloodsea.story.Story.tick(p);
         if (com.krolasyon.bloodsea.story.Story.active(p)) Omens.tick(p, lvl, com.krolasyon.bloodsea.story.Story.raftOf(p));
@@ -294,6 +298,11 @@ public final class SeaEvents {
         String test = System.getProperty("bloodsea.autotest", "");
         if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night") && !test.contains("death")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
+        String stage = com.krolasyon.bloodsea.story.Story.stage(p);
+        if (com.krolasyon.bloodsea.story.Story.active(p) && !stage.equals("ending") && p.level().dimension() != SEA) {
+            com.krolasyon.bloodsea.story.Story.later(40, () -> { if (!p.hasDisconnected() && p.level().dimension() != SEA) { var r = enter(p); if (r != null) { var st = r.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2); p.teleportTo(p.server.getLevel(SEA), st.x, st.y, st.z, r.getYRot(), 0f); } } });
+            return;
+        }
         if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
         d.putBoolean("bloodsea_began", true);
         com.krolasyon.bloodsea.story.Story.later(40, () -> { if (!p.hasDisconnected()) com.krolasyon.bloodsea.story.Story.start(p); });
@@ -304,13 +313,21 @@ public final class SeaEvents {
     public static void onClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone e) {
         net.minecraft.nbt.CompoundTag from = e.getOriginal().getPersistentData(), to = e.getEntity().getPersistentData();
         for (String k : from.getAllKeys()) if (k.startsWith("bloodsea")) to.put(k, from.get(k).copy());
+        if (e.isWasDeath()) to.putBoolean("bloodsea_died_at_sea", e.getOriginal().level().dimension() == SEA);
     }
 
     /** dying out here puts you back on the raft */
     @SubscribeEvent
     public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || !com.krolasyon.bloodsea.story.Story.active(p)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        net.minecraft.nbt.CompoundTag d = p.getPersistentData();
+        String stage = com.krolasyon.bloodsea.story.Story.stage(p);
+        boolean atSea = d.getBoolean("bloodsea_died_at_sea");
+        if (!com.krolasyon.bloodsea.story.Story.active(p) && !atSea) return;
+        if (stage.equals("done") || stage.equals("ending")) return;
         p.server.execute(() -> {
+            // a story lost on an older version: pick it up again on the open water
+            if (!com.krolasyon.bloodsea.story.Story.active(p)) com.krolasyon.bloodsea.story.Story.revive(p);
             ServerLevel sea = p.server.getLevel(SEA);
             if (sea == null) return;
             var raft = raftFor(sea, p);

@@ -160,6 +160,10 @@ public final class AutoTest {
             cue(60, () -> shot("d_dead"));
             cue(20, () -> Minecraft.getInstance().player.respawn());
             cue(120, () -> { var mc = Minecraft.getInstance(); BloodSea.LOG.info("[DEATHTEST] dim={} pos={} screen={}", mc.level.dimension().location(), mc.player.position(), mc.screen); shot("d_back"); });
+            cue(10, () -> { var sv = Minecraft.getInstance().getSingleplayerServer(); sv.execute(() -> { var sp = sv.getPlayerList().getPlayers().get(0); sp.getPersistentData().remove("bloodsea_story"); sp.getPersistentData().remove("bloodsea_began"); }); });
+            cue(20, () -> cmd("kill @s"));
+            cue(60, () -> Minecraft.getInstance().player.respawn());
+            cue(120, () -> { var mc = Minecraft.getInstance(); BloodSea.LOG.info("[DEATHTEST2] dim={} pos={}", mc.level.dimension().location(), mc.player.position()); shot("d_back2"); });
             cue(20, () -> Minecraft.getInstance().stop());
             return;
         }

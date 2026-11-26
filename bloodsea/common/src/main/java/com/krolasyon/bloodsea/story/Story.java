@@ -46,7 +46,8 @@ public final class Story {
         return d.getCompound("bloodsea_story");
     }
 
-    public static String stage(ServerPlayer p) { return st(p).getString("stage"); }
+    /** reading the stage never creates a story (a new player must still be seen as new) */
+    public static String stage(ServerPlayer p) { return p.getPersistentData().getCompound("bloodsea_story").getString("stage"); }
 
     static void stage(ServerPlayer p, String s) {
         CompoundTag t = st(p);
@@ -95,6 +96,18 @@ public final class Story {
     public static boolean eyeOpen(ServerPlayer p) { return !active(p) || st(p).getLong("eye_until") > p.level().getGameTime(); }
 
     /** development: go straight to a stage */
+    /** a story that was lost (an older version did not keep it through death): start again on the open water, past the waking */
+    public static void revive(ServerPlayer p) {
+        CompoundTag t = new CompoundTag();
+        p.getPersistentData().put("bloodsea_story", t);
+        p.getPersistentData().putBoolean("bloodsea_began", true);
+        p.server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, p.server);
+        p.server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, p.server);
+        stage(p, "oar");
+        obj(p, "oar");
+        BloodSea.LOG.info("[STORY] revived for {}", p.getName().getString());
+    }
+
     public static void jump(ServerPlayer p, String s) {
         if (!active(p)) {
             p.getPersistentData().put("bloodsea_story", new CompoundTag());
