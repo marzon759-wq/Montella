@@ -292,7 +292,7 @@ public final class SeaEvents {
     public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         String test = System.getProperty("bloodsea.autotest", "");
-        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase")) return;
+        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
         d.putBoolean("bloodsea_began", true);
@@ -310,6 +310,7 @@ public final class SeaEvents {
             var st = raft.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2);
             p.teleportTo(sea, st.x, st.y, st.z, raft.getYRot(), 0f);
             p.getFoodData().setFoodLevel(12);
+            if (com.krolasyon.bloodsea.story.Story.stage(p).startsWith("night")) com.krolasyon.bloodsea.story.Story.later(40, () -> com.krolasyon.bloodsea.story.Story.say(p, "night.died"));
         });
     }
 

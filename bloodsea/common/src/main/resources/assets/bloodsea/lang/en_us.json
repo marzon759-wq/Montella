@@ -218,7 +218,7 @@
  "obj.bloodsea.oar": "Sit at the oar at the back of the raft.",
  "obj.bloodsea.food": "You are starving. Row to a floating crate and pull it aboard.",
  "obj.bloodsea.explore": "Row. Look for anything.",
- "obj.bloodsea.night": "Survive the night. Stay on the raft.",
+ "obj.bloodsea.night": "Survive the night. Row if something follows you; crouch and keep still if something listens. Eat. Keep Pip close.",
  "obj.bloodsea.north": "Row north, to the islands drawn like bones.",
  "obj.bloodsea.escape": "Get away from it!",
  "obj.bloodsea.east": "Follow the heartbeat east.",
@@ -273,5 +273,15 @@
  "line.bloodsea.omen.lights": "Lights, on the water. Lanterns. They go out when I look at them.",
  "subtitles.bloodsea.omen_bell": "A distant bell",
  "subtitles.bloodsea.omen_rain": "Blood rain",
- "subtitles.bloodsea.omen_moan": "Something moans below"
+ "subtitles.bloodsea.omen_moan": "Something moans below",
+ "line.bloodsea.night.dusk": "The light's going. Pip, come here. Stay by me.",
+ "line.bloodsea.night.start": "The moon is red. Of course it is. We just have to last till morning. Just till morning.",
+ "line.bloodsea.night.cold": "It's so cold. Keep moving. If I stop, I'll fall asleep.",
+ "line.bloodsea.night.wake": "Something's following us. Every time I stop rowing, it comes closer. Row. Row!",
+ "line.bloodsea.night.caller": "Something's in the water. It's listening for us. Crouch, Pip. Don't make a sound.",
+ "line.bloodsea.night.half": "Half the night gone. My hands won't stop shaking.",
+ "line.bloodsea.night.late": "It's getting lighter. Isn't it? Please. Please be getting lighter.",
+ "line.bloodsea.night.died": "Not yet. Not tonight.",
+ "obj.bloodsea.dusk": "Night is coming. Find food while there is light.",
+ "hud.bloodsea.dawn": "Dawn in %s"
 }

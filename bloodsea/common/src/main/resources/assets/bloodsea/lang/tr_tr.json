@@ -218,7 +218,7 @@
  "obj.bloodsea.oar": "Salın arkasındaki küreğe otur.",
  "obj.bloodsea.food": "Açlıktan ölüyorsun. Yüzen bir sandığa kürek çek ve onu sala al.",
  "obj.bloodsea.explore": "Kürek çek. Herhangi bir şey ara.",
- "obj.bloodsea.night": "Geceyi atlat. Salda kal.",
+ "obj.bloodsea.night": "Geceyi atlat. Bir şey seni takip ederse kürek çek; bir şey dinliyorsa eğil ve kıpırdama. Ye. Pip'i yakında tut.",
  "obj.bloodsea.north": "Kuzeye, kemik gibi çizilmiş adalara kürek çek.",
  "obj.bloodsea.escape": "Ondan uzaklaş!",
  "obj.bloodsea.east": "Kalp atışını takip et, doğuya git.",
@@ -273,5 +273,15 @@
  "line.bloodsea.omen.lights": "Suyun üstünde ışıklar. Fenerler. Baktığımda sönüyorlar.",
  "subtitles.bloodsea.omen_bell": "Uzakta bir çan",
  "subtitles.bloodsea.omen_rain": "Kan yağmuru",
- "subtitles.bloodsea.omen_moan": "Aşağıda bir şey inliyor"
+ "subtitles.bloodsea.omen_moan": "Aşağıda bir şey inliyor",
+ "line.bloodsea.night.dusk": "Işık gidiyor. Pip, buraya gel. Yanımda kal.",
+ "line.bloodsea.night.start": "Ay kırmızı. Tabii ki kırmızı. Sabaha kadar dayanmamız lazım. Sadece sabaha kadar.",
+ "line.bloodsea.night.cold": "Çok soğuk. Hareket etmeye devam et. Durursam uyuyakalırım.",
+ "line.bloodsea.night.wake": "Bir şey bizi takip ediyor. Kürek çekmeyi her bıraktığımda yaklaşıyor. Çek. Çek!",
+ "line.bloodsea.night.caller": "Suda bir şey var. Bizi dinliyor. Eğil, Pip. Ses çıkarma.",
+ "line.bloodsea.night.half": "Gecenin yarısı geçti. Ellerim titremeyi bırakmıyor.",
+ "line.bloodsea.night.late": "Aydınlanıyor. Değil mi? Lütfen. Lütfen aydınlansın.",
+ "line.bloodsea.night.died": "Daha değil. Bu gece değil.",
+ "obj.bloodsea.dusk": "Gece geliyor. Işık varken yiyecek bul.",
+ "hud.bloodsea.dawn": "Şafağa %s"
 }

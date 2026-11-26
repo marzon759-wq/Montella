@@ -23,6 +23,7 @@ minecraft {
             if (System.getenv('BLOODSEA_AUTOTEST') != null) property 'bloodsea.autotest', System.getenv('BLOODSEA_AUTOTEST')
             if (System.getenv('BLOODSEA_DEBUGAI') != null) property 'bloodsea.debugai', 'true'
             if (System.getenv('BLOODSEA_CUTS') != null) property 'bloodsea.cuts', System.getenv('BLOODSEA_CUTS')
+            if (System.getenv('BLOODSEA_FASTNIGHT') != null) property 'bloodsea.fastnight', 'true'
             if (System.getenv('BLOODSEA_SHOWCOLL') != null) property 'bloodsea.showcolliders', 'true'
             if (System.getenv('BLOODSEA_SIZE') != null) args '--width', System.getenv('BLOODSEA_SIZE').split('x')[0], '--height', System.getenv('BLOODSEA_SIZE').split('x')[1]
         }

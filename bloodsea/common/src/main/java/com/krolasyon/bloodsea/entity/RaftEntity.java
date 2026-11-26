@@ -91,6 +91,7 @@ public class RaftEntity extends RaftBase {
     public void tick() {
         super.tick();
         if (!level().isClientSide && isGhost() && tickCount > 1400) { discard(); return; }
+        if (!level().isClientSide && !isGhost() && tickCount % 5 == 0) lantern();
         if (lerpSteps > 0 && !isControlledByLocalInstance()) {
             double x = getX() + (lerpX - getX()) / lerpSteps, y = getY() + (lerpY - getY()) / lerpSteps, z = getZ() + (lerpZ - getZ()) / lerpSteps;
             setYRot(getYRot() + (float) Mth.wrapDegrees(lerpYRot - getYRot()) / lerpSteps);
@@ -127,6 +128,32 @@ public class RaftEntity extends RaftBase {
             level().addParticle(new DustParticleOptions(new Vector3f(0.45f, 0.02f, 0.03f), 1.6f),
                     getX() + back.x + (random.nextFloat() - 0.5) * 3, Waves.MEAN + 0.1, getZ() + back.z + (random.nextFloat() - 0.5) * 3, 0, 0.05, 0);
         }
+    }
+
+    // the lantern on its pole really gives light: an invisible light block that goes where the lantern goes
+    private net.minecraft.core.BlockPos lit;
+
+    private void lantern() {
+        Vec3 w = local(-1.56, TOP + 1.7, 1.94);
+        net.minecraft.core.BlockPos at = net.minecraft.core.BlockPos.containing(w);
+        if (at.equals(lit)) return;
+        unlight();
+        if (level().getBlockState(at).isAir()) {
+            level().setBlock(at, net.minecraft.world.level.block.Blocks.LIGHT.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 13), 3);
+            lit = at;
+        }
+    }
+
+    private void unlight() {
+        if (lit != null && level().getBlockState(lit).is(net.minecraft.world.level.block.Blocks.LIGHT)) level().setBlock(lit, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+        lit = null;
+    }
+
+    @Override
+    public void remove(RemovalReason why) {
+        if (!level().isClientSide) unlight();
+        super.remove(why);
     }
 
     /** a point on the raft in its own frame: x to the left, y up from the waterline, z toward the bow, in blocks.

@@ -57,7 +57,24 @@ public final class Story {
         BloodSea.LOG.info("[STORY] {} -> {}", p.getName().getString(), s);
     }
 
+    /** true the first time only, for this player's story */
+    static boolean once(ServerPlayer p, String flag) {
+        CompoundTag t = st(p);
+        if (t.getBoolean(flag)) return false;
+        t.putBoolean(flag, true);
+        return true;
+    }
+
     static void score(ServerPlayer p, String k, int n) { st(p).putInt("s_" + k, st(p).getInt("s_" + k) + n); }
+
+    /** the Blood Sea keeps the overworld's clock (a dimension of its own cannot set its time): set it there */
+    public static void setTime(net.minecraft.server.MinecraftServer server, long t) { server.overworld().setDayTime(t); }
+
+    static long now(ServerLevel lvl) { return lvl.getDayTime() % 24000L; }
+
+    /** the night: from moonrise to first light, about six and a half minutes of real time, if nothing interrupts */
+    static final long MOONRISE = 14200, FIRST_LIGHT = 22600;
+    static final float NIGHT_STEP = (FIRST_LIGHT - MOONRISE) / (6.5f * 60f) * (Boolean.getBoolean("bloodsea.fastnight") ? 6f : 1f);
 
     public static boolean active(ServerPlayer p) { String s = stage(p); return !s.isEmpty() && !s.equals("done"); }
 
@@ -102,7 +119,7 @@ public final class Story {
         p.getPersistentData().put("bloodsea_story", t);
         p.server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, p.server);
         p.server.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, p.server);
-        sea.setDayTime(1000);
+        setTime(p.server, 1000);
         RaftEntity r = SeaEvents.enter(p);
         if (r == null) return;
         PipEntity cat = pip(sea, r);
@@ -174,6 +191,9 @@ public final class Story {
         String stage = stage(p);
         if (t % 200 == 0 && Boolean.getBoolean("bloodsea.debugai"))
             BloodSea.LOG.info("[STORY] tick {} t={} region={} dist={} raft={}", stage, t, reg, (int) Regions.dist(p.getX(), p.getZ()), r != null);
+        // the day goes by while you row: slowly, from morning toward the afternoon
+        if (Set.of("rowing", "hungry", "day1").contains(stage)) { long tod = now(lvl); if (tod < 10400) setTime(p.server, tod + 10); }
+        else if (Set.of("north", "north2", "escape", "east0", "east").contains(stage)) { long tod = now(lvl); if (tod < 11000) setTime(p.server, tod + 4); }
         switch (stage) {
             case "oar" -> {
                 if (p.getVehicle() instanceof RaftEntity) {
@@ -194,40 +214,76 @@ public final class Story {
             case "day1" -> {
                 Crates.keep(p, 2);
                 if (t > 1400 && r != null) {
-                    lvl.setDayTime(10500);
+                    if (now(lvl) < 10500) setTime(p.server, 10500);
                     play(p, "gift", () -> ask(p, "gift", pick -> {
                         if (pick.equals("share")) { score(p, "courage", 1); bondUp(p, 3); } else score(p, "fury", 1);
                         say(p, "gift." + pick);
+                        Story.later(120, () -> { say(p, "night.dusk"); obj(p, "dusk"); });
                         stage(p, "dusk");
                     }));
                 }
             }
             case "dusk" -> {
                 Crates.keep(p, 2);
-                if (t > 400) play(p, "moon", () -> { obj(p, "night"); stage(p, "night1"); });
+                // the sun goes down for real: about a minute of evening
+                long tod = now(lvl);
+                if (tod < 12000) setTime(p.server, Math.min(12000, tod + (Boolean.getBoolean("bloodsea.fastnight") ? 150 : 25)));
+                if (tod >= 12000 && t > 200) play(p, "moon", () -> {
+                    obj(p, "night");
+                    say(p, "night.start");
+                    stage(p, "night1");
+                });
             }
-            case "night1" -> {
-                if (t > 700) play(p, "bump", () -> ask(p, "bump", pick -> {
-                    switch (pick) {
-                        case "look" -> { score(p, "courage", 1); Creatures2.wakePast(p); }
-                        case "quiet" -> score(p, "hope", 1);
-                        default -> { score(p, "fury", 1); p.hurt(p.damageSources().generic(), 3f); Net.toPlayer(p, Msg.of("shake").i("ticks", 30)); }
-                    }
-                    say(p, "bump." + pick);
-                    stage(p, "night1b");
-                }));
-            }
-            case "night1b" -> {
-                if (t > 900) play(p, "dawn", () -> play(p, "mem1", () -> {
-                    say(p, "think.north");
-                    obj(p, "north");
-                    stage(p, "north");
-                }));
+            case "night1", "night1b" -> {
+                Crates.keep(p, 2);
+                long tod = now(lvl);
+                if (tod < 12000) tod += 24000;
+                if (tod < FIRST_LIGHT) setTime(p.server, Math.min(FIRST_LIGHT, tod + Math.round(NIGHT_STEP)));
+                float f = Mth.clamp((tod - MOONRISE) / (float) (FIRST_LIGHT - MOONRISE), 0, 1);
+                if (t % 100 == 0) Net.toPlayer(p, Msg.of("dawn").i("secs", Math.max(0, Math.round((FIRST_LIGHT - tod) / NIGHT_STEP))));
+                if (f > 0.08f && once(p, "n_cold")) say(p, "night.cold");
+                if (stage.equals("night1")) {
+                    if (f > 0.2f) play(p, "bump", () -> ask(p, "bump", pick -> {
+                        switch (pick) {
+                            case "look" -> score(p, "courage", 1);
+                            case "quiet" -> score(p, "hope", 1);
+                            default -> { score(p, "fury", 1); p.hurt(p.damageSources().generic(), 3f); Net.toPlayer(p, Msg.of("shake").i("ticks", 30)); }
+                        }
+                        say(p, "bump." + pick);
+                        stage(p, "night1b");
+                    }));
+                    break;
+                }
+                // what was under the raft follows it now: row, or it comes in
+                if (f > 0.3f && r != null && once(p, "n_wake")) {
+                    com.krolasyon.bloodsea.game.Creatures.spawn(lvl, p, "wake");
+                    Story.later(60, () -> say(p, "night.wake"));
+                    Net.toPlayer(p, Msg.of("omen").s("kind", "dread").i("ticks", 600));
+                }
+                if (f > 0.5f && once(p, "n_half")) say(p, "night.half");
+                // and something that hunts by sound: crouch and keep still
+                if (f > 0.62f && r != null && once(p, "n_caller")) {
+                    com.krolasyon.bloodsea.game.Creatures.spawn(lvl, p, "caller");
+                    say(p, "night.caller");
+                    Net.toPlayer(p, Msg.of("omen").s("kind", "dread").i("ticks", 600));
+                }
+                if (f > 0.88f && once(p, "n_late")) say(p, "night.late");
+                if (f >= 1f && r != null) {
+                    // first light: what came in the night goes back down
+                    for (Entity e : lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.CallerEntity.class, p.getBoundingBox().inflate(120))) e.discard();
+                    for (Entity e : lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.WakeEntity.class, p.getBoundingBox().inflate(120))) e.discard();
+                    Net.toPlayer(p, Msg.of("dawn").i("secs", 0));
+                    play(p, "dawn", () -> play(p, "mem1", () -> {
+                        say(p, "think.north");
+                        obj(p, "north");
+                        stage(p, "north");
+                    }));
+                }
             }
             case "north" -> {
                 Crates.keep(p, 2);
                 if ((moved > 220 || t > 2600) && r != null) {
-                    lvl.setDayTime(6000);
+                    setTime(p.server, 6000);
                     play(p, "eye", () -> ask(p, "eye", pick -> {
                         score(p, pick.equals("stare") ? "courage" : "hope", 1);
                         say(p, "eye." + pick);
@@ -258,7 +314,7 @@ public final class Story {
             case "east" -> {
                 Crates.keep(p, 2);
                 if (reg == Regions.Region.LEVIATHAN && Regions.dist(p.getX(), p.getZ()) > 560 && r != null) {
-                    lvl.setDayTime(8000);
+                    setTime(p.server, 8000);
                     play(p, "lev", () -> ask(p, "lev", pick -> {
                         score(p, switch (pick) { case "look" -> "courage"; case "close" -> "accept"; default -> "fury"; }, 1);
                         say(p, "lev." + pick);
@@ -276,7 +332,7 @@ public final class Story {
             case "west" -> {
                 Crates.keep(p, 2);
                 if ((reg == Regions.Region.MIRAGE || moved > 380) && r != null) {
-                    lvl.setDayTime(15500);
+                    setTime(p.server, 15500);
                     play(p, "voice", () -> ask(p, "voice", pick -> {
                         score(p, switch (pick) { case "answer" -> "hope"; case "silent" -> "courage"; default -> "accept"; }, pick.equals("answer") ? 2 : 1);
                         say(p, "voice." + pick);
@@ -293,7 +349,7 @@ public final class Story {
                         st(p).putString("dest", dest);
                         say(p, "dest." + dest);
                         obj(p, "dest_" + dest);
-                        lvl.setDayTime(4000);
+                        setTime(p.server, 4000);
                         stage(p, "dest");
                     });
                 });
@@ -353,7 +409,7 @@ public final class Story {
         if (SESSIONS.containsKey(p.getUUID())) return false;
         String s = stage(p);
         return switch (kind) {
-            case "wake" -> s.equals("night1b") || s.equals("dest") || s.equals("fog");
+            case "wake" -> s.equals("night1") || s.equals("night1b") || s.equals("dest") || s.equals("fog");
             case "changer" -> !s.equals("wake") && !s.equals("oar") && !s.equals("rowing");
             case "caller" -> s.equals("dest");
             case "gatherer" -> s.equals("dest");
@@ -529,7 +585,7 @@ public final class Story {
             for (Iterator<Mover> it = movers.iterator(); it.hasNext(); ) if (it.next().step(t)) it.remove();
             if (timeRamp != null) {
                 float k = Mth.clamp((t - timeRamp[2]) / (float) timeRamp[3], 0, 1);
-                lvl().setDayTime((long) Mth.lerp(k, timeRamp[0], timeRamp[1]));
+                setTime(p.server, (long) Mth.lerp(k, timeRamp[0], timeRamp[1]));
             }
             p.setDeltaMovement(Vec3.ZERO);
             // what was made before the world around it reached the player may never have been shown to it: show it again

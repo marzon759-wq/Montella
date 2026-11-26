@@ -17,6 +17,7 @@ public final class ClientNet {
             case "say" -> StoryHud.say(m.s("key"));
             case "eye" -> WatcherClient.open(m.i("ticks"));
             case "shake" -> StoryHud.shake(m.i("ticks"));
+            case "dawn" -> StoryHud.dawn(m.i("secs"));
             case "omen" -> OmenClient.handle(m.s("kind"), m.i("ticks"));
             default -> {}
         }

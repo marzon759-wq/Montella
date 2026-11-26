@@ -188,7 +188,7 @@ def write_lang(durs):
                  "subtitles.bloodsea.stomach": ("Something churns", "Bir şey çalkalanıyor"), "subtitles.bloodsea.heartbeat_near": ("A heartbeat", "Kalp atışı"),
                  "entity.bloodsea.pip": ("Pip", "Pip"), "entity.bloodsea.elias": ("Elias", "Elias"), "item.bloodsea.pip_fish": ("Pip's fish", "Pip'in balığı"),
                  "item.bloodsea.sea_map": ("Hand-drawn map", "Elle çizilmiş harita"), "entity.bloodsea.crate": ("Floating crate", "Yüzen sandık"),
-                 "hud.bloodsea.objective": ("Objective", "Görev"), "hud.bloodsea.skip": ("Hold SPACE to skip", "Geçmek için BOŞLUK'a basılı tut"),
+                 "hud.bloodsea.objective": ("Objective", "Görev"), "hud.bloodsea.dawn": ("Dawn in %s", "Şafağa %s"), "hud.bloodsea.skip": ("Hold SPACE to skip", "Geçmek için BOŞLUK'a basılı tut"),
                  "hud.bloodsea.choose": ("Choose", "Seç"), "hud.bloodsea.crate": ("Use: pull the crate aboard", "Kullan: sandığı sala çek"),
                  "hud.bloodsea.oar": ("Use: sit at the oar", "Kullan: küreğe otur"), "hud.bloodsea.pet": ("Use: stroke Pip", "Kullan: Pip'i sev"),
                  "hud.bloodsea.ending": ("Ending", "Son"), "hud.bloodsea.endings_seen": ("%s of 4 endings", "4 sondan %s tanesi")}

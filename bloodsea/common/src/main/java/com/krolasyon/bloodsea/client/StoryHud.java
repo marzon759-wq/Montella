@@ -20,6 +20,11 @@ public final class StoryHud {
 
     public static void obj(String key) { obj = key; objT = 0; }
 
+    // the night's clock: how long until first light, counted down here between the server's reminders
+    static int dawnSecs, dawnAt = -1, clock;
+
+    public static void dawn(int secs) { dawnSecs = secs; dawnAt = secs > 0 ? clock : -1; }
+
     public static void say(String key) {
         sayKey = key;
         sayT = 0;
@@ -30,6 +35,7 @@ public final class StoryHud {
 
     public static void tick() {
         objT++;
+        clock++;
         if (sayKey != null) {
             String txt = I18n.get("line.bloodsea." + sayKey);
             int d = Lines.ticks(sayKey);
@@ -65,6 +71,14 @@ public final class StoryHud {
             g.drawString(f, head, 13, 10, argb(a, 0xB02020), false);
             int y = 22;
             for (FormattedCharSequence l : ls) { g.drawString(f, l, 13, y, argb(a, 0xE0D8C8), false); y += 10; }
+            if (dawnAt >= 0) {
+                int left = Math.max(0, dawnSecs - (clock - dawnAt) / 20);
+                if (left > 0 && clock - dawnAt < 20 * 12) {
+                    String d = I18n.get("hud.bloodsea.dawn", String.format("%d:%02d", left / 60, left % 60));
+                    g.fill(6, 12 + bh, 6 + f.width(d) + 14, 26 + bh, argb(0.45f * a, 0x000000));
+                    g.drawString(f, d, 13, 15 + bh, argb(a, 0xC89A6A), false);
+                }
+            }
         }
         if (sayKey != null) {
             float a = Math.min(1f, Math.min(sayT / 8f, (sayLen - sayT) / 10f));

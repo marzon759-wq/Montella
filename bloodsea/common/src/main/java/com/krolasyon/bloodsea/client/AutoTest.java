@@ -152,6 +152,32 @@ public final class AutoTest {
             cue(20, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("night")) {
+            // dusk, the Blood Moon rising, the night with its clock, and first light
+            cue(1100, () -> {});
+            waitFree();
+            cue(20, () -> { cmd("gamerule sendCommandFeedback false"); cmd("time set 10800"); cmd("bloodsea stage dusk"); });
+            cue(100, () -> look(90, -12f));
+            cue(5, () -> shot("n_dusk1"));
+            cue(300, () -> shot("n_dusk2"));
+            waitFree();
+            cue(60, () -> look(-90, -30f));
+            cue(10, () -> shot("n_moonrise"));
+            cue(200, () -> shot("n_night1"));
+            waitFree();
+            cue(100, () -> look(-90, -55f));
+            cue(10, () -> shot("n_moon_high"));
+            cue(120, () -> look(0, -5f));
+            cue(5, () -> shot("n_night_sea"));
+            cue(200, () -> shot("n_night_late"));
+            waitFree();
+            cue(300, () -> shot("n_after"));
+            cue(900, () -> {});
+            waitFree();
+            cue(100, () -> shot("n_morning"));
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("showcase")) {
             // for a viewer: the drift music while rowing, the sun turning into the eye, then the omens one by one
             cue(1100, () -> {});
