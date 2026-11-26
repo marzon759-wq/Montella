@@ -21,6 +21,11 @@ import org.joml.Matrix4f;
 
 /** Client glue: Forge 1.21.1 - the sky of the Blood Sea */
 public final class ClientCompat {
+    /** the game's settings screen (it moved package between versions) */
+    public static net.minecraft.client.gui.screens.Screen options(net.minecraft.client.gui.screens.Screen parent) {
+        return new net.minecraft.client.gui.screens.options.OptionsScreen(parent, net.minecraft.client.Minecraft.getInstance().options);
+    }
+
     private ClientCompat() {}
 
     public static void init(IEventBus bus) {

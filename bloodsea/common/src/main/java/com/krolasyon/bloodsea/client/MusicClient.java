@@ -20,6 +20,11 @@ public final class MusicClient {
     private MusicClient() {}
 
     /** the story can ask for dread for a while (a creature, a chase) */
+    private static boolean menu;
+
+    /** the title screen plays the drift too */
+    public static void menu(boolean on) { menu = on; }
+
     public static void dread(int ticks) { dreadHold = Math.max(dreadHold, ticks); }
 
     static final class Track extends AbstractTickableSoundInstance {
@@ -51,6 +56,7 @@ public final class MusicClient {
     static float base(String id) { return switch (id) { case "dread" -> 0.85f; case "night" -> 0.75f; default -> 0.7f; }; }
 
     public static void tick() {
+        TitleMenu.check();
         Minecraft mc = Minecraft.getInstance();
         boolean here = mc.level != null && mc.player != null
                 && (mc.level.dimension() == SeaEvents.SEA || mc.screen instanceof CutScreen);
@@ -71,6 +77,10 @@ public final class MusicClient {
             boolean night = day > 12800 && day < 23200;
             w = dreadHold > 0 ? "dread" : night ? "night" : "drift";
             // our own score, not the game's
+            mc.getMusicManager().stopPlaying();
+        }
+        if (menu && mc.screen instanceof TitleMenu) {
+            w = "drift";
             mc.getMusicManager().stopPlaying();
         }
         if (!w.equals(want)) {

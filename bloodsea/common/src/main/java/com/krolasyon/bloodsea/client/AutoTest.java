@@ -486,6 +486,18 @@ public final class AutoTest {
         if (mode == null) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) {
+            if (mode.contains("menu")) {
+                // the title screen itself: pictures of it, the sun closed and open
+                if (mc.screen instanceof TitleScreen) {
+                    menu++;
+                    BloodSea.LOG.info("[MENUTEST] screen {}", menu == 1 ? mc.screen.getClass().getName() : "");
+                    if (menu == 80) Screenshot.grab(mc.gameDirectory, "m_menu.png", mc.getMainRenderTarget(), c -> {});
+                    if (menu == 82 && mc.screen instanceof TitleMenu tm) tm.forceEye();
+                    if (menu == 150) Screenshot.grab(mc.gameDirectory, "m_menu_eye.png", mc.getMainRenderTarget(), c -> {});
+                    if (menu == 160) mc.stop();
+                }
+                return;
+            }
             if (!created && mc.screen instanceof TitleScreen && ++menu > 40) {
                 created = true;
                 try {

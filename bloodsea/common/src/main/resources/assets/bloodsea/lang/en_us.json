@@ -283,5 +283,11 @@
  "line.bloodsea.night.late": "It's getting lighter. Isn't it? Please. Please be getting lighter.",
  "line.bloodsea.night.died": "Not yet. Not tonight.",
  "obj.bloodsea.dusk": "Night is coming. Find food while there is light.",
- "hud.bloodsea.dawn": "Dawn in %s"
+ "hud.bloodsea.dawn": "Dawn in %s",
+ "menu.bloodsea.start": "Set Out",
+ "menu.bloodsea.multiplayer": "Other Rafts",
+ "menu.bloodsea.settings": "Settings",
+ "menu.bloodsea.quit": "Let Go",
+ "menu.bloodsea.by": "by Kyvix Photo Editor",
+ "menu.bloodsea.tagline": "Why am I here? Where is this?"
 }

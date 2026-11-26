@@ -283,5 +283,11 @@
  "line.bloodsea.night.late": "Aydınlanıyor. Değil mi? Lütfen. Lütfen aydınlansın.",
  "line.bloodsea.night.died": "Daha değil. Bu gece değil.",
  "obj.bloodsea.dusk": "Gece geliyor. Işık varken yiyecek bul.",
- "hud.bloodsea.dawn": "Şafağa %s"
+ "hud.bloodsea.dawn": "Şafağa %s",
+ "menu.bloodsea.start": "Başla",
+ "menu.bloodsea.multiplayer": "Diğer Sallar",
+ "menu.bloodsea.settings": "Ayarlar",
+ "menu.bloodsea.quit": "Bırak Git",
+ "menu.bloodsea.by": "by Kyvix Photo Editor",
+ "menu.bloodsea.tagline": "Neden buradayım? Burası neresi?"
 }

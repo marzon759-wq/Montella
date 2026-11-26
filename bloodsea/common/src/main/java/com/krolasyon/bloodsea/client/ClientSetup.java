@@ -27,6 +27,11 @@ public final class ClientSetup {
             Minecraft mc = Minecraft.getInstance();
             return mc.player == null ? new float[]{0, 0} : new float[]{mc.player.input.forwardImpulse, mc.player.input.leftImpulse};
         };
+        // the game's title screen is replaced by the Blood Sea's own
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.ScreenEvent.Opening e) -> {
+            net.minecraft.client.gui.screens.Screen n = TitleMenu.replace(e.getNewScreen());
+            if (n != e.getNewScreen()) e.setNewScreen(n);
+        });
         MinecraftForge.EVENT_BUS.addListener((ViewportEvent.ComputeCameraAngles e) -> {
             float[] s = SeaClient.sway((float) e.getPartialTick());
             if (s != null) {
