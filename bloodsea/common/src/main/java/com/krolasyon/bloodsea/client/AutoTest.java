@@ -103,6 +103,9 @@ public final class AutoTest {
     }
 
     static boolean waiting;
+    public static float zoom = -1;
+
+    static void mark(String what) { BloodSea.LOG.info("[TRAILER] mark {}", what); }
 
     static void look(float yaw, float pitch) {
         var pl = Minecraft.getInstance().player;
@@ -150,6 +153,51 @@ public final class AutoTest {
                 cue(c.length + 40, () -> {});
             }
             cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        if (mode.contains("trailer2")) {
+            // the sky shots again, wide enough for a tall screen
+            cue(1, () -> CutScreen.clean = true);
+            cue(1100, () -> {});
+            waitFree();
+            cue(5, () -> { cmd("gamerule sendCommandFeedback false"); Minecraft.getInstance().options.hideGui = true; cmd("time set 2600"); });
+            cue(10, () -> { look(-90, -40f); zoom = 100; });
+            cue(60, () -> mark("eye_closed"));
+            cue(30, () -> { cmd("bloodsea omen blink"); WatcherClient.open(240); mark("eye_opening"); });
+            cue(220, () -> mark("eye_done"));
+            cue(5, () -> { cmd("time set 12700"); look(-90, -14f); zoom = 92; });
+            cue(40, () -> mark("moonrise"));
+            for (int i = 0; i < 110; i++) cue(2, () -> cmd("time add 18"));
+            cue(30, () -> { mark("moon_done"); look(-60, -8f); });
+            cue(60, () -> { mark("end"); Minecraft.getInstance().stop(); });
+            return;
+        }
+        if (mode.contains("trailer")) {
+            // raw footage for a vertical trailer: the opening plays by itself, then the strongest moments, clean
+            cue(1, () -> { CutScreen.clean = true; mark("start"); });
+            cue(1100, () -> {});
+            waitFree();
+            cue(5, () -> { mark("wake_done"); cmd("gamerule sendCommandFeedback false"); Minecraft.getInstance().options.hideGui = true; cmd("time set 2600"); });
+            cue(10, () -> { look(-90, -40f); zoom = 26; });
+            cue(60, () -> mark("eye_closed"));
+            cue(40, () -> { cmd("bloodsea omen blink"); WatcherClient.open(220); mark("eye_opening"); });
+            cue(200, () -> { zoom = -1; mark("eye_done"); });
+            cue(5, () -> cmd("time set 6000"));
+            waitFree();
+            cue(10, () -> { cmd("bloodsea cut rule"); mark("rule"); });
+            cue(40, () -> {});
+            waitFree();
+            cue(10, () -> { Minecraft.getInstance().options.hideGui = true; cmd("time set 12900"); look(-90, -22f); zoom = 40; });
+            cue(40, () -> mark("moonrise"));
+            for (int i = 0; i < 90; i++) cue(2, () -> cmd("time add 20"));
+            cue(30, () -> { zoom = -1; mark("moon_done"); cmd("time set 6000"); });
+            for (String id : new String[]{"bones", "lev", "taken"}) {
+                waitFree();
+                cue(10, () -> { cmd("bloodsea cut " + id); mark(id); });
+                cue(40, () -> {});
+            }
+            waitFree();
+            cue(40, () -> { mark("end"); Minecraft.getInstance().stop(); });
             return;
         }
         if (mode.contains("death")) {

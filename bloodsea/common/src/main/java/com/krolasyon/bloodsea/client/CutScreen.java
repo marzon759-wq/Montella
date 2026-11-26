@@ -19,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
 public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     private static Marker cam;
     public static float fov = -1;
+    /** for recording trailers: no letterbox, no subtitles, no hint */
+    public static boolean clean;
     private final Cut cut;
     private final double ox, oy, oz;
     private final float yaw;
@@ -110,7 +112,7 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
     @Override
     public void tick() {
         if (cut == null) { finish(); return; }
-        for (Cut.Say l : cut.lines) {
+        if (!clean) for (Cut.Say l : cut.lines) {
             int len = com.krolasyon.bloodsea.story.Lines.ticks(l.key());
             if (t + 1 >= l.t() && t < l.t() + len) {
                 String txt = I18n.get("line.bloodsea." + l.key());
@@ -147,7 +149,7 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
         camera(pt);
         int w = width, h = height;
         float tt = t + pt;
-        int bar = (int) (h * 0.12f);
+        int bar = clean ? 0 : (int) (h * 0.12f);
         g.fill(0, 0, w, bar, 0xFF000000);
         g.fill(0, h - bar, w, h, 0xFF000000);
         if (cut == null) return;
@@ -164,7 +166,7 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
         }
         if (fade > 0) g.fill(0, 0, w, h, StoryHud.argb(Math.min(1, fade), 0x000000));
         if (cut.whiteFrom >= 0 && tt > cut.whiteFrom) g.fill(0, 0, w, h, StoryHud.argb(Math.min(1f, (tt - cut.whiteFrom) / 50f), 0xFFFFF4));
-        for (Cut.Say l : cut.lines) {
+        if (!clean) for (Cut.Say l : cut.lines) {
             int len = com.krolasyon.bloodsea.story.Lines.ticks(l.key());
             if (tt >= l.t() && tt < l.t() + len) {
                 float a = Math.min(1f, Math.min((tt - l.t()) / 6f, (l.t() + len - tt) / 8f));
@@ -172,7 +174,7 @@ public class CutScreen extends com.krolasyon.bloodsea.compat.CScreen {
                 StoryHud.subtitle(g, font, w, h - bar - 36, com.krolasyon.bloodsea.story.Lines.ALL.get(l.key()).speaker(), txt, a, StoryHud.typed(txt, len, tt - l.t()));
             }
         }
-        if (t > 40 && t < 160 || skipHold > 0) {
+        if (!clean && (t > 40 && t < 160 || skipHold > 0)) {
             String s = I18n.get("hud.bloodsea.skip");
             g.drawString(font, s, w - font.width(s) - 10, h - bar + 8, 0x80FFFFFF, false);
             if (skipHold > 0) g.fill(w - font.width(s) - 10, h - bar + 19, w - font.width(s) - 10 + (int) (font.width(s) * skipHold / 24f), h - bar + 20, 0xFFB02020);

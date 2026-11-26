@@ -47,6 +47,7 @@ public final class ClientSetup {
         });
         MinecraftForge.EVENT_BUS.addListener((ViewportEvent.ComputeFov e) -> {
             if (CutScreen.fov > 0 && Minecraft.getInstance().screen instanceof CutScreen) e.setFOV(CutScreen.fov);
+            else if (AutoTest.zoom > 0) e.setFOV(AutoTest.zoom);
         });
         com.krolasyon.bloodsea.item.SeaMapItem.OPEN = () -> Minecraft.getInstance().setScreen(new MapScreen());
         bus.addListener((net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers e) -> {
