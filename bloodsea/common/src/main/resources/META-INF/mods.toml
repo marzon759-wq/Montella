@@ -7,9 +7,14 @@ modId="bloodsea"
 version="${mod_version}"
 displayName="Blood Sea"
 authors="krolasyon"
+logoFile="bloodsea_logo.png"
+credits="Cat sounds: kerzoven (CC0), ignasd (CC0), macro (CC-BY 3.0) on freesound.org"
 description='''
-An endless ocean of blood under a white sun and a blood moon. Four ways across it, and four ways it ends:
-the Bone Reach, Leviathan's Deep, the Edge of the World and the Mirage. Type /bloodsea enter.
+A story-driven horror survival mod. You wake face down on a raft in an endless sea of blood, with a black cat
+you have never seen and a hand-drawn map. Why are you here, and where is this?
+
+Eighteen cutscenes, choices that decide one of four endings, a real night under the Blood Moon, five creatures
+that cannot be killed, and a white sun that is not a sun. Create a new world and the story begins by itself.
 '''
 
 [[dependencies.bloodsea]]

@@ -30,3 +30,5 @@ bloodsea/forge-*/.gradle/
 bloodsea/tools/__pycache__/
 bloodsea/*.zip
 bloodsea/*.mp4
+bloodsea/release/raw/
+bloodsea/release/gallery/
