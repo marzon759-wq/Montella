@@ -292,11 +292,18 @@ public final class SeaEvents {
     public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         String test = System.getProperty("bloodsea.autotest", "");
-        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night")) return;
+        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night") && !test.contains("death")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
         d.putBoolean("bloodsea_began", true);
         com.krolasyon.bloodsea.story.Story.later(40, () -> { if (!p.hasDisconnected()) com.krolasyon.bloodsea.story.Story.start(p); });
+    }
+
+    /** the story lives on the player: when they die it has to be carried over to the one who respawns, or it is lost */
+    @SubscribeEvent
+    public static void onClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone e) {
+        net.minecraft.nbt.CompoundTag from = e.getOriginal().getPersistentData(), to = e.getEntity().getPersistentData();
+        for (String k : from.getAllKeys()) if (k.startsWith("bloodsea")) to.put(k, from.get(k).copy());
     }
 
     /** dying out here puts you back on the raft */
@@ -310,6 +317,9 @@ public final class SeaEvents {
             var st = raft.local(0, com.krolasyon.bloodsea.entity.RaftEntity.TOP + 0.05, -1.2);
             p.teleportTo(sea, st.x, st.y, st.z, raft.getYRot(), 0f);
             p.getFoodData().setFoodLevel(12);
+            // the map is not something you lose
+            if (!p.getInventory().contains(new net.minecraft.world.item.ItemStack(com.krolasyon.bloodsea.registry.ModItems.SEA_MAP.get())))
+                p.getInventory().add(new net.minecraft.world.item.ItemStack(com.krolasyon.bloodsea.registry.ModItems.SEA_MAP.get()));
             if (com.krolasyon.bloodsea.story.Story.stage(p).startsWith("night")) com.krolasyon.bloodsea.story.Story.later(40, () -> com.krolasyon.bloodsea.story.Story.say(p, "night.died"));
         });
     }

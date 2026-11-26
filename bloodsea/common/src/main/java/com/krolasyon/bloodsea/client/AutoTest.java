@@ -152,6 +152,17 @@ public final class AutoTest {
             cue(20, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("death")) {
+            // die in the story and come back on the raft, with the story going on
+            cue(1100, () -> {});
+            waitFree();
+            cue(40, () -> { cmd("gamerule sendCommandFeedback false"); cmd("kill @s"); });
+            cue(60, () -> shot("d_dead"));
+            cue(20, () -> Minecraft.getInstance().player.respawn());
+            cue(120, () -> { var mc = Minecraft.getInstance(); BloodSea.LOG.info("[DEATHTEST] dim={} pos={} screen={}", mc.level.dimension().location(), mc.player.position(), mc.screen); shot("d_back"); });
+            cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("night")) {
             // dusk, the Blood Moon rising, the night with its clock, and first light
             cue(1100, () -> {});

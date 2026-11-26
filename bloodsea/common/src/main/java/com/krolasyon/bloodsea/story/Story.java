@@ -119,6 +119,8 @@ public final class Story {
         p.getPersistentData().put("bloodsea_story", t);
         p.server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, p.server);
         p.server.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, p.server);
+        // what you carry stays with you when the blood takes you
+        p.server.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, p.server);
         setTime(p.server, 1000);
         RaftEntity r = SeaEvents.enter(p);
         if (r == null) return;
