@@ -259,5 +259,19 @@
  "hud.bloodsea.oar": "Kullan: küreğe otur",
  "hud.bloodsea.pet": "Kullan: Pip'i sev",
  "hud.bloodsea.ending": "Son",
- "hud.bloodsea.endings_seen": "4 sondan %s tanesi"
+ "hud.bloodsea.endings_seen": "4 sondan %s tanesi",
+ "line.bloodsea.omen.bell": "Bir çan. Gemi çanı. Burada mı? ...Kimse var mı?",
+ "line.bloodsea.omen.bell2": "Sustu. Sanki beni duydu.",
+ "line.bloodsea.omen.ghost": "Başka bir sal. Üstünde biri duruyor.",
+ "line.bloodsea.omen.ghost2": "Benim gibi giyinmiş. O... bana bakıyor.",
+ "line.bloodsea.omen.ghost3": "Gitti. Orada kimse yoktu. Orada kimse yoktu.",
+ "line.bloodsea.omen.rain": "Yağmur yağıyor. Kan yağıyor. Başını sakla, Pip.",
+ "line.bloodsea.omen.moan": "Altımızda büyük bir şey var. Çok büyük. Kıpırdama.",
+ "line.bloodsea.omen.whisper": "Elias... kapıyı açık bıraktın...",
+ "line.bloodsea.omen.whisper2": "Bunu kim söyledi? ...Kim söyledi bunu?!",
+ "line.bloodsea.omen.blink": "Güneş az önce... hayır. Hayır, sadece güneş.",
+ "line.bloodsea.omen.lights": "Suyun üstünde ışıklar. Fenerler. Baktığımda sönüyorlar.",
+ "subtitles.bloodsea.omen_bell": "Uzakta bir çan",
+ "subtitles.bloodsea.omen_rain": "Kan yağmuru",
+ "subtitles.bloodsea.omen_moan": "Aşağıda bir şey inliyor"
 }

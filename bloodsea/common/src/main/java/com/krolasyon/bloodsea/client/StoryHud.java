@@ -49,6 +49,9 @@ public final class StoryHud {
 
     public static void render(GuiGraphics g, float pt, int w, int h) {
         Minecraft mc = Minecraft.getInstance();
+        // under blood rain the light itself goes red and low
+        float rain = OmenClient.rain();
+        if (rain > 0 && !(mc.screen instanceof CutScreen)) g.fill(0, 0, w, h, argb(rain * 0.22f, 0x2A0003));
         if (mc.screen instanceof CutScreen || mc.options.hideGui) return;
         Font f = mc.font;
         if (obj != null) {

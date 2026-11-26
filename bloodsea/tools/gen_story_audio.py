@@ -247,6 +247,11 @@ def main():
         sounds, durs = {}, {}
         for m in _re.finditer(r'e\("([^"]+)", "[^"]+", (\d+)\)', open(os.path.join(J, "Lines.java")).read()):
             durs[m.group(1)] = int(m.group(2))
+        # lines added since the recordings: as long as it takes to read them
+        from story_lines import LINES as _L
+        for k, v in _L.items():
+            if k not in durs:
+                durs[k] = int(45 + len(v[1]) * 1.5)
     sounds.update(misc())
     p = os.path.join(A, "sounds.json")
     d = json.load(open(p))

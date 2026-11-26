@@ -38,6 +38,7 @@ public class ActorEntity extends CreatureBase {
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && tickCount > 1400 && getTags().contains(RaftEntity.GHOST)) { discard(); return; }
         this.yBodyRot = getYRot();
         this.yHeadRot = getYRot();
         this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);

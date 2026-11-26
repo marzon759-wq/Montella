@@ -132,9 +132,11 @@ public final class Story {
         return c;
     }
 
+    public static RaftEntity raftOf(ServerPlayer p) { return raft(p); }
+
     static RaftEntity raft(ServerPlayer p) {
         if (p.getVehicle() instanceof RaftEntity rv) return rv;
-        var l = p.serverLevel().getEntitiesOfClass(RaftEntity.class, p.getBoundingBox().inflate(48));
+        var l = p.serverLevel().getEntitiesOfClass(RaftEntity.class, p.getBoundingBox().inflate(48), r -> !r.isGhost());
         if (l.isEmpty()) return null;
         CompoundTag d = p.getPersistentData();
         if (d.hasUUID("bloodsea_raft")) for (RaftEntity r : l) if (r.getUUID().equals(d.getUUID("bloodsea_raft"))) return r;

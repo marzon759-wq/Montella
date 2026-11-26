@@ -48,7 +48,7 @@ public class RaftEntity extends RaftBase {
 
     @Override
     public InteractionResult interact(Player p, InteractionHand hand) {
-        if (p.isSecondaryUseActive() || p.isPassenger()) return InteractionResult.PASS;
+        if (p.isSecondaryUseActive() || p.isPassenger() || isGhost()) return InteractionResult.PASS;
         if (!level().isClientSide && getControllingPassenger() == null) p.startRiding(this);
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
@@ -82,9 +82,15 @@ public class RaftEntity extends RaftBase {
         return new Vec3(w.x, w.y, w.z);
     }
 
+    /** the other raft, the one with the man on it who watches you: it is never yours, and it never stays */
+    public static final String GHOST = "bloodsea_ghost";
+
+    public boolean isGhost() { return getTags().contains(GHOST); }
+
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && isGhost() && tickCount > 1400) { discard(); return; }
         if (lerpSteps > 0 && !isControlledByLocalInstance()) {
             double x = getX() + (lerpX - getX()) / lerpSteps, y = getY() + (lerpY - getY()) / lerpSteps, z = getZ() + (lerpZ - getZ()) / lerpSteps;
             setYRot(getYRot() + (float) Mth.wrapDegrees(lerpYRot - getYRot()) / lerpSteps);

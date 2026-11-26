@@ -259,5 +259,19 @@
  "hud.bloodsea.oar": "Use: sit at the oar",
  "hud.bloodsea.pet": "Use: stroke Pip",
  "hud.bloodsea.ending": "Ending",
- "hud.bloodsea.endings_seen": "%s of 4 endings"
+ "hud.bloodsea.endings_seen": "%s of 4 endings",
+ "line.bloodsea.omen.bell": "A bell. A ship's bell. Out here? ...Hello?",
+ "line.bloodsea.omen.bell2": "It stopped. Like it heard me.",
+ "line.bloodsea.omen.ghost": "Another raft. Someone's standing on it.",
+ "line.bloodsea.omen.ghost2": "He's dressed like me. He's... he's looking at me.",
+ "line.bloodsea.omen.ghost3": "Gone. There was nobody there. There was nobody there.",
+ "line.bloodsea.omen.rain": "It's raining. It's raining blood. Cover your head, Pip.",
+ "line.bloodsea.omen.moan": "Something big, under us. Something very big. Don't move.",
+ "line.bloodsea.omen.whisper": "Elias... you left the door open...",
+ "line.bloodsea.omen.whisper2": "Who said that? ...Who said that?!",
+ "line.bloodsea.omen.blink": "Did the sun just... no. No, it's just the sun.",
+ "line.bloodsea.omen.lights": "Lights, on the water. Lanterns. They go out when I look at them.",
+ "subtitles.bloodsea.omen_bell": "A distant bell",
+ "subtitles.bloodsea.omen_rain": "Blood rain",
+ "subtitles.bloodsea.omen_moan": "Something moans below"
 }

@@ -13,12 +13,6 @@
    "block_search_extent": 8,
    "offset": 2.0
   },
-  "music": {
-   "sound": "minecraft:ambient.basalt_deltas.mood",
-   "min_delay": 3000,
-   "max_delay": 9000,
-   "replace_current_music": true
-  },
   "particle": {
    "options": {
     "type": "minecraft:ash"

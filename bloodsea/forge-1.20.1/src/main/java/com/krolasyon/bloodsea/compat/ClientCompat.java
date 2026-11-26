@@ -30,7 +30,7 @@ public final class ClientCompat {
         bus.addListener((net.minecraftforge.client.event.RegisterGuiOverlaysEvent e) ->
                 e.registerAboveAll("bloodsea_story", (gui, g, pt, w, h) -> com.krolasyon.bloodsea.client.StoryHud.render(g, pt, w, h)));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ClientTickEvent e) -> {
-            if (e.phase == net.minecraftforge.event.TickEvent.Phase.END) { com.krolasyon.bloodsea.client.AutoTest.tick(); com.krolasyon.bloodsea.client.WatcherClient.tick(); com.krolasyon.bloodsea.client.SeaClient.tick(); com.krolasyon.bloodsea.client.StoryHud.tick(); }
+            if (e.phase == net.minecraftforge.event.TickEvent.Phase.END) { com.krolasyon.bloodsea.client.AutoTest.tick(); com.krolasyon.bloodsea.client.WatcherClient.tick(); com.krolasyon.bloodsea.client.SeaClient.tick(); com.krolasyon.bloodsea.client.StoryHud.tick(); com.krolasyon.bloodsea.client.MusicClient.tick(); com.krolasyon.bloodsea.client.OmenClient.tick(); }
         });
     }
 
@@ -60,6 +60,8 @@ public final class ClientCompat {
     static final ResourceLocation MOON = Compat.rl("textures/environment/blood_moon.png");
     static final ResourceLocation GLOW = Compat.rl("textures/environment/glow.png");
     static final ResourceLocation VANILLA_SUN = Compat.rl("minecraft", "textures/environment/sun.png");
+    static final ResourceLocation WHITE_SUN = Compat.rl("textures/environment/white_sun.png");
+    static final ResourceLocation SEAM = Compat.rl("textures/environment/sun_seam.png");
     static final ResourceLocation EYE = Compat.rl("textures/environment/watcher_eye.png");
     static final ResourceLocation PUPIL = Compat.rl("textures/environment/watcher_pupil.png");
     static final ResourceLocation LID = Compat.rl("textures/environment/watcher_lid.png");
@@ -95,7 +97,7 @@ public final class ClientCompat {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             // the Pale Sun is the Watcher: veins across the sky, a halo, and an eye that blinks and looks about
             float eo = com.krolasyon.bloodsea.client.WatcherClient.openness(pt);
-            float blink = 1f - eo * (1f - com.krolasyon.bloodsea.client.WatcherClient.blink(pt)), stare = com.krolasyon.bloodsea.client.WatcherClient.stare(pt) * eo;
+            float stare = com.krolasyon.bloodsea.client.WatcherClient.stare(pt) * eo;
             float pu = com.krolasyon.bloodsea.client.WatcherClient.pupil(pt);
             float lx = com.krolasyon.bloodsea.client.WatcherClient.lookX(pt), ly = com.krolasyon.bloodsea.client.WatcherClient.lookY(pt);
             final float E = 44f;
@@ -106,35 +108,39 @@ public final class ClientCompat {
             rect(m, 0, 0, 250, 250, 100);
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
             RenderSystem.setShaderTexture(0, GLOW);
-            RenderSystem.setShaderColor(1f, 0.96f - 0.1f * (1 - eo), 0.93f - 0.25f * (1 - eo), 0.35f + 0.15f * eo + 0.2f * stare);
+            RenderSystem.setShaderColor(1f, 0.97f - 0.03f * eo, 0.94f - 0.04f * eo, 0.32f + 0.18f * eo + 0.2f * stare);
             quad(m, 110, 100, true, false);
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            // before it opens it is only a sun: warm, ordinary
-            if (eo < 1f) {
-                RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
-                RenderSystem.setShaderTexture(0, VANILLA_SUN);
-                RenderSystem.setShaderColor(1f, 0.92f, 0.78f, 1f - eo);
-                rect(m, 0, 0, 30, 30, 100);
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            }
-            RenderSystem.setShaderColor(1f, 1f, 1f, eo);
-            RenderSystem.setShaderTexture(0, LID);
-            rect(m, 0, 0, E * 1.04f, E * 1.04f, 100);
+            // the white sun, exactly the eye's size: until the story opens it, it is only a sun
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            float open = 1f - blink;
-            if (open > 0.02f && eo > 0.02f) {
-                RenderSystem.setShaderTexture(0, EYE);
-                rect(m, 0, 0, E, E * open, 100);
-                // the iris glows
-                RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
-                RenderSystem.setShaderColor(1f, 1f, 1f, 0.2f + 0.2f * stare);
-                rect(m, 0, 0, E, E * open, 100);
+            RenderSystem.setShaderTexture(0, WHITE_SUN);
+            rect(m, 0, 0, E, E, 100);
+            // when it opens, it opens like an eyelid: a crack across the middle, then the white parts from it
+            float raw = eo * (1f - com.krolasyon.bloodsea.client.WatcherClient.blink(pt));
+            float o = raw * raw * (3 - 2 * raw);
+            if (eo > 0.002f) {
+                float h = E * o;
+                if (h > 0.25f) {
+                    RenderSystem.setShaderTexture(0, EYE);
+                    rectUV(m, 0, 0, E, h, 100, 0, 0.5f - o / 2, 1, 0.5f + o / 2);
+                    // the iris glows
+                    RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+                    RenderSystem.setShaderColor(1f, 1f, 1f, 0.2f + 0.2f * stare);
+                    rectUV(m, 0, 0, E, h, 100, 0, 0.5f - o / 2, 1, 0.5f + o / 2);
+                    RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+                    RenderSystem.defaultBlendFunc();
+                    RenderSystem.setShaderTexture(0, PUPIL);
+                    float ph = Math.min(E * 0.62f, h * 0.92f);
+                    rect(m, lx * E, Math.max(-h + ph, Math.min(h - ph, ly * E)), E * 0.42f * (0.5f + 0.5f * pu), ph, 100);
+                }
+                // the lid edges, dark and wet, where the white has split
+                float cw = (float) Math.sqrt(Math.max(0, E * E - h * h)) * 0.99f;
+                RenderSystem.setShaderTexture(0, SEAM);
+                RenderSystem.setShaderColor(1f, 1f, 1f, Math.min(1f, eo * 5f));
+                rect(m, 0, -h, cw, 1.5f, 100);
+                rect(m, 0, h, cw, 1.5f, 100);
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.setShaderTexture(0, PUPIL);
-                rect(m, lx * E, ly * E * open, E * 0.42f * (0.5f + 0.5f * pu), E * 0.62f * open, 100);
             }
             // the Blood Moon: a red halo and a red face
             RenderSystem.setShaderTexture(0, GLOW);
@@ -149,6 +155,16 @@ public final class ClientCompat {
             RenderSystem.enableCull();
             RenderSystem.depthMask(true);
             return true;
+        }
+
+        private static void rectUV(Matrix4f m, float cx, float cz, float hx, float hz, float y, float u0, float v0, float u1, float v1) {
+            BufferBuilder bb = Tesselator.getInstance().getBuilder();
+            bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            bb.vertex(m, cx - hx, y, cz - hz).uv(u0, v0).endVertex();
+            bb.vertex(m, cx + hx, y, cz - hz).uv(u1, v0).endVertex();
+            bb.vertex(m, cx + hx, y, cz + hz).uv(u1, v1).endVertex();
+            bb.vertex(m, cx - hx, y, cz + hz).uv(u0, v1).endVertex();
+            BufferUploader.drawWithShader(bb.end());
         }
 
         /** a textured rectangle centred at (cx, cz) on the plane y, half sizes hx, hz */

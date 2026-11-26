@@ -49,7 +49,9 @@ where is this, and why are you here? Everything outside the cutscenes is played 
   hope, acceptance, courage or fury; what weighs most decides where the voyage ends:
   - *The Stomach* (the lighthouse): a hospital bed, Pip alive in your lap... and what is really there.
   - *Acceptance* (the throne of bones), *Return* (through the Leviathan), *The Fall* (the edge of the sea).
-- **The Watcher**: the sun is only a sun - until the story opens its eye, and after that it opens at the worst moments.
+- **The Watcher**: the sun is a plain white sun, exactly the eye's size - until the story opens it: a crack across the middle, then it parts like an eyelid. After that it opens at the worst moments.
+- **Score**: three synthesised, looping pieces (tools/gen_music.py) - *drift* by day, *night*, and *dread* when the eye is open or something is close - cross-faded, replacing the game's own music out here.
+- **Omens**: every minute or two, between chapters, the sea does something it never explains - a ship's bell far off, blood falling as rain, a moan from below, a woman's whisper behind you, lanterns on the horizon that go out when you look at them, the sun forgetting to be a sun, and another raft with a man like you on it, watching (`/bloodsea omen <bell|rain|moan|whisper|lights|blink|ghost>` to see one).
 - The map (use it) shows where you are and where you are pointing.
 
 ## The living

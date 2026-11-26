@@ -100,6 +100,12 @@ public final class SeaEvents {
                     com.krolasyon.bloodsea.story.Story.later(400, () -> sea.setChunkForced(cx, cz, false));
                     return 1;
                 }))));
+        c.then(Commands.literal("omen").requires(s -> s.hasPermission(2)).then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
+                .executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    Omens.force(com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "kind"), p, p.serverLevel(), com.krolasyon.bloodsea.story.Story.raftOf(p));
+                    return 1;
+                })));
         c.then(Commands.literal("where").executes(ctx -> {
             ServerPlayer p = ctx.getSource().getPlayerOrException();
             Regions.Region r = Regions.at(p.getX(), p.getZ());
@@ -135,7 +141,7 @@ public final class SeaEvents {
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         if (d.hasUUID("bloodsea_raft") && sea.getEntity(d.getUUID("bloodsea_raft")) instanceof com.krolasyon.bloodsea.entity.RaftEntity r0 && !r0.isRemoved()) return r0;
         sea.getChunkAt(BlockPos.containing(0, Regions.SEA, 0));
-        var list = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000));
+        var list = sea.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, new net.minecraft.world.phys.AABB(-4000, -64, -4000, 4000, 320, 4000), r0 -> !r0.isGhost());
         com.krolasyon.bloodsea.entity.RaftEntity r;
         if (!list.isEmpty()) r = list.get(0);
         else {
@@ -153,7 +159,7 @@ public final class SeaEvents {
 
     /** only ever one raft: any other found near the player (a double made while the world was still loading) goes */
     static void oneRaft(ServerPlayer p, ServerLevel lvl) {
-        var rafts = lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, p.getBoundingBox().inflate(96));
+        var rafts = lvl.getEntitiesOfClass(com.krolasyon.bloodsea.entity.RaftEntity.class, p.getBoundingBox().inflate(96), r0 -> !r0.isGhost());
         if (rafts.size() < 2) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         com.krolasyon.bloodsea.entity.RaftEntity keep = null;
@@ -246,6 +252,7 @@ public final class SeaEvents {
         if (now % 100 == 0) oneRaft(p, lvl);
         if (!p.isCreative() || Boolean.getBoolean("bloodsea.creatures")) Creatures.tick(p, lvl, r);
         com.krolasyon.bloodsea.story.Story.tick(p);
+        if (com.krolasyon.bloodsea.story.Story.active(p)) Omens.tick(p, lvl, com.krolasyon.bloodsea.story.Story.raftOf(p));
         boolean inBlood = p.isInFluidType(ModFluids.BLOOD_TYPE.get());
         boolean open = lvl.canSeeSky(BlockPos.containing(p.getEyePosition()));
         if (day) {
@@ -285,7 +292,7 @@ public final class SeaEvents {
     public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         String test = System.getProperty("bloodsea.autotest", "");
-        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video")) return;
+        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         if (d.getBoolean("bloodsea_began") || d.contains("bloodsea_story")) return;
         d.putBoolean("bloodsea_began", true);

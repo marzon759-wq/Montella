@@ -104,6 +104,23 @@ public final class AutoTest {
 
     static boolean waiting;
 
+    static void look(float yaw, float pitch) {
+        var pl = Minecraft.getInstance().player;
+        pl.setYRot(yaw); pl.yRotO = yaw; pl.setXRot(pitch); pl.xRotO = pitch;
+    }
+
+    static void lookAtNearest(Class<? extends net.minecraft.world.entity.Entity> c) {
+        var mc = Minecraft.getInstance();
+        var pl = mc.player;
+        net.minecraft.world.entity.Entity best = null;
+        for (var e : mc.level.entitiesForRendering())
+            if (c.isInstance(e) && (best == null || e.distanceTo(pl) > best.distanceTo(pl))) best = e;
+        if (best == null) { BloodSea.LOG.info("[AUTOTEST] nothing to look at"); return; }
+        double dx = best.getX() - pl.getX(), dz = best.getZ() - pl.getZ(), dy = best.getY() + 1.2 - pl.getEyeY();
+        look((float) (Math.atan2(dz, dx) * 180 / Math.PI) - 90f, (float) -(Math.atan2(dy, Math.hypot(dx, dz)) * 180 / Math.PI));
+        BloodSea.LOG.info("[AUTOTEST] looking at {} {} blocks", best, best.distanceTo(pl));
+    }
+
     static final class Story2 { static java.util.function.Supplier<float[]> saved; }
 
     static void waitFree() { cue(1, () -> waiting = true); }
@@ -133,6 +150,55 @@ public final class AutoTest {
                 cue(c.length + 40, () -> {});
             }
             cue(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        if (mode.contains("showcase")) {
+            // for a viewer: the drift music while rowing, the sun turning into the eye, then the omens one by one
+            cue(1100, () -> {});
+            waitFree();
+            cue(20, () -> { cmd("gamerule sendCommandFeedback false"); cmd("time set 2600"); });
+            cue(10, () -> look(-150, -8f));
+            cue(200, () -> look(-120, -25f));
+            cue(30, () -> look(-90, -40f));
+            cue(100, () -> cmd("bloodsea omen blink"));
+            cue(5, () -> com.krolasyon.bloodsea.client.WatcherClient.open(260));
+            cue(300, () -> { cmd("time set 6000"); look(0, 0); });
+            cue(5, () -> cmd("bloodsea omen ghost"));
+            cue(60, () -> lookAtNearest(com.krolasyon.bloodsea.entity.ActorEntity.class));
+            cue(200, () -> cmd("bloodsea omen rain"));
+            cue(300, () -> cmd("bloodsea omen moan"));
+            cue(240, () -> { cmd("time set 18000"); cmd("bloodsea omen lights"); });
+            cue(300, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        if (mode.contains("omens")) {
+            // the sun and the eye, then each omen, from the raft (after the opening scene has played)
+            cue(1100, () -> {});
+            waitFree();
+            cue(20, () -> { cmd("gamerule sendCommandFeedback false"); cmd("time set 2600"); });
+            cue(60, () -> look(-90, -40f));
+            cue(40, () -> shot("o_sun_closed"));
+            cue(5, () -> cmd("bloodsea omen blink"));
+            cue(12, () -> shot("o_sun_crack"));
+            cue(14, () -> shot("o_sun_opening"));
+            cue(22, () -> shot("o_sun_open"));
+            cue(5, () -> com.krolasyon.bloodsea.client.WatcherClient.open(200));
+            cue(80, () -> shot("o_sun_open2"));
+            cue(140, () -> { cmd("time set 6000"); look(0, 0); });
+            cue(5, () -> cmd("bloodsea omen ghost"));
+            cue(80, () -> lookAtNearest(com.krolasyon.bloodsea.entity.ActorEntity.class));
+            cue(10, () -> shot("o_ghost"));
+            cue(5, () -> cmd("bloodsea omen rain"));
+            cue(200, () -> { look(Minecraft.getInstance().player.getYRot() + 120, 5); });
+            cue(10, () -> shot("o_rain"));
+            cue(5, () -> cmd("bloodsea omen moan"));
+            cue(60, () -> shot("o_moan"));
+            cue(60, () -> { cmd("time set 18000"); });
+            cue(10, () -> cmd("bloodsea omen lights"));
+            cue(60, () -> shot("o_lights"));
+            cue(5, () -> look(Minecraft.getInstance().player.getYRot() + 180, 2));
+            cue(30, () -> shot("o_lights2"));
+            cue(40, () -> Minecraft.getInstance().stop());
             return;
         }
         if (mode.contains("auto")) {
