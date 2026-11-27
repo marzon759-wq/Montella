@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", "module": "ES2020", "moduleResolution": "node", "lib": ["ES2020"],
+    "rootDir": "src", "outDir": "out/BP/scripts", "strict": true, "noImplicitAny": false,
+    "skipLibCheck": true, "removeComments": false, "noUnusedLocals": false
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,1 @@
+{"name":"bloodsea-bedrock","private":true,"version":"1.0.0","devDependencies":{"@minecraft/server":"1.11.0","@minecraft/server-ui":"1.2.0","esbuild":"^0.23.1","typescript":"5.5.4"}}
