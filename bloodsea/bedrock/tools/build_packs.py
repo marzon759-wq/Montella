@@ -320,6 +320,25 @@ def blocks_items():
     shutil.copy(os.path.join(JA, "textures", "item", "sea_map.png"), os.path.join(ti, "sea_map.png"))
     wjson(os.path.join(RP, "textures", "item_texture.json"), {"resource_pack_name": "bloodsea", "texture_name": "atlas.items",
                                                               "texture_data": {"bloodsea_sea_map": {"textures": "textures/items/bloodsea/sea_map"}}})
+    # touch controls for phones: things in the hotbar you tap
+    from PIL import ImageDraw as _D
+    def icon(name, draw):
+        im = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        draw(_D.Draw(im))
+        im.save(os.path.join(ti, f"{name}.png"))
+    icon("ctl_oar", lambda d: (d.line([(6, 26), (24, 8)], fill=(120, 84, 48, 255), width=4), d.ellipse([20, 2, 30, 12], fill=(150, 108, 64, 255))))
+    icon("ctl_pip", lambda d: (d.ellipse([7, 10, 25, 28], fill=(20, 20, 24, 255)), d.polygon([(8, 13), (10, 3), (15, 11)], fill=(20, 20, 24, 255)),
+                               d.polygon([(24, 13), (22, 3), (17, 11)], fill=(20, 20, 24, 255)), d.ellipse([11, 15, 14, 18], fill=(200, 220, 40, 255)),
+                               d.ellipse([18, 15, 21, 18], fill=(200, 220, 40, 255))))
+    icon("ctl_skip", lambda d: (d.polygon([(5, 6), (16, 16), (5, 26)], fill=(230, 230, 230, 255)), d.polygon([(16, 6), (27, 16), (16, 26)], fill=(230, 230, 230, 255))))
+    tex = {"bloodsea_sea_map": {"textures": "textures/items/bloodsea/sea_map"}}
+    for n in ("ctl_oar", "ctl_pip", "ctl_skip"):
+        tex[f"bloodsea_{n}"] = {"textures": f"textures/items/bloodsea/{n}"}
+        wjson(os.path.join(BP, "items", f"{n}.json"), {"format_version": "1.21.0", "minecraft:item": {
+            "description": {"identifier": f"bloodsea:{n}", "menu_category": {"category": "items"}},
+            "components": {"minecraft:icon": f"bloodsea_{n}", "minecraft:max_stack_size": 1, "minecraft:glint": False,
+                           "minecraft:display_name": {"value": f"item.bloodsea.{n}"}}}})
+    wjson(os.path.join(RP, "textures", "item_texture.json"), {"resource_pack_name": "bloodsea", "texture_name": "atlas.items", "texture_data": tex})
     wjson(os.path.join(BP, "items", "sea_map.json"), {"format_version": "1.21.0", "minecraft:item": {
         "description": {"identifier": "bloodsea:sea_map", "menu_category": {"category": "items"}},
         "components": {"minecraft:icon": "bloodsea_sea_map", "minecraft:max_stack_size": 1,
@@ -360,7 +379,7 @@ def sounds():
 
 # ------------------------------------------------------------------ language
 LANG_EXTRA = {
-    "en_us": {"action.interact.bloodsea.oar": "Sit at the oar", "action.interact.bloodsea.pet": "Stroke Pip",
+    "en_us": {"item.bloodsea.ctl_oar": "Oar (tap: sit / stand)", "item.bloodsea.ctl_pip": "Call Pip (tap)", "item.bloodsea.ctl_skip": "Skip scene (tap)", "action.interact.bloodsea.oar": "Sit at the oar", "action.interact.bloodsea.pet": "Stroke Pip",
               "action.interact.bloodsea.crate": "Pull it aboard", "item.bloodsea.sea_map": "Hand-drawn Map",
               "entity.bloodsea:pip.name": "Pip", "entity.bloodsea:elias.name": "Elias", "entity.bloodsea:raft.name": "Raft",
               "entity.bloodsea:wake.name": "Wake Follower", "entity.bloodsea:gatherer.name": "Bone Gatherer",
@@ -378,7 +397,7 @@ LANG_EXTRA = {
               "dir.bloodsea.n": "north", "dir.bloodsea.ne": "north-east", "dir.bloodsea.e": "east", "dir.bloodsea.se": "south-east",
               "dir.bloodsea.s": "south", "dir.bloodsea.sw": "south-west", "dir.bloodsea.w": "west", "dir.bloodsea.nw": "north-west",
               "ui.bloodsea.ending.close": "Back to the sea", "ui.bloodsea.objective": "§c§lOBJECTIVE§r\n%s"},
-    "tr_tr": {"action.interact.bloodsea.oar": "Küreğe otur", "action.interact.bloodsea.pet": "Pip'i sev",
+    "tr_tr": {"item.bloodsea.ctl_oar": "Kürek (dokun: otur / kalk)", "item.bloodsea.ctl_pip": "Pip'i çağır (dokun)", "item.bloodsea.ctl_skip": "Sahneyi geç (dokun)", "action.interact.bloodsea.oar": "Küreğe otur", "action.interact.bloodsea.pet": "Pip'i sev",
               "action.interact.bloodsea.crate": "Sala çek", "item.bloodsea.sea_map": "Elle Çizilmiş Harita",
               "entity.bloodsea:pip.name": "Pip", "entity.bloodsea:elias.name": "Elias", "entity.bloodsea:raft.name": "Sal",
               "entity.bloodsea:wake.name": "Dümen Suyu Takipçisi", "entity.bloodsea:gatherer.name": "Kemik Toplayıcı",

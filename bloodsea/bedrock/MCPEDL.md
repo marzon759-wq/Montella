@@ -29,12 +29,13 @@ WHAT'S INSIDE
 - An original score: drift by day, night after dark, and dread when something is close.
 - Its own title screen: a blood-red panorama, the dripping logo and a new splash text. For this, turn on the resource pack under Settings > Global Resources.
 
-HOW TO PLAY
-- Tap or right-click the raft to sit at the oar, then row with the movement controls. You steer where you look.
-- Tap Pip to stroke her. Holding food feeds her.
-- Tap a floating crate to pull it aboard.
-- Use the map to see where you are and which way to go.
-- Hold crouch to skip a cutscene.
+HOW TO PLAY (made for touch screens)
+Your hotbar holds four controls:
+- Oar (slot 1): tap it to sit at the oar or stand up. Row with the joystick; you steer where you look.
+- Map (slot 2): tap it to see where you are and which way to go.
+- Call Pip (slot 3): tap it and she comes to you. Tap again when she is close to stroke her.
+- Skip scene (slot 9): tap it during a cutscene to skip it.
+You can also tap Pip to stroke her (holding food feeds her) and tap a floating crate to pull it aboard. On PC, right-click does the same, and holding crouch also skips a scene.
 
 Made by krolasyon. Title screen splash: "by Kyvix Photo Editor" (Google Play: play.google.com/store/apps/details?id=com.kyvix.photoeditor)
 
@@ -59,6 +60,20 @@ Minecraft Bedrock 1.21.0 and newer (Android, iOS, Windows, consoles). No experim
 ## Tags
 `horror` `story` `adventure` `survival` `cutscenes` `mobs` `addon` `scary`
 
+## Gallery (mcpedl_images folder)
+| File | Caption |
+|---|---|
+| 01_air_raft.png | Your raft, alone on the blood |
+| 02_air_raft_dusk.png | The light is going |
+| 03_air_bloodmoon.png | The Blood Moon |
+| 04_air_bones.png | The Bone Reach |
+| 05_air_throne.png | The Ossuary Throne |
+| 06_air_leviathan.png | Leviathan's Deep |
+| 07_air_maw.png | The Maw |
+| 08_air_mirage.png | The Mirage |
+| 09_air_lighthouse.png | The lighthouse of home |
+| 10_air_edge.png | The Edge of the World |
+
 ## Before publishing
-- Play it once in a real Bedrock world and take your screenshots there. MCPEDL needs at least one; take more for the gallery.
+- The gallery pictures were taken from the air in the Java version of the mod. Bedrock renders the sea differently (flat animated blood instead of moving waves). If you can, add a few shots from your phone.
 - Turn on Settings > Creator > Content Log GUI while testing. Any error the add-on hits will show on screen. Send me the text and I will fix it.

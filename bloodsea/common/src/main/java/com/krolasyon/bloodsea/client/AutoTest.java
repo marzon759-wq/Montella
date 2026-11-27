@@ -155,6 +155,40 @@ public final class AutoTest {
             cue(20, () -> Minecraft.getInstance().stop());
             return;
         }
+        if (mode.contains("aerial2")) {
+            cue(1100, () -> {});
+            waitFree();
+            cue(10, () -> { cmd("gamerule sendCommandFeedback false"); cmd("gamemode spectator"); Minecraft.getInstance().options.hideGui = true; });
+            view("air_raft", 4.5, 70, 7.5, 150, 40, 3000);
+            view("air_raft_dusk", -5.5, 68, 6, -140, 24, 11900);
+            cue(5, () -> cmd("execute in bloodsea:blood_sea run summon bloodsea:gatherer 4 63 -652"));
+            view("air_gatherer", 4, 71, -636, 180, 14, 4000);
+            view("air_lighthouse", -1500, 84, -30, -60, 10, 6000);
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        if (mode.contains("aerial")) {
+            // pictures from the air for a store page: the raft, the sky, each region and each ending's place
+            cue(1100, () -> {});
+            waitFree();
+            cue(10, () -> { cmd("gamerule sendCommandFeedback false"); cmd("gamemode spectator"); Minecraft.getInstance().options.hideGui = true; });
+            view("air_raft", 6, 80, 12, 155, 52, 3000);
+            view("air_raft_high", 20, 110, 30, 145, 58, 5000);
+            view("air_sunset", -14, 74, 16, -125, 14, 12300);
+            view("air_bloodmoon", -10, 72, 18, -110, -22, 15200);
+            cue(5, () -> cmd("time set 4000"));
+            view("air_bones", 40, 100, -600, 170, 38, 4000);
+            cue(5, () -> cmd("execute in bloodsea:blood_sea run summon bloodsea:gatherer 30 63 -650"));
+            view("air_gatherer", 22, 72, -628, 160, 18, 4000);
+            view("air_throne", 30, 100, -1395, 155, 30, 4500);
+            view("air_leviathan", 880, 110, -40, 175, 45, 5000);
+            view("air_maw", 1400, 96, 40, -135, 30, 5000);
+            view("air_lighthouse", -1395, 92, 40, 125, 14, 12600);
+            view("air_mirage", -700, 110, 60, 160, 40, 6000);
+            view("air_edge", 30, 90, 1830, -10, 22, 6000);
+            cue(40, () -> Minecraft.getInstance().stop());
+            return;
+        }
         if (mode.contains("trailer2")) {
             // the sky shots again, wide enough for a tall screen
             cue(1, () -> CutScreen.clean = true);

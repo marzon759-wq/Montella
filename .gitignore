@@ -36,3 +36,4 @@ bloodsea/*.mcaddon
 bloodsea/bedrock/node_modules/
 bloodsea/bedrock/out/
 bloodsea/bedrock/tools/sim/bundle.mjs
+bloodsea/*.zip

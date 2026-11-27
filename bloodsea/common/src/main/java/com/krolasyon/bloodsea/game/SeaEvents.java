@@ -296,7 +296,7 @@ public final class SeaEvents {
     public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         String test = System.getProperty("bloodsea.autotest", "");
-        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night") && !test.contains("death") && !test.contains("trailer")) return;
+        if (!test.isEmpty() && !test.contains("auto") && !test.contains("video") && !test.contains("omens") && !test.contains("showcase") && !test.contains("night") && !test.contains("death") && !test.contains("trailer") && !test.contains("aerial")) return;
         net.minecraft.nbt.CompoundTag d = p.getPersistentData();
         String stage = com.krolasyon.bloodsea.story.Story.stage(p);
         if (com.krolasyon.bloodsea.story.Story.active(p) && !stage.equals("ending") && p.level().dimension() != SEA) {

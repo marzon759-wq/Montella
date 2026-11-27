@@ -48,13 +48,25 @@ function choose(p: Player, id: string, then: (pick: string) => void): void {
 
 export function busy(p: Player): boolean { return inCut(p) || ASKING.has(p.id); }
 
+/** the touch controls in the hotbar (and the map): oar, map, call Pip, skip a scene. They stay in their slots. */
+const CONTROLS: [number, string][] = [[0, "bloodsea:ctl_oar"], [1, "bloodsea:sea_map"], [2, "bloodsea:ctl_pip"], [8, "bloodsea:ctl_skip"]];
 function giveMap(p: Player): void {
     const inv = p.getComponent("minecraft:inventory") as EntityInventoryComponent;
     const c = inv?.container;
     if (!c) return;
-    for (let i = 0; i < c.size; i++) if (c.getItem(i)?.typeId === "bloodsea:sea_map") return;
-    c.addItem(new ItemStack("bloodsea:sea_map", 1));
+    for (const [slot, id] of CONTROLS) {
+        let have = false;
+        for (let i = 0; i < c.size; i++) if (c.getItem(i)?.typeId === id) { have = true; break; }
+        if (have) continue;
+        const it = new ItemStack(id, 1);
+        try { (it as any).lockMode = "slot"; it.keepOnDeath = true; } catch { /* */ }
+        const old = c.getItem(slot);
+        c.setItem(slot, it);
+        if (old) c.addItem(old);
+    }
 }
+
+export function giveControls(p: Player): void { giveMap(p); }
 
 // ------------------------------------------------------------------ starting
 export function onJoin(p: Player): void {

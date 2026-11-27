@@ -29,11 +29,24 @@ const watch = setInterval(() => { const s = st().stage; if (s && s !== last) { s
 
 world.afterEvents.playerSpawn.fire({ player: p, initialSpawn: true });
 await until(() => ["oar", "rowing", "hungry"].includes(st().stage), 200, "oar");
+// CONTROLS TEST: the hotbar controls are there, and they work
+const held = p.inv.container.items.filter(Boolean).map(i => i.typeId);
+for (const id of ["bloodsea:ctl_oar", "bloodsea:sea_map", "bloodsea:ctl_pip", "bloodsea:ctl_skip"]) if (!held.includes(id)) throw new Error("missing control " + id);
+world.afterEvents.itemUse.fire({ source: p, itemStack: { typeId: "bloodsea:ctl_oar" } });
+const sat = !!p.ridingOn;
+world.afterEvents.itemUse.fire({ source: p, itemStack: { typeId: "bloodsea:ctl_oar" } });
+if (sat === !!p.ridingOn) throw new Error("oar control did nothing");
+world.afterEvents.itemUse.fire({ source: p, itemStack: { typeId: "bloodsea:ctl_pip" } });
+world.afterEvents.itemUse.fire({ source: p, itemStack: { typeId: "bloodsea:sea_map" } });
+console.log("controls ok:", held.join(", "));
 if (!p.ridingOn) p.ridingOn = raft();
 await until(() => st().stage === "hungry", 300, "hungry");
 const crate = world.getDimension().spawnEntity("bloodsea:crate", { x: p.location.x + 2, y: p.location.y, z: p.location.z });
 world.afterEvents.dataDrivenEntityTrigger.fire({ entity: crate, eventId: "bloodsea:hauled" });
 await until(() => st().stage === "day1", 50, "day1");
+// skip the next scene with the control once it starts
+let skipped = false;
+const skipper = setInterval(() => { if (!skipped && p.cameraCalls.length && p.effects.invisibility) { world.afterEvents.itemUse.fire({ source: p, itemStack: { typeId: "bloodsea:ctl_skip" } }); skipped = true; } }, 0);
 // stroke the cat once
 const pip = world.getDimension().getEntities({ type: "bloodsea:pip" })[0];
 if (!pip) throw new Error("no Pip");

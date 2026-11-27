@@ -3,14 +3,14 @@ import { world, system, Player, Entity } from "@minecraft/server";
 import { tickClock, active, st, save, setAnim } from "./util";
 import { defineCuts } from "./cuts.gen";
 import { tickUi, showMap } from "./ui";
-import { tickSessions, inCut } from "./session";
+import { tickSessions, inCut, skipCut } from "./session";
 import { keepSea, bloodTick, cratesTouch, haul, raftOf } from "./sea";
-import { tickPips, onPetted } from "./pip";
+import { tickPips, onPetted, callPip } from "./pip";
 import { tickCreatures, directCreatures, alertAll } from "./creatures";
 import { tickWatcher, eye } from "./watcher";
 import { tickMusic } from "./music";
 import { tickOmens, forceOmen, tickRain, sweepGhosts } from "./omens";
-import { tickStory, onJoin, onRespawn, onCrate, onPet, jump, resetStory, start, firstPerson } from "./story";
+import { tickStory, onJoin, onRespawn, onCrate, onPet, jump, resetStory, start, firstPerson, giveControls } from "./story";
 
 defineCuts();
 
@@ -54,8 +54,23 @@ world.afterEvents.playerSpawn.subscribe(ev => {
     else onRespawn(ev.player);
 });
 
+// the touch controls
 world.afterEvents.itemUse.subscribe(ev => {
-    if (ev.itemStack.typeId === "bloodsea:sea_map") showMap(ev.source as Player);
+    const p = ev.source as Player;
+    switch (ev.itemStack.typeId) {
+        case "bloodsea:sea_map": showMap(p); break;
+        case "bloodsea:ctl_skip": skipCut(p); break;
+        case "bloodsea:ctl_oar": {
+            if (inCut(p)) break;
+            const r = raftOf(p);
+            if (!r) break;
+            const rideable = r.getComponent("minecraft:rideable") as any;
+            if (p.getComponent("minecraft:riding")) { try { rideable?.ejectRider(p); } catch { /* */ } }
+            else if (Math.hypot(r.location.x - p.location.x, r.location.z - p.location.z) < 6) { try { rideable?.addRider(p); } catch { /* */ } }
+            break;
+        }
+        case "bloodsea:ctl_pip": callPip(p, onPet); break;
+    }
 });
 
 world.afterEvents.dataDrivenEntityTrigger.subscribe(ev => {
@@ -77,5 +92,6 @@ system.afterEvents.scriptEventReceive.subscribe(ev => {
         case "bloodsea:omen": forceOmen(p, ev.message.trim()); break;
         case "bloodsea:eye": eye(p, Number(ev.message) || 200); break;
         case "bloodsea:fp": firstPerson(p); break;
+        case "bloodsea:controls": giveControls(p); break;
     }
 });

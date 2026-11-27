@@ -53,7 +53,7 @@ export class Session {
         try { p.addEffect("invisibility", 20 * 3600, { showParticles: false }); } catch { /* */ }
         try { p.addEffect("resistance", 20 * 3600, { amplifier: 255, showParticles: false }); } catch { /* */ }
         cmd(p, "inputpermission set @s movement disabled");
-        for (const el of ["hotbar", "crosshair", "health", "hunger", "armor", "air_bubbles", "horse_health", "status_effects", "item_text", "paperdoll", "progress_bar"])
+        for (const el of ["crosshair", "health", "hunger", "armor", "air_bubbles", "horse_health", "status_effects", "item_text", "paperdoll", "progress_bar"])
             cmd(p, `hud @s hide ${el}`);
         this.pipE = getPip(p);
         if (this.pipE) pipScripted(this.pipE, true);
@@ -248,6 +248,12 @@ export function playAt(p: Player, id: string, o: Vector3, yaw: number, then: () 
     const s = new Session(p, c, o, yaw, then, home);
     SESSIONS.set(p.id, s);
     s.begin();
+}
+
+/** the skip control: end the scene now (the hotbar stays up during scenes for this) */
+export function skipCut(p: Player): void {
+    const s = SESSIONS.get(p.id);
+    if (s && s.t > 20) s.end(true);
 }
 
 export function tickSessions(): void {

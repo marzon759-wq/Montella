@@ -233,3 +233,14 @@ function choose(p: Player, c: Cat, ox: number, oz: number, bond: number): void {
     else if (k < 0.75) { c.lx = BLANKET.x; c.lz = BLANKET.z; go(c, "sleep"); }
     else go(c, "idle");
 }
+
+/** the call control: she comes to you and asks to be stroked */
+export function callPip(p: Player, onPet: (p: Player) => void): void {
+    const e = getPip(p);
+    if (!e) return;
+    const c = cat(e);
+    if (c.scripted) return;
+    pipMeow(e);
+    if (flatDist(e.location, p.location) < 2.5) onPetted(e, onPet);
+    else go(c, "rub");
+}
