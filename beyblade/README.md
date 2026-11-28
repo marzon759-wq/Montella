@@ -1,4 +1,4 @@
-# Beyblade Metal Fight (librabeyblade) — 2.1.0
+# Beyblade Metal Fight (librabeyblade) — 2.2.0
 
 Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
@@ -6,8 +6,21 @@ Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
 1. Forge + **GeckoLib** (Forge sürümü, aynı Minecraft sürümü için) kur.
 2. `dist/` içinden doğru jar'ı `mods/` klasörüne at:
-   - `beyblade_mod-1.20.1-forge-2.1.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
-   - `beyblade_mod-1.21.1-forge-2.1.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+   - `beyblade_mod-1.20.1-forge-2.2.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
+   - `beyblade_mod-1.21.1-forge-2.2.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+
+## 2.2: savaşı hissettir
+
+- **Çarpışma rüzgarı:** iki bey çarpıştığında rüzgar çarpışma çizgisine dik olarak iki yana savrulur (kıvrılan rüzgar
+  izleri, zeminde koşan toz halkası), iki beyin enerji renkleri çarpışma noktasında parlar; ağır vuruşlarda hız
+  çizgileri, yakındaki eşyalar/moblar savrulur, otlar yatar. Yeni rüzgar sesi.
+- **3D L-Drago ejderhası:** düz logo yerine gerçek 3D Doğu ejderhası — pullu, sivrilen yılan gövde, sırt yüzgeçleri,
+  pençeli dört bacak, timsah kafa (açılan çene, dişler, parlayan gözler, boynuzlar, bıyıklar), ışıma kabuğu.
+  Uyanışta beyin etrafında sarılıp kükrer; Spin Steal'de girdap gibi döner; Wild Fire'da hedefe saldırır;
+  Life Destructor'da dev boyutta hedefe atılıp ateş kusar.
+- **Cut-in:** her özel hamle (kalkan/uyanış dahil) başladığında ekrana eğik bir bant kayar: bey ikonu, hamle adı, bey adı,
+  hız çizgileri ve "shing" sesi. F1 ile arayüz gizliyken ve kayıtlarda da görünür.
+- **Kamera:** ağır çarpışmada ve özel hamle darbelerinde kamera sarsıntısı + görüş açısı darbesi, büyük patlamalarda beyaz flaş.
 
 ## 2.1: özel hamlelerin dünyaya etkisi + yeni sesler
 

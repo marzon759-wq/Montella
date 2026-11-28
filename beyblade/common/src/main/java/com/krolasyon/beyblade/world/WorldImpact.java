@@ -403,6 +403,25 @@ public final class WorldImpact {
       }
    }
 
+   /** Plants and snow around a point are laid flat (blown away) for a while. */
+   public static void flatten(ServerLevel l, Vec3 c, double radius) {
+      int r = Mth.ceil(radius);
+      for (int dx = -r; dx <= r; dx++) {
+         for (int dz = -r; dz <= r; dz++) {
+            if (dx * dx + dz * dz > radius * radius) {
+               continue;
+            }
+            for (int dy = -1; dy <= 1; dy++) {
+               BlockPos p = BlockPos.containing(c.x + dx, c.y + dy, c.z + dz);
+               BlockState s = l.getBlockState(p);
+               if (isPlant(s) && setTemp(l, p, Blocks.AIR.defaultBlockState(), RESTORE / 2 + l.random.nextInt(200))) {
+                  Px.send(l, new BlockParticleOption(ParticleTypes.BLOCK, s), p.getX() + 0.5, p.getY() + 0.3, p.getZ() + 0.5, 4, 0.3, 0.1, 0.3, 0.3);
+               }
+            }
+         }
+      }
+   }
+
    /** Ground turns to the move's material around a point (magma for fire moves, sand for Inferno Blast). */
    public static void field(ServerLevel l, Vec3 c, double radius, Style style, int perTick) {
       for (int n = 0; n < perTick; n++) {

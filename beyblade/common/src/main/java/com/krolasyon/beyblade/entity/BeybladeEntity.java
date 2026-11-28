@@ -357,6 +357,44 @@ public class BeybladeEntity extends GeoBeyBase {
       return (Float)this.entityData.get(DATA_MAX_SPIN);
    }
 
+   // client: the last clash with another bey (drawn by ClashFx from the lower id of the pair)
+   public int clashTime = -1000;
+   public boolean clashHeavy;
+   public int clashOther = -1;
+   public double clashX;
+   public double clashY;
+   public double clashZ;
+   public double clashNX;
+   public double clashNZ;
+
+   private void noteClash(boolean heavy) {
+      BeybladeEntity other = null;
+      double best = 4.0;
+      for (BeybladeEntity b : this.level().getEntitiesOfClass(BeybladeEntity.class, this.getBoundingBox().inflate(2.0), bx -> bx != this)) {
+         double d = b.distanceToSqr(this);
+         if (d < best) {
+            best = d;
+            other = b;
+         }
+      }
+      if (other == null) {
+         return;
+      }
+      Vec3 dir = flat(other.position().subtract(this.position()));
+      dir = dir.lengthSqr() < 1.0E-4 ? new Vec3(1.0, 0.0, 0.0) : dir.normalize();
+      this.clashTime = this.tickCount;
+      this.clashHeavy = heavy;
+      this.clashOther = other.getId();
+      this.clashNX = dir.x;
+      this.clashNZ = dir.z;
+      this.clashX = this.getX() + dir.x * 0.45;
+      this.clashY = this.getY() + 0.38;
+      this.clashZ = this.getZ() + dir.z * 0.45;
+      if (this.getId() < other.getId()) {
+         com.krolasyon.beyblade.client.ClientHooks.clash(this, heavy);
+      }
+   }
+
    public boolean burstFinish() {
       return this.burstClient;
    }
@@ -1581,6 +1619,7 @@ public class BeybladeEntity extends GeoBeyBase {
                         heavy ? 2.2F : 1.4F,
                         0.8F + this.random.nextFloat() * 0.3F
                      );
+                  ClashWind.gust(this, o, cx, cy, cz, nx, nz, heavy, impact);
                   this.level().broadcastEntityEvent(this, (byte)(heavy ? 61 : 60));
                   this.level().broadcastEntityEvent(o, (byte)(heavy ? 61 : 60));
                   if (heavy) {
@@ -3013,6 +3052,11 @@ public class BeybladeEntity extends GeoBeyBase {
             this.abilityZ = this.getZ();
             if (this.clientAbility != 0 && this.tickCount > 2) {
                this.playAction(com.krolasyon.beyblade.client.BeyAnims.ability(this, this.clientAbility));
+               com.krolasyon.beyblade.client.ClientHooks.special(this, this.clientAbility);
+            }
+         } else if (DATA_SHIELD_END.equals(key)) {
+            if (this.tickCount > 2 && this.isShielded() && this.buffAbility() > 0) {
+               com.krolasyon.beyblade.client.ClientHooks.special(this, this.buffAbility());
             }
          } else if (DATA_STATE.equals(key)) {
             this.clientStateStart = this.tickCount;
@@ -3029,6 +3073,7 @@ public class BeybladeEntity extends GeoBeyBase {
          case 60:
             this.hitTime = this.tickCount;
             this.playAction(com.krolasyon.beyblade.client.BeyAnims.HIT_LIGHT);
+            this.noteClash(false);
             break;
          case 64:
             this.hitTime = this.tickCount;
@@ -3038,6 +3083,7 @@ public class BeybladeEntity extends GeoBeyBase {
             this.hitTime = this.tickCount;
             this.heavyHitTime = this.tickCount;
             this.playAction(com.krolasyon.beyblade.client.BeyAnims.HIT_HEAVY);
+            this.noteClash(true);
             break;
          case 62:
             this.landTime = this.tickCount;
@@ -3097,6 +3143,7 @@ public class BeybladeEntity extends GeoBeyBase {
             break;
          case 65:
             this.impactTime = this.tickCount;
+            com.krolasyon.beyblade.client.ClientHooks.impact(this, 1.0F);
             this.clientScar(3.4F);
             break;
          case 66:

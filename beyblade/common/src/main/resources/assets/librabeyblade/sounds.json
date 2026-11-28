@@ -512,5 +512,25 @@
     "attenuation_distance": 24
    }
   ]
+ },
+ "clash_wind": {
+  "subtitle": "subtitles.librabeyblade.clash_wind",
+  "sounds": [
+   {
+    "name": "librabeyblade:clash_wind",
+    "stream": false,
+    "attenuation_distance": 32
+   }
+  ]
+ },
+ "cut_in": {
+  "subtitle": "subtitles.librabeyblade.cut_in",
+  "sounds": [
+   {
+    "name": "librabeyblade:cut_in",
+    "stream": false,
+    "attenuation_distance": 16
+   }
+  ]
  }
 }

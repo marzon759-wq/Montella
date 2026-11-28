@@ -16,6 +16,8 @@ public final class ModSounds {
    public static final RegistryObject<SoundEvent> SKY_LAUNCH = reg("sky_launch");
    public static final RegistryObject<SoundEvent> METEOR_DIVE = reg("meteor_dive");
    public static final RegistryObject<SoundEvent> AURA = reg("aura");
+   public static final RegistryObject<SoundEvent> CLASH_WIND = reg("clash_wind");
+   public static final RegistryObject<SoundEvent> CUT_IN = reg("cut_in");
    public static final RegistryObject<SoundEvent> LAND = reg("land");
    public static final RegistryObject<SoundEvent> CHARGE = reg("charge");
    public static final RegistryObject<SoundEvent> SPIN_LOOP = reg("spin_loop");

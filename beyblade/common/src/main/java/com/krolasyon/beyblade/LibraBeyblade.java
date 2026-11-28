@@ -28,7 +28,7 @@ public class LibraBeyblade {
       ModMenus.MENUS.register(bus);
       bus.addListener(this::commonSetup);
       com.krolasyon.beyblade.world.WorldImpact.init();
-      if (System.getProperty("libra.autotest", "false").matches("true|world") && FMLEnvironment.dist == Dist.CLIENT) {
+      if (System.getProperty("libra.autotest", "false").matches("true|world|dragon|clash") && FMLEnvironment.dist == Dist.CLIENT) {
          AutoTest.init();
       }
       if (Boolean.getBoolean("libra.video") && FMLEnvironment.dist == Dist.CLIENT) {

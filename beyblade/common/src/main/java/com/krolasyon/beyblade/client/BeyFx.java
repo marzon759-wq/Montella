@@ -93,6 +93,7 @@ public final class BeyFx {
 
    /** After the model, at the entity origin. */
    public static void after(BeyRig rig, PoseStack pose, MultiBufferSource buf, int light, Quaternionf cam) {
+      ClashFx.render(rig, pose, buf, cam);
       BeybladeEntity e = rig.e;
       float partial = rig.partial;
       float t = rig.t;

@@ -91,6 +91,14 @@ public final class AutoTest {
    }
 
    private AutoTest() {
+      if ("dragon".equals(System.getProperty("libra.autotest"))) {
+         this.dragonScenario();
+         return;
+      }
+      if ("clash".equals(System.getProperty("libra.autotest"))) {
+         this.clashScenario();
+         return;
+      }
       if ("world".equals(System.getProperty("libra.autotest"))) {
          this.worldScenario();
          return;
@@ -175,6 +183,43 @@ public final class AutoTest {
       this.wait(10, "sleep_a");
       this.wait(30, "sleep_b");
       this.wait(20, "END");
+   }
+
+   private void dragonScenario() {
+      this.cmd(0, null, "gamerule doDaylightCycle false", "time set 13500", "weather clear", "difficulty peaceful", "gamemode spectator @a", "kill @e[type=!player]",
+         "summon librabeyblade:stadium 0.5 -60 -14.5");
+      this.cmd(10, null, "tp @a 0.5 -55.5 -4.0 180 22", "summon librabeyblade:ldrago 0.5 -58 -14.5 {Tags:[\"a\"]}", "summon librabeyblade:common 4.5 -58 -16 {Variant:2}");
+      this.wait(20, null);
+      this.force(1);
+      this.wait(3, "buff_cutin");
+      this.wait(17, "dragon_awaken_a");
+      this.wait(15, "dragon_awaken_b");
+      this.cmd(1, null, "tp @a 7.5 -56.5 -9.0 135 15");
+      this.wait(10, "dragon_side");
+      this.cmd(1, null, "tp @a 0.5 -57.5 -10.5 180 -5");
+      this.wait(8, "dragon_low");
+      this.cmd(160, null, "tp @a 0.5 -55.0 -3.0 180 22");
+      this.force(5);
+      this.wait(4, "cutin_a");
+      this.wait(6, "cutin_b");
+      this.wait(40, "dragon_roar_a");
+      this.wait(14, "dragon_roar_b");
+      this.wait(14, "dragon_roar_c");
+      this.wait(20, "END");
+   }
+
+   private void clashScenario() {
+      this.cmd(0, null, "gamerule doDaylightCycle false", "time set 5000", "weather clear", "difficulty peaceful", "gamemode spectator @a", "kill @e[type=!player]",
+         "summon librabeyblade:stadium 0.5 -60 -14.5");
+      for (int r = 0; r < 3; r++) {
+         this.cmd(2, null, "kill @e[type=!player,type=!librabeyblade:stadium]", "tp @a 0.5 -57.4 -10.0 180 30",
+            "summon librabeyblade:pegasus -2.5 -58 -14.5 {Motion:[0.55,0.0,0.0]}", "summon librabeyblade:ldrago 3.5 -58 -14.5 {Motion:[-0.55,0.0,0.0]}");
+         for (int k = 0; k < 5; k++) {
+            this.wait(2, "clash_" + r + "_" + k);
+         }
+         this.wait(30, null);
+      }
+      this.wait(10, "END");
    }
 
    /** Special moves on open ground: craters, tornadoes, shock waves, and the ground putting itself back. */

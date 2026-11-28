@@ -29,7 +29,8 @@ public final class LDragoFx {
    }
 
    private static void emblem(MultiBufferSource buf, PoseStack pose, Quaternionf cam, double x, double y, double z, float size, float strength) {
-      float a = Mth.clamp(strength, 0.0F, 1.0F);
+      // the flat logo is only a faint halo now: the 3D dragon (DragonSpirit) is the spirit
+      float a = Mth.clamp(strength, 0.0F, 1.0F) * 0.18F;
       if (!(a <= 0.01F) && !(size <= 0.01F)) {
          VertexConsumer vc = Fx.bufT(buf, DRAGON, 0.9F * a);
          Fx.billboard(vc, pose, cam, x, y, z, size, 0.0F, new float[]{0.9F, 0.06F, 0.3F});
@@ -37,6 +38,63 @@ public final class LDragoFx {
          vc = Fx.buf(buf, DRAGON);
          Fx.billboard(vc, pose, cam, x, y, z, size * 1.04F, 0.0F, k(MAGENTA, 0.35F * a));
       }
+   }
+
+   /** The 3D dragon spirit, coiled round L-Drago while its powers are active. */
+   private static void dragon3d(LDragoEntity e, float partial, float t, double ex, double ey, double ez, PoseStack pose, MultiBufferSource buf, Quaternionf cam) {
+      int ab = e.clientAbility;
+      float at = e.abilityAge(partial);
+      boolean buffOn = e.isShielded();
+      if (ab == 0 && !buffOn) {
+         return;
+      }
+      float dur = ab > 0 && ab < LDragoEntity.DR_DURATION.length ? (float)LDragoEntity.DR_DURATION[ab] : 0.0F;
+      float alpha;
+      if (ab > 0 && dur > 0.0F) {
+         alpha = Mth.clamp(at / 10.0F, 0.0F, 1.0F) * Mth.clamp((dur - at) / 10.0F, 0.0F, 1.0F);
+      } else {
+         alpha = 0.85F;
+      }
+      double radius = 2.4;
+      double height = 3.4;
+      float size = 1.15F;
+      float jaw = 0.1F + 0.15F * Mth.sin(t * 0.2F) * Mth.sin(t * 0.2F);
+      float fire = 0.0F;
+      float lunge = 0.0F;
+      net.minecraft.world.entity.Entity tg = e.level().getEntity(e.getTargetId());
+      Vec3 target = tg == null ? null : new Vec3(Mth.lerp(partial, tg.xo, tg.getX()) - ex, Mth.lerp(partial, tg.yo, tg.getY()) - ey + 0.5, Mth.lerp(partial, tg.zo, tg.getZ()) - ez);
+      switch (ab) {
+         case LDragoEntity.DR_VORTEX -> {
+            radius = 2.7;
+            height = 3.6;
+         }
+         case LDragoEntity.DR_METEOR -> {
+            size = 1.2F;
+            radius = 2.4;
+            height = 5.0;
+            jaw = 0.5F;
+         }
+         case LDragoEntity.DR_CLAW -> {
+            lunge = 0.5F + 0.5F * Mth.sin(at * 0.45F);
+            jaw = 0.3F + 0.5F * lunge;
+         }
+         case LDragoEntity.DR_ROAR -> {
+            size = 1.45F;
+            radius = 2.8;
+            height = 6.5;
+            float k = Mth.clamp((at - 18.0F) / 10.0F, 0.0F, 1.0F) * Mth.clamp((dur - 12.0F - at) / 8.0F, 0.0F, 1.0F);
+            lunge = 0.85F * k;
+            jaw = 0.25F + 0.75F * k;
+            fire = k;
+         }
+         default -> {
+            // awakening: rears up and roars once
+            float r = buffOn ? Mth.clamp(1.0F - (float)Math.abs((t % 120.0F) - 20.0F) / 20.0F, 0.0F, 1.0F) : 0.0F;
+            jaw = Math.max(jaw, r);
+         }
+      }
+      Vec3[] spine = DragonSpirit.coil(46, 0.0, 0.0, 0.0, t, radius, height, (float)e.spinDir(), target, lunge);
+      DragonSpirit.render(pose, buf, cam, spine, size, t, alpha, jaw, fire, target);
    }
 
    private static float[] k(float[] c, float k) {
@@ -49,6 +107,7 @@ public final class LDragoFx {
    }
 
    public static void render(LDragoEntity e, float partial, float t, double ex, double ey, double ez, PoseStack pose, MultiBufferSource buf, Quaternionf cam) {
+      dragon3d(e, partial, t, ex, ey, ez, pose, buf, cam);
       if (e.isShielded()) {
          awaken(e, t, pose, buf, cam);
       }

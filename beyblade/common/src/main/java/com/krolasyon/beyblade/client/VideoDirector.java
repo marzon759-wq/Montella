@@ -218,6 +218,10 @@ public final class VideoDirector {
 
    // ------------------------------------------------------------------ the script
    private VideoDirector() {
+      if ("short".equals(System.getProperty("libra.video.script"))) {
+         this.shortScript();
+         return;
+      }
       // 1. intro: the stadium
       this.fight = true;
       this.shot(300, 1.0F, then(cmds(CLEAR), s -> {
@@ -306,6 +310,69 @@ public final class VideoDirector {
       // 10. outro
       this.shot(240, 1.0F, s -> {
       }, orbit(CX, CY, CZ, 16.0, 9.0, 120.0, 0.12), "Beyblade Metal Fight 2.1|Krater · kasırga · şok dalgası · kendini onaran dünya");
+   }
+
+   /** 2.2 showcase: clash wind, the 3D dragon, cut-ins, Star Blast, Storm Bringer, a battle royale. */
+   private void shortScript() {
+      this.fight = true;
+      this.shot(140, 1.0F, cmds(CLEAR), orbit(CX, CY, CZ, 14.0, 7.0, 200.0, 0.15),
+         "BEYBLADE METAL FIGHT 2.2|Çarpışma rüzgarı · 3D L-Drago ejderhası · özel hamle cut-in");
+      // clashes in slow motion
+      for (int r = 0; r < 3; r++) {
+         double side = r % 2 == 0 ? 1.0 : -1.0;
+         this.shot(7, 1.0F, cmds(CLEAR,
+               String.format(Locale.ROOT, "summon librabeyblade:pegasus %.2f %.2f %.2f {Motion:[0.55,0.0,0.0]}", CX - 2.5, CY + 0.3, CZ),
+               String.format(Locale.ROOT, "summon librabeyblade:ldrago %.2f %.2f %.2f {Motion:[-0.55,0.0,0.0]}", CX + 3.5, CY + 0.3, CZ)),
+            fixed(CX + 0.5 + side * 0.8, CY + 0.9, CZ + 3.4, CX + 0.5, CY + 0.2, CZ), r == 0 ? "Çarpışma: rüzgar iki yana savrulur" : (r == 1 ? "Enerjiler çarpışır" : "Toz halkası, kamera sarsıntısı"));
+         this.shot(26, 0.28F, s -> {
+         }, fixed(CX + 0.5 + side * 0.8, CY + 0.9, CZ + 3.4, CX + 0.5, CY + 0.2, CZ), null);
+         this.shot(40, 1.0F, s -> {
+         }, this.follow(4.5, 1.6, side > 0 ? 160.0 : 200.0, 0.5), null);
+      }
+      // L-Drago awakens: the 3D dragon
+      this.fight = false;
+      this.shot(170, 1.0F, cmds(CLEAR, String.format(Locale.ROOT, "summon librabeyblade:ldrago %.2f %.2f %.2f {Tags:[\"a\"]}", CX, CY + 0.3, CZ),
+            String.format(Locale.ROOT, "summon librabeyblade:common %.2f %.2f %.2f {Variant:2}", CX + 4.0, CY + 0.3, CZ - 2.0)),
+         track(ModEntities.LDRAGO, 7.0, 3.0, 160.0, 0.35), "L-Drago: İmparator Ejderha Uyanışı",
+         sub(12, s -> each(s, b -> b.debugForceAbility(1))));
+      this.shot(220, 1.0F, s -> each(s, b -> b.debugForceAbility(5)), track(ModEntities.LDRAGO, 10.0, 4.5, 220.0, 0.3),
+         "Ejderha İmparatoru Yaşam Yok Edici: ejderha hedefe atılır, ateş kusar");
+      this.fight = true;
+      // Pegasus outside: Star Blast and Storm Bringer
+      this.outdoorShort();
+      // battle royale
+      this.fight = true;
+      this.shot(700, 1.0F, then(cmds(CLEAR), s -> {
+         place(s, ModEntities.PEGASUS.get(), new ItemStack(ModItems.PEGASUS.get()), CX - 6.0, CZ, new Vec3(0.35, 0.2, 0.2), false);
+         place(s, ModEntities.LDRAGO.get(), new ItemStack(ModItems.LDRAGO.get()), CX + 6.0, CZ, new Vec3(-0.35, 0.2, -0.2), false);
+         place(s, ModEntities.LEONE.get(), new ItemStack(ModItems.LEONE.get()), CX, CZ - 6.0, new Vec3(0.2, 0.2, 0.35), false);
+         place(s, ModEntities.EAGLE.get(), new ItemStack(ModItems.EAGLE.get()), CX, CZ + 6.0, new Vec3(-0.2, 0.2, -0.35), false);
+      }), this.follow(6.0, 3.0, 0.0, 0.15), "Battle Royale: Pegasus · L-Drago · Leone · Eagle");
+      this.capAt(-1, 160, "");
+      this.shot(120, 1.0F, cmds(CLEAR), orbit(CX, CY, CZ, 15.0, 8.0, 100.0, 0.15), "Beyblade Metal Fight 2.2|Let it rip!");
+   }
+
+   private void outdoorShort() {
+      String meadow = String.format(Locale.ROOT, "fill %d -61 %d %d -61 %d minecraft:grass_block", (int)OX - 26, (int)OZ - 22, (int)OX + 26, (int)OZ + 22);
+      String air = String.format(Locale.ROOT, "fill %d -60 %d %d -52 %d minecraft:air", (int)OX - 26, (int)OZ - 22, (int)OX + 26, (int)OZ + 22);
+      String grass = String.format(Locale.ROOT, "fill %d -60 %d %d -60 %d minecraft:short_grass", (int)OX - 22, (int)OZ - 18, (int)OX + 22, (int)OZ + 18);
+      this.fight = false;
+      this.shot(60, 1.0F, cmds(CLEAR, meadow, air, grass, f("fill %d -60 %d %d -60 %d minecraft:poppy", -9, -6, -5, -3),
+            f("fill %d -60 %d %d -60 %d minecraft:dandelion", 4, 3, 8, 7), f("summon minecraft:sheep %d -60 %d", 7, -3)),
+         orbit(OX, OY, OZ, 16.0, 6.0, 150.0, 0.25), "Stadyumun dışında…");
+      this.shot(24, 1.0F, cmds(f("summon librabeyblade:pegasus %d -59.7 %d {Tags:[\"a\"]}", -3, 1), f("summon librabeyblade:common %d -59.7 %d {Variant:2}", 2, 0)),
+         fixed(OX + 6.0, OY + 3.0, OZ + 12.0, OX, OY, OZ), "Storm Pegasus — Yıldız Patlama Saldırısı!", sub(8, s -> each(s, b -> b.debugForceAbility(3))));
+      this.shot(12, 1.0F, s -> {
+      }, watch(ModEntities.PEGASUS, OX + 4.0, OY + 4.0, OZ + 14.0), null);
+      this.shot(18, 1.0F, s -> {
+      }, watch(ModEntities.PEGASUS, OX - 6.0, OY + 30.0, OZ + 8.0), null);
+      this.shot(16, 0.4F, s -> {
+      }, fixed(OX + 5.0, OY + 3.5, OZ + 11.0, OX + 1.0, OY + 3.0, OZ), null);
+      this.shot(60, 1.0F, s -> {
+      }, orbit(OX + 1.0, OY, OZ, 11.0, 6.0, 20.0, 0.25), null);
+      this.shot(120, 1.0F, cmds(CLEAR, f("summon librabeyblade:pegasus %d -59.7 %d {Tags:[\"a\"]}", -10, -2),
+            f("summon librabeyblade:common %d -59.7 %d {Variant:4}", -6, -3)),
+         fixed(OX - 8.0, OY + 5.0, OZ + 15.0, OX - 6.0, OY + 5.0, OZ - 3.0), "Storm Pegasus — Fırtına Getirici", sub(14, s -> each(s, b -> b.debugForceAbility(2))));
    }
 
    // ------------------------------------------------------------------ outdoor: world impact
@@ -549,7 +616,9 @@ public final class VideoDirector {
          cmds(String.format(Locale.ROOT, "tick rate %.2f", rate)).accept(srv);
          s.start().accept(srv);
       });
-      this.caption(s.caption());
+      if (s.caption() != null) {
+         this.caption(s.caption());
+      }
       LOG.info("[VIDEO] shot {} / {} at video {}s, {} frames", this.shotIndex + 1, this.shots.size(), String.format(Locale.ROOT, "%.1f", this.videoTime), this.frameNo);
    }
 

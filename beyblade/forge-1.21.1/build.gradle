@@ -22,6 +22,7 @@ minecraft {
         client {
             if (System.getenv('LIBRA_AUTOTEST') != null) property 'libra.autotest', System.getenv('LIBRA_AUTOTEST')
             if (System.getenv('LIBRA_VIDEO') != null) property 'libra.video', System.getenv('LIBRA_VIDEO')
+            if (System.getenv('LIBRA_VIDEO_SCRIPT') != null) property 'libra.video.script', System.getenv('LIBRA_VIDEO_SCRIPT')
             if (System.getenv('LIBRA_VIDEO_RATE') != null) property 'libra.video.rate', System.getenv('LIBRA_VIDEO_RATE')
             if (System.getenv('LIBRA_SIZE') != null) args '--width', System.getenv('LIBRA_SIZE').split('x')[0], '--height', System.getenv('LIBRA_SIZE').split('x')[1]
         }

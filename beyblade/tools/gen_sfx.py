@@ -188,6 +188,12 @@ def main():
     aura = mix([(load('movingshield_sound.ogg', dur=2.0), 0, 0.8), (load('powerup.wav'), 0, 0.7), (load('power_up_sound_v3_0.ogg'), 0.1, 0.5)], 2.0)
     save('aura', aura, fout=0.6)
     save('charge', mix([(load('chargestart.wav'), 0, 0.8), (load('charge.wav', dur=1.2), 0.1, 0.7)], 1.5), fout=0.4)
+    # clash wind: the gust thrown sideways by a hit
+    save('clash_wind', mix([(load('whoosh2_0.wav', rate=1.1), 0.0, 0.9), (load('short_wind_sound.wav', dur=1.0, rate=1.2), 0.0, 0.6),
+                            (load('swishes/swishes/swish-3.wav', rate=0.6), 0.0, 0.6)], 1.0), fout=0.5, decay=0.45)
+    # cut-in: swish + blade ring
+    save('cut_in', mix([(load('swishes/swishes/swish-9.wav', rate=0.9), 0.0, 0.8), (load(SW + 'sword_clash.3.ogg', rate=1.25), 0.06, 0.7),
+                        (load('power_up_sound_v1_0.ogg', rate=1.4), 0.05, 0.35)], 1.2), fout=0.5)
     # thunder: the loudest crack of the rain + thunder recording
     rt = load('rain-thunder.ogg')
     w = int(0.05 * SR)
