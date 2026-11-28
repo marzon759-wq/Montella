@@ -1,0 +1,110 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.beyblade",
+    "texture_width": 16,
+    "texture_height": 16,
+    "visible_bounds_width": 4,
+    "visible_bounds_height": 3,
+    "visible_bounds_offset": [
+     0,
+     1,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "tilt",
+     "parent": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "motion",
+     "parent": "tilt",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "spin",
+     "parent": "motion",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "tip_lag",
+     "parent": "spin",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "tip",
+     "parent": "tip_lag",
+     "pivot": [
+      0,
+      1.44,
+      0
+     ]
+    },
+    {
+     "name": "track",
+     "parent": "spin",
+     "pivot": [
+      0,
+      4.32,
+      0
+     ]
+    },
+    {
+     "name": "wheel",
+     "parent": "spin",
+     "pivot": [
+      0,
+      7.2,
+      0
+     ]
+    },
+    {
+     "name": "ring",
+     "parent": "spin",
+     "pivot": [
+      0,
+      8.64,
+      0
+     ]
+    },
+    {
+     "name": "bolt",
+     "parent": "spin",
+     "pivot": [
+      0,
+      9.576,
+      0
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,4 +1,8 @@
-package com.krolasyon.beyblade.client;
+package com.krolasyon.beyblade.compat;
+
+import com.krolasyon.beyblade.client.LaunchHud;
+import com.krolasyon.beyblade.client.LibraHud;
+import com.krolasyon.beyblade.client.MatchHud;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;

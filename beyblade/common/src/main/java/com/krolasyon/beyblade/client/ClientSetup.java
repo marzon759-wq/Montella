@@ -36,16 +36,16 @@ public final class ClientSetup {
 
    @SubscribeEvent
    public static void registerRenderers(RegisterRenderers event) {
-      event.registerEntityRenderer((EntityType)ModEntities.LIBRA.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.LDRAGO.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.LEONE.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.EAGLE.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.PEGASUS.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.TEMPO.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.VARIARES.get(), BeybladeRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.BEFFAL.get(), BeybladeRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.LIBRA.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.LDRAGO.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.LEONE.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.EAGLE.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.PEGASUS.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.TEMPO.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.VARIARES.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.BEFFAL.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
       event.registerEntityRenderer((EntityType)ModEntities.STADIUM.get(), StadiumRenderer::new);
-      event.registerEntityRenderer((EntityType)ModEntities.COMMON.get(), BeybladeRenderer::new);
+      event.registerEntityRenderer((EntityType)ModEntities.COMMON.get(), com.krolasyon.beyblade.compat.BeyGeoRenderer::new);
    }
 
    @SubscribeEvent

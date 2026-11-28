@@ -46,9 +46,9 @@ public class CommonBeybladeEntity extends BeybladeEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT, 0);
+   protected void defineData(DataDef d) {
+      super.defineData(d);
+      d.define(DATA_VARIANT, 0);
    }
 
    public int getVariant() {

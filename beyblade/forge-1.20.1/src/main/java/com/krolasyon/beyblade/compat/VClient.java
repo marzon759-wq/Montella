@@ -40,4 +40,13 @@ public final class VClient {
    public static float partialTick() {
       return Minecraft.getInstance().getFrameTime();
    }
+
+   public static void background(net.minecraft.client.gui.screens.Screen screen, net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partial) {
+      screen.renderBackground(g);
+   }
+
+   public static void createFlatTestWorld(Minecraft mc, String name, net.minecraft.world.level.LevelSettings settings, net.minecraft.world.level.levelgen.WorldOptions options) {
+      mc.createWorldOpenFlows().createFreshLevel(name, settings, options, reg -> reg.registryOrThrow(net.minecraft.core.registries.Registries.WORLD_PRESET)
+         .getHolderOrThrow(net.minecraft.world.level.levelgen.presets.WorldPresets.FLAT).value().createWorldDimensions());
+   }
 }

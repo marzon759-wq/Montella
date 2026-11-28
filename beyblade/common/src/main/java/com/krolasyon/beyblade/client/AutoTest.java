@@ -104,57 +104,72 @@ public final class AutoTest {
          "kill @e[type=!player]",
          "summon librabeyblade:stadium 0.5 -60 -14.5"
       );
+      // the whole line up, standing still
       this.cmd(
          10,
          null,
-         "tp @a 0.5 -57.4 -9.2 180 26",
-         "summon librabeyblade:leone -6.2 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:eagle -4.4 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:ldrago -2.6 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:pegasus -0.8 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:beffal 1.0 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:variares 2.8 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:libra 4.6 -58 -14.5 {Frozen:1b}",
-         "summon librabeyblade:tempo 6.4 -58 -14.5 {Frozen:1b}"
+         "tp @a 0.5 -57.0 -10.6 180 28",
+         "summon librabeyblade:leone -2.9 -58 -14.5 {Frozen:1b}",
+         "summon librabeyblade:eagle -1.6 -58 -14.5 {Frozen:1b}",
+         "summon librabeyblade:ldrago -0.3 -58 -14.5 {Frozen:1b}",
+         "summon librabeyblade:pegasus 1.0 -58 -14.5 {Frozen:1b}",
+         "summon librabeyblade:libra 2.3 -58 -14.5 {Frozen:1b}",
+         "summon librabeyblade:tempo 3.6 -58 -14.5 {Frozen:1b}"
       );
-      this.record(true);
-      this.wait(50, "lineup_front");
-      this.cmd(30, "xstadium_top", "kill @e[type=!player,type=!librabeyblade:stadium]", "tp @a 0.5 -36 -14.5 0 90");
-      this.cmd(25, "xstadium_angle", "tp @a 16 -50 -3 125 32");
-      this.cmd(
-         2,
-         null,
-         "kill @e[type=!player,type=!librabeyblade:stadium]",
-         "tp @a -2 -49 0 200 40",
-         "summon librabeyblade:pegasus -9.4 -58.5 -14.5 {Motion:[0.0,0.0,-0.45]}",
-         "summon librabeyblade:common -3.4 -58.6 -19.1 {Variant:2}"
-      );
-      this.wait(5, "rail_ride");
-      this.wait(5, "rail_ride_2");
-      this.wait(6, "xdash");
-      this.wait(10, "xdash_hit");
-      this.wait(20, null);
-      this.server(0, null, s -> {
-         BeybladeEntity.debugFlight = true;
-         BeybladeEntity.rivalAbilities = true;
+      this.wait(40, "lineup");
+      // custom bottoms: rubber, bearing and metal tips turned on the lathe
+      this.cmd(2, null, CLEAR, "tp @a 0.5 -58.6 -12.6 180 25");
+      this.server(4, null, s -> {
+         launchCustom(s, com.krolasyon.beyblade.registry.ModEntities.PEGASUS.get(), -1.0,
+            custom(com.krolasyon.beyblade.registry.ModItems.PEGASUS.get(), "track_df145:1", "tip_rs:1"), true);
+         launchCustom(s, com.krolasyon.beyblade.registry.ModEntities.LIBRA.get(), 0.5,
+            custom(com.krolasyon.beyblade.registry.ModItems.LIBRA.get(), "track_ad145:1", "tip_bd:1"), true);
+         launchCustom(s, com.krolasyon.beyblade.registry.ModEntities.LEONE.get(), 2.0,
+            custom(com.krolasyon.beyblade.registry.ModItems.LEONE.get(), "track_lw160:1", "tip_q:1"), true);
       });
+      this.server(30, "tips", s -> {
+      });
+      // clash: two beys thrown into each other
       this.cmd(
          2,
          null,
-         "kill @e[type=!player,type=!librabeyblade:stadium]",
-         "tp @a 0.5 -44 2 180 45",
-         "summon librabeyblade:pegasus -5 -57 -14.5",
-         "summon librabeyblade:ldrago 6 -57 -14.5",
-         "summon librabeyblade:variares 0.5 -57 -20",
-         "summon librabeyblade:leone 0.5 -57 -9"
+         CLEAR,
+         "tp @a 0.5 -57.6 -10.9 180 34",
+         "summon librabeyblade:pegasus -2.0 -58 -14.5 {Motion:[0.32,0.0,0.0],Tags:[\"a\"]}",
+         "summon librabeyblade:leone 3.0 -58 -14.5 {Motion:[-0.32,0.0,0.0]}"
       );
-
       for (int k = 0; k < 6; k++) {
-         this.wait(200, "free_battle_" + k);
+         this.wait(3, "clash_" + k);
       }
-
-      this.server(2, null, s -> BeybladeEntity.rivalAbilities = false);
-      this.record(false);
+      this.wait(30, null);
+      // special moves
+      String[] kinds = {"ldrago", "pegasus", "libra", "tempo"};
+      int[] abil = {3, 3, 3, 1};
+      for (int i = 0; i < kinds.length; i++) {
+         int ab = abil[i];
+         this.cmd(2, null, CLEAR, "tp @a 0.5 -57.9 -11.4 180 32", "summon librabeyblade:" + kinds[i] + " 0.5 -58 -14.5 {Tags:[\"a\"]}",
+            "summon librabeyblade:common 3.5 -58 -16 {Variant:3}");
+         this.wait(16, null);
+         this.force(ab);
+         this.wait(8, "special_" + kinds[i] + "_a");
+         this.wait(8, "special_" + kinds[i] + "_b");
+         this.wait(10, "special_" + kinds[i] + "_c");
+         this.wait(30, null);
+      }
+      // burst finish
+      this.cmd(2, null, CLEAR, "tp @a 0.5 -58.4 -12.7 180 40", "summon librabeyblade:eagle 0.5 -58 -14.5 {Tags:[\"a\"]}");
+      this.wait(20, null);
+      this.server(1, null, s -> each(s, "a", BeybladeEntity::debugBurst));
+      this.wait(4, "burst_a");
+      this.wait(6, "burst_b");
+      this.wait(10, "burst_c");
+      this.wait(30, "burst_d");
+      // sleep out
+      this.cmd(2, null, CLEAR, "summon librabeyblade:libra 0.5 -58 -14.5 {Tags:[\"a\"]}");
+      this.wait(20, null);
+      this.server(1, null, s -> each(s, "a", BeybladeEntity::debugSleepOut));
+      this.wait(10, "sleep_a");
+      this.wait(30, "sleep_b");
       this.wait(20, "END");
    }
 
@@ -271,13 +286,7 @@ public final class AutoTest {
                LevelSettings settings = new LevelSettings(
                   "ltest", GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(), WorldDataConfiguration.DEFAULT
                );
-               mc.createWorldOpenFlows()
-                  .createFreshLevel(
-                     "ltest",
-                     settings,
-                     new WorldOptions(42L, false, false),
-                     reg -> ((WorldPreset)reg.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value()).createWorldDimensions()
-                  );
+               com.krolasyon.beyblade.compat.VClient.createFlatTestWorld(mc, "ltest", settings, new WorldOptions(42L, false, false));
             } else if (mc.level != null && mc.player != null && mc.getSingleplayerServer() != null) {
                if (mc.screen != null && !(mc.screen instanceof CommandScreen) && !(mc.screen instanceof WorkbenchScreen)) {
                   mc.setScreen(null);

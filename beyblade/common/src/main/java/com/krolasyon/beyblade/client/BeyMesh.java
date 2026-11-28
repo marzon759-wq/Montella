@@ -264,6 +264,136 @@ public final class BeyMesh {
       }
    }
 
+   // ---------------------------------------------------------------- per part slices for the GeckoLib bones
+   public static final int S_BOLT = 0;
+   public static final int S_RING = 1;
+   public static final int S_WHEEL = 2;
+   public static final int S_TRACK = 3;
+   public static final int S_TIP = 4;
+   private float[][] faceSlices;
+   private float[][] partSlices;
+   private float[][] glowSlices;
+
+   /** Radius with the fewest top-surface quads between lo and hi: the seam between two parts. */
+   private static float seam(float[] top, float lo, float hi) {
+      int bins = 24;
+      int[] h = new int[bins];
+      for (int q = 0; q < top.length; q += 32) {
+         float r = 0.0F;
+         for (int v = 0; v < 4; v++) {
+            int o = q + v * 8;
+            r += (float)Math.sqrt((double)(top[o] * top[o] + top[o + 2] * top[o + 2]));
+         }
+         r /= 4.0F;
+         int b = (int)((r - lo) / (hi - lo) * (float)bins);
+         if (b >= 0 && b < bins) {
+            h[b]++;
+         }
+      }
+      int best = bins / 2;
+      for (int b = 1; b < bins - 1; b++) {
+         if (h[b] < h[best]) {
+            best = b;
+         }
+      }
+      return lo + (hi - lo) * ((float)best + 0.5F) / (float)bins;
+   }
+
+   private void slice() {
+      if (this.faceSlices == null) {
+         this.split();
+         float[][] gr = this.groups();
+         float boltR = seam(gr[0], 0.2F, 0.42F);
+         float ringR = seam(gr[0], 0.52F, 0.86F);
+         List<List<Float>> face = new ArrayList<>();
+         List<List<Float>> part = new ArrayList<>();
+         List<List<Float>> glow = new ArrayList<>();
+         for (int i = 0; i < 5; i++) {
+            face.add(new ArrayList<>());
+            part.add(new ArrayList<>());
+            glow.add(new ArrayList<>());
+         }
+         for (int g = 0; g < 2; g++) {
+            float[] d = gr[g];
+            for (int q = 0; q < d.length; q += 32) {
+               int dst = S_WHEEL;
+               if (g == 0) {
+                  float r = 0.0F;
+                  for (int v = 0; v < 4; v++) {
+                     int o = q + v * 8;
+                     r += (float)Math.sqrt((double)(d[o] * d[o] + d[o + 2] * d[o + 2]));
+                  }
+                  r /= 4.0F;
+                  dst = r < boltR ? S_BOLT : (r < ringR ? S_RING : S_WHEEL);
+               }
+               for (int k = 0; k < 32; k++) {
+                  face.get(dst).add(d[q + k]);
+                  if (g == 0) {
+                     glow.get(dst).add(d[q + k]);
+                  }
+               }
+            }
+         }
+         for (float f : this.under) {
+            part.get(S_WHEEL).add(f);
+         }
+         String[] st = BeyPart.stock(this.kind);
+         BeyPart stockTip = BeyPart.get(st[4]);
+         float tipTop = stockTip == null ? 0.36F : PartLathe.tipTop(stockTip.tip());
+         float[] l = this.lathe;
+         for (int q = 0; q < l.length; q += 32) {
+            float y = 0.0F;
+            for (int v = 0; v < 4; v++) {
+               y += l[q + v * 8 + 1];
+            }
+            int dst = y / 4.0F < tipTop ? S_TIP : S_TRACK;
+            for (int k = 0; k < 32; k++) {
+               part.get(dst).add(l[q + k]);
+            }
+         }
+         float[][] fs = new float[5][];
+         float[][] ps = new float[5][];
+         float[][] gs = new float[5][];
+         for (int i = 0; i < 5; i++) {
+            gs[i] = toArray(glow.get(i));
+            fs[i] = toArray(face.get(i));
+            ps[i] = toArray(part.get(i));
+         }
+         this.partSlices = ps;
+         this.glowSlices = gs;
+         this.faceSlices = fs;
+      }
+   }
+
+   /**
+    * Draws one part of the bey (for the GeckoLib bone of the same name). The pose must already hold the bone
+    * transform and the mesh scale. Bolt, ring and wheel come from the bey's own mesh; track and tip come from the
+    * mesh when they are the stock ones, otherwise they are turned on the lathe from the loadout.
+    */
+   public void renderSlice(int slice, PoseStack pose, MultiBufferSource buffers, int light, int overlay, Loadout lo, float gr, float gg, float gb) {
+      this.slice();
+      boolean stock = lo == null || this.stockBottom(lo);
+      if (slice <= S_WHEEL) {
+         float dy = stock ? 0.0F : this.lift(lo);
+         pose.pushPose();
+         pose.translate(0.0F, dy, 0.0F);
+         emit(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(this.FACE)), this.faceSlices[slice], light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+         if (this.partSlices[slice].length > 0) {
+            emit(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(this.PARTS)), this.partSlices[slice], light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+         }
+         if (gr > 0.003F || gg > 0.003F || gb > 0.003F) {
+            emit(pose, buffers.getBuffer(RenderType.eyes(this.GLOW)), this.glowSlices[slice], 15728880, OverlayTexture.NO_OVERLAY, gr, gg, gb, 1.0F);
+         }
+         pose.popPose();
+      } else if (stock) {
+         emit(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(this.PARTS)), this.partSlices[slice], light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+      } else if (slice == S_TRACK) {
+         PartLathe.renderTrack(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(PLAIN)), light, overlay, lo);
+      } else {
+         PartLathe.renderTip(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(PLAIN)), light, overlay, lo);
+      }
+   }
+
    public void renderGhostDisc(PoseStack pose, MultiBufferSource buffers, int light, float alpha, float y) {
       VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucent(this.FACE));
       Matrix4f m = pose.last().pose();

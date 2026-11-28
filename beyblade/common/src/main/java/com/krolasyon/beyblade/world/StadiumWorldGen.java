@@ -77,8 +77,7 @@ public final class StadiumWorldGen {
                   it.remove();
                } else if (level.hasChunksAt(x - 26 - 2, z - 26 - 2, x + 26 + 2, z + 26 + 2)) {
                   it.remove();
-                  StadiumWorldGen.Sites sites = (StadiumWorldGen.Sites)level.getDataStorage()
-                     .computeIfAbsent(StadiumWorldGen.Sites::load, StadiumWorldGen.Sites::new, "librabeyblade_stadiums");
+                  com.krolasyon.beyblade.compat.StadiumSites sites = com.krolasyon.beyblade.compat.StadiumSites.get(level);
                   if (!sites.near(x, z)) {
                      if (build(level, x, z)) {
                         sites.add(x, z);
@@ -165,7 +164,7 @@ public final class StadiumWorldGen {
                BlockPos chest = new BlockPos(x + 3, y, z + 23);
                level.setBlock(chest, (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH), 2);
                if (level.getBlockEntity(chest) instanceof ChestBlockEntity cbe) {
-                  cbe.setLootTable(CHEST_LOOT, level.random.nextLong());
+                  V.chestLoot(cbe, CHEST_LOOT, level.random.nextLong());
                }
 
                return true;
@@ -173,47 +172,6 @@ public final class StadiumWorldGen {
          }
       } else {
          return false;
-      }
-   }
-
-   public static class Sites extends SavedData {
-      private final List<long[]> list = new ArrayList<>();
-
-      static StadiumWorldGen.Sites load(CompoundTag tag) {
-         StadiumWorldGen.Sites s = new StadiumWorldGen.Sites();
-
-         for (Tag t : tag.getList("Sites", 4)) {
-            BlockPos p = BlockPos.of(((LongTag)t).getAsLong());
-            s.list.add(new long[]{(long)p.getX(), (long)p.getZ()});
-         }
-
-         return s;
-      }
-
-      boolean near(int x, int z) {
-         for (long[] p : this.list) {
-            if ((p[0] - (long)x) * (p[0] - (long)x) + (p[1] - (long)z) * (p[1] - (long)z) < 360000L) {
-               return true;
-            }
-         }
-
-         return false;
-      }
-
-      void add(int x, int z) {
-         this.list.add(new long[]{(long)x, (long)z});
-         this.setDirty();
-      }
-
-      public CompoundTag save(CompoundTag tag) {
-         ListTag l = new ListTag();
-
-         for (long[] p : this.list) {
-            l.add(LongTag.valueOf(new BlockPos((int)p[0], 0, (int)p[1]).asLong()));
-         }
-
-         tag.put("Sites", l);
-         return tag;
       }
    }
 }

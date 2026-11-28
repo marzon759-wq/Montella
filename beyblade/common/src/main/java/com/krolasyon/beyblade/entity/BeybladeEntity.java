@@ -2,6 +2,7 @@ package com.krolasyon.beyblade.entity;
 
 import com.krolasyon.beyblade.client.ClientHooks;
 import com.krolasyon.beyblade.compat.V;
+import com.krolasyon.beyblade.compat.GeoBeyBase;
 import com.krolasyon.beyblade.item.LibraItem;
 import com.krolasyon.beyblade.parts.BeyPart;
 import com.krolasyon.beyblade.parts.Loadout;
@@ -55,7 +56,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public class BeybladeEntity extends Entity {
+public class BeybladeEntity extends GeoBeyBase {
    public static final float WIDTH = 0.9F;
    public static final float HEIGHT = 0.66F;
    public static final float RADIUS = 0.45F;
@@ -215,6 +216,12 @@ public class BeybladeEntity extends Entity {
    public double shockY;
    public double shockZ;
    public int hitTime = -1000;
+   /** phase of the tip's flower pattern drive */
+   private float tipPhase;
+   /** client only: this defeat is drawn as a burst (parts flying apart) instead of a sleep out */
+   public boolean burstClient;
+   /** client only: spin angle at the moment of defeat (the fallen bey stops turning) */
+   public float frozenSpin;
    public int heavyHitTime = -1000;
    public int landTime = -1000;
    public int shieldHitTime = -1000;
@@ -259,7 +266,7 @@ public class BeybladeEntity extends Entity {
 
    public BeybladeEntity(EntityType<? extends BeybladeEntity> type, Level level) {
       super(type, level);
-      this.setMaxUpStep(0.6F);
+      this.setStepHeight(0.6F);
       this.blocksBuilding = true;
    }
 
@@ -301,27 +308,27 @@ public class BeybladeEntity extends Entity {
       }
    }
 
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_OWNER, Optional.empty());
-      this.entityData.define(DATA_SPIN, 5000.0F);
-      this.entityData.define(DATA_MAX_SPIN, 5000.0F);
-      this.entityData.define(DATA_STATE, 0);
-      this.entityData.define(DATA_ABILITY, 0);
-      this.entityData.define(DATA_TARGET, -1);
-      this.entityData.define(DATA_SHIELD_END, 0);
-      this.entityData.define(DATA_MODE, -1);
-      this.entityData.define(DATA_ORDER, 0);
-      this.entityData.define(DATA_LEVEL, 1);
-      this.entityData.define(DATA_XP, 0);
-      this.entityData.define(DATA_PARTS, "");
-      this.entityData.define(DATA_SCLASH, -1);
-      this.entityData.define(DATA_SCLASH_RATIO, 0.5F);
-      this.entityData.define(DATA_WOBBLE, 0.0F);
-      this.entityData.define(DATA_SPIRIT, 0);
-      this.entityData.define(DATA_SPIRIT_END, 0);
+   protected void defineData(DataDef d) {
+      d.define(DATA_OWNER, Optional.empty());
+      d.define(DATA_SPIN, 5000.0F);
+      d.define(DATA_MAX_SPIN, 5000.0F);
+      d.define(DATA_STATE, 0);
+      d.define(DATA_ABILITY, 0);
+      d.define(DATA_TARGET, -1);
+      d.define(DATA_SHIELD_END, 0);
+      d.define(DATA_MODE, -1);
+      d.define(DATA_ORDER, 0);
+      d.define(DATA_LEVEL, 1);
+      d.define(DATA_XP, 0);
+      d.define(DATA_PARTS, "");
+      d.define(DATA_SCLASH, -1);
+      d.define(DATA_SCLASH_RATIO, 0.5F);
+      d.define(DATA_WOBBLE, 0.0F);
+      d.define(DATA_SPIRIT, 0);
+      d.define(DATA_SPIRIT_END, 0);
 
       for (EntityDataAccessor<Integer> a : DATA_COOLDOWN) {
-         this.entityData.define(a, 0);
+         d.define(a, 0);
       }
    }
 
@@ -346,6 +353,10 @@ public class BeybladeEntity extends Entity {
 
    public float getMaxSpin() {
       return (Float)this.entityData.get(DATA_MAX_SPIN);
+   }
+
+   public boolean burstFinish() {
+      return this.burstClient;
    }
 
    public float spinRatio() {
@@ -657,6 +668,7 @@ public class BeybladeEntity extends Entity {
          m *= 0.6F;
       }
 
+      m *= com.krolasyon.beyblade.parts.TipPhysics.decay(l.tip());
       return m / Loadout.mul(l.stamina());
    }
 
@@ -681,6 +693,7 @@ public class BeybladeEntity extends Entity {
             m *= 1.15;
       }
 
+      m *= com.krolasyon.beyblade.parts.TipPhysics.knock(l.tip());
       return this.getOrder() == 8 ? m * 0.5 : m;
    }
 
@@ -829,7 +842,11 @@ public class BeybladeEntity extends Entity {
    public void tick() {
       super.tick();
       if (this.level().isClientSide()) {
+         if (this.tickCount == 2 && this.getState() == STATE_BATTLE) {
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.LAUNCH);
+         }
          this.clientTick();
+         com.krolasyon.beyblade.client.ClientHooks.tipFx(this);
       } else {
          this.serverTick();
       }
@@ -1352,7 +1369,22 @@ public class BeybladeEntity extends Entity {
       }
 
       if (this.onGround()) {
-         v = new Vec3(v.x * 0.955, v.y, v.z * 0.955);
+         BeyPart.Tip tipK = this.parts().tip();
+         double fr = com.krolasyon.beyblade.parts.TipPhysics.groundFriction(tipK);
+         v = new Vec3(v.x * fr, v.y, v.z * fr);
+         if (this.getState() == 0) {
+            // the tip drives the bey around the bowl: flat and rubber tips trace the flower pattern, sharp sits still
+            double drive = com.krolasyon.beyblade.parts.TipPhysics.drive(tipK, this.spinRatio(), this.spinDir());
+            if (drive > 0.0) {
+               this.tipPhase += 0.07F * (float)this.spinDir();
+               v = v.add(Math.cos(this.tipPhase) * drive, 0.0, Math.sin(this.tipPhase) * drive);
+            }
+            if (tipK == BeyPart.Tip.QUAKE && this.tickCount % 9 == 0) {
+               // Quake: the uneven tip kicks the bey in random directions
+               double a = this.random.nextDouble() * Math.PI * 2.0;
+               v = v.add(Math.cos(a) * 0.05, 0.04, Math.sin(a) * 0.05);
+            }
+         }
       } else {
          v = new Vec3(v.x * 0.99, v.y * 0.98, v.z * 0.99);
       }
@@ -1611,12 +1643,8 @@ public class BeybladeEntity extends Entity {
             Vec3 v = this.getDeltaMovement();
             double vt = v.x * tx + v.z * nx;
             BeyPart.Tip tip = this.parts().tip();
-            boolean grippy = tip.rubber()
-               || tip == BeyPart.Tip.FLAT
-               || tip == BeyPart.Tip.EXTREME_FLAT
-               || tip == BeyPart.Tip.METAL_FLAT
-               || tip == BeyPart.Tip.FINAL_DRIVE;
-            boolean point = tip == BeyPart.Tip.SHARP || tip == BeyPart.Tip.ETERNAL_SHARP || tip == BeyPart.Tip.BALL || tip == BeyPart.Tip.WIDE_BALL;
+            boolean grippy = com.krolasyon.beyblade.parts.TipPhysics.grippy(tip);
+            boolean point = com.krolasyon.beyblade.parts.TipPhysics.point(tip);
             if (this.railTicks == 0) {
                double need = grippy ? 0.14 : (point ? 0.32 : 0.2);
                if (this.railCooldown <= 0 && this.onGround() && !(r < 9.45F) && !(r > 10.35F) && StadiumEntity.onRail(deg) && !(Math.abs(vt) < need)) {
@@ -2449,7 +2477,7 @@ public class BeybladeEntity extends Entity {
                            LivingEntity l = (LivingEntity)exxxx;
                            if (t % 8 == 0) {
                               l.hurt(this.damageSources().indirectMagic(this, owner), 3.0F);
-                              l.setSecondsOnFire(4);
+                              V.ignite(l, 4);
                            }
                         }
                      }
@@ -2632,7 +2660,7 @@ public class BeybladeEntity extends Entity {
             b.setDeltaMovement(b.getDeltaMovement().add(out.scale(0.9 * falloff)).add(0.0, 0.35, 0.0));
          } else if (e instanceof LivingEntity l) {
             l.hurt(this.damageSources().indirectMagic(this, owner), (float)(10.0 * falloff));
-            l.setSecondsOnFire(5);
+            V.ignite(l, 5);
             l.knockback(1.2 * falloff, -out.x, -out.z);
          }
       }
@@ -2979,8 +3007,15 @@ public class BeybladeEntity extends Entity {
             this.abilityX = this.getX();
             this.abilityY = this.getY();
             this.abilityZ = this.getZ();
+            if (this.clientAbility != 0 && this.tickCount > 2) {
+               this.playAction(com.krolasyon.beyblade.client.BeyAnims.ability(this, this.clientAbility));
+            }
          } else if (DATA_STATE.equals(key)) {
             this.clientStateStart = this.tickCount;
+            int st = this.getState();
+            // a defeat right after a heavy blow is shown as a burst finish: the parts fly apart
+            this.burstClient = st == STATE_DEFEATED && this.tickCount - this.heavyHitTime < 10 && this.tickCount > 5;
+            this.frozenSpin = this.spinAngle;
          }
       }
    }
@@ -2988,15 +3023,21 @@ public class BeybladeEntity extends Entity {
    public void handleEntityEvent(byte id) {
       switch (id) {
          case 60:
+            this.hitTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.HIT_LIGHT);
+            break;
          case 64:
             this.hitTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.HIT_WALL);
             break;
          case 61:
             this.hitTime = this.tickCount;
             this.heavyHitTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.HIT_HEAVY);
             break;
          case 62:
             this.landTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.LAND);
 
             for (int i = 0; i < 20; i++) {
                double a = (double)i / 20.0 * Math.PI * 2.0;
@@ -3060,6 +3101,7 @@ public class BeybladeEntity extends Entity {
             break;
          case 67:
             this.grindTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.GRIND);
             break;
          case 68:
             BeybladeEntity other = null;
@@ -3086,12 +3128,17 @@ public class BeybladeEntity extends Entity {
             break;
          case 69:
             this.spiritTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.SPIRIT);
             break;
          case 86:
+            if (this.tickCount - this.railClientTime > 6) {
+               this.playAction(com.krolasyon.beyblade.client.BeyAnims.RAIL);
+            }
             this.railClientTime = this.tickCount;
             break;
          case 87:
             this.xdashClientTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.XDASH);
             break;
          case 88:
             this.outClientTime = this.tickCount;
@@ -3100,6 +3147,7 @@ public class BeybladeEntity extends Entity {
          case 105:
             this.sclashBoomTime = this.tickCount;
             this.boomDraw = id != 104;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.CLASH);
             Entity o = this.level().getEntity(this.getSpecialClashPartner());
             double f = this.boomDraw ? 0.5 : sclashMeet(this.getSpecialClashRatio(), 1.0F);
             if (o != null) {
@@ -3115,9 +3163,11 @@ public class BeybladeEntity extends Entity {
             break;
          case 108:
             this.shieldHitTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.SHIELD_HIT);
             break;
          case 110:
             this.evadeTime = this.tickCount;
+            this.playAction(com.krolasyon.beyblade.client.BeyAnims.EVADE);
       }
    }
 
@@ -3505,6 +3555,17 @@ public class BeybladeEntity extends Entity {
 
    public void setFrozen(boolean f) {
       this.frozen = f;
+   }
+
+   /** Test hook: a heavy blow that bursts the bey. */
+   public void debugBurst() {
+      this.level().broadcastEntityEvent(this, (byte)61);
+      this.defeat();
+   }
+
+   /** Test hook: plain sleep out. */
+   public void debugSleepOut() {
+      this.defeat();
    }
 
    public void debugForceAbility(int id) {

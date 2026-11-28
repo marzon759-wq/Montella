@@ -1,5 +1,7 @@
 package com.krolasyon.beyblade.entity;
 
+import com.krolasyon.beyblade.compat.V;
+
 import com.krolasyon.beyblade.registry.ModItems;
 import com.krolasyon.beyblade.registry.ModSounds;
 import javax.annotation.Nullable;
@@ -83,10 +85,10 @@ public class LDragoEntity extends BeybladeEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_RESERVE, 0.0F);
-      this.entityData.define(DATA_REVIVED, false);
+   protected void defineData(DataDef d) {
+      super.defineData(d);
+      d.define(DATA_RESERVE, 0.0F);
+      d.define(DATA_REVIVED, false);
    }
 
    public void debugCharge(float amount) {
@@ -464,7 +466,7 @@ public class LDragoEntity extends BeybladeEntity {
                               LivingEntity l = (LivingEntity)ex;
                               if (t % 5 == 0) {
                                  l.hurt(this.damageSources().indirectMagic(this, owner), 2.0F);
-                                 l.setSecondsOnFire(5);
+                                 V.ignite(l, 5);
                               }
                            }
                         }
@@ -558,7 +560,7 @@ public class LDragoEntity extends BeybladeEntity {
             b.setDeltaMovement(b.getDeltaMovement().add(out.scale(1.0 * falloff)).add(0.0, 0.45, 0.0));
          } else if (e instanceof LivingEntity l) {
             l.hurt(this.damageSources().indirectMagic(this, owner), (float)(14.0 * falloff));
-            l.setSecondsOnFire(6);
+            V.ignite(l, 6);
             l.knockback(1.4 * falloff, -out.x, -out.z);
          }
       }

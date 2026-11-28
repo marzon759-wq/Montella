@@ -202,6 +202,15 @@ public record BeyPart(
       track("track_d125", 125, BeyPart.Trait.DEFENSE_RING, 2, 10, 6, 3, 2.3F, 1, 3159100, 15790320);
       track("track_r145", 145, BeyPart.Trait.RUBBER_RING, 4, 9, 4, 3, 2.2F, 1, 2105380, 13639712);
       track("track_th170", 170, BeyPart.Trait.TWIN_HEIGHT, 7, 5, 5, 3, 2.6F, 2, 3159100, 15777856);
+      track("track_120", 120, BeyPart.Trait.NONE, 4, 5, 5, 4, 1.7F, 0, 5264476, 9080984);
+      track("track_130", 130, BeyPart.Trait.NONE, 5, 4, 6, 4, 1.8F, 0, 4212304, 8425632);
+      track("track_160", 160, BeyPart.Trait.NONE, 6, 4, 5, 3, 2.1F, 0, 4212304, 8425632);
+      track("track_ch120", 120, BeyPart.Trait.TWIN_HEIGHT, 6, 5, 5, 4, 2.2F, 1, 3159100, 16764992);
+      track("track_ed145", 145, BeyPart.Trait.DEFENSE_RING, 2, 9, 9, 2, 2.6F, 2, 3159100, 13689087);
+      track("track_df145", 145, BeyPart.Trait.WING, 3, 5, 10, 3, 2.2F, 1, 2779850, 15790320);
+      track("track_ad145", 145, BeyPart.Trait.DEFENSE_RING, 3, 11, 5, 2, 3.0F, 2, 6316128, 16757504);
+      track("track_sw145", 145, BeyPart.Trait.CLAW, 8, 6, 4, 4, 2.5F, 1, 3159100, 16737843);
+      track("track_lw160", 160, BeyPart.Trait.WING, 5, 4, 8, 4, 2.3F, 1, 10040217, 15790320);
       tip("tip_f", BeyPart.Tip.FLAT, 8, 3, 2, 10, 1.0F, 0, 15263980, 6316136);
       tip("tip_rf", BeyPart.Tip.RUBBER_FLAT, 10, 3, 1, 13, 1.1F, 1, 2763312, 13639712);
       tip("tip_r2f", BeyPart.Tip.RUBBER_FLAT, 9, 4, 2, 12, 1.2F, 1, 3159100, 4243680);
@@ -219,6 +228,20 @@ public record BeyPart(
       tip("tip_rsf", BeyPart.Tip.RUBBER_SEMI_FLAT, 8, 6, 3, 9, 1.2F, 1, 3195088, 1065040);
       tip("tip_fd", BeyPart.Tip.FINAL_DRIVE, 8, 7, 8, 9, 2.6F, 2, 3836640, 14696544);
       tip("tip_fs", BeyPart.Tip.FINAL_SURVIVE, 4, 7, 11, 5, 2.4F, 2, 2763332, 12632272);
+      tip("tip_hf", BeyPart.Tip.HOLE_FLAT, 7, 3, 3, 9, 1.0F, 0, 15263980, 4210752);
+      tip("tip_wf", BeyPart.Tip.WIDE_FLAT, 8, 4, 2, 9, 1.1F, 0, 14737636, 3170266);
+      tip("tip_wsf", BeyPart.Tip.WIDE_SEMI_FLAT, 6, 5, 5, 7, 1.1F, 0, 15790320, 9474192);
+      tip("tip_rs", BeyPart.Tip.RUBBER_SHARP, 4, 5, 7, 5, 1.0F, 1, 2763312, 11546150);
+      tip("tip_rb", BeyPart.Tip.RUBBER_BALL, 5, 8, 4, 5, 1.1F, 1, 3159100, 3381759);
+      tip("tip_rdf", BeyPart.Tip.RUBBER_DEFENSE_FLAT, 7, 8, 3, 7, 1.3F, 1, 2763312, 16750848);
+      tip("tip_lrf", BeyPart.Tip.LEFT_RUBBER_FLAT, 10, 3, 1, 13, 1.1F, 1, 2763312, 10040217);
+      tip("tip_sd", BeyPart.Tip.SEMI_DEFENSE, 3, 8, 9, 3, 1.1F, 0, 15263980, 7368824);
+      tip("tip_ds", BeyPart.Tip.DEFENSE_SHARP, 2, 7, 11, 2, 1.1F, 0, 15790320, 3355647);
+      tip("tip_ms", BeyPart.Tip.METAL_SHARP, 2, 4, 13, 2, 1.8F, 1, 13159636, 9474192);
+      tip("tip_mb", BeyPart.Tip.METAL_BALL, 4, 9, 8, 4, 2.0F, 1, 13159636, 7370880);
+      tip("tip_gb", BeyPart.Tip.GRAVITY_BALL, 4, 10, 7, 3, 1.6F, 1, 3828282, 13684944);
+      tip("tip_q", BeyPart.Tip.QUAKE, 9, 4, 1, 8, 1.0F, 1, 15263980, 16737843);
+      tip("tip_bd", BeyPart.Tip.BEARING_DRIVE, 1, 5, 16, 2, 1.4F, 2, 13684944, 2121952);
    }
 
    public static enum Tip {
@@ -238,7 +261,21 @@ public record BeyPart(
       RUBBER_SEMI_FLAT(0.14F),
       FINAL_DRIVE(0.18F),
       FINAL_SURVIVE(0.06F),
-      COAT_SHARP(0.02F);
+      COAT_SHARP(0.02F),
+      HOLE_FLAT(0.2F),
+      WIDE_FLAT(0.3F),
+      WIDE_SEMI_FLAT(0.16F),
+      RUBBER_SHARP(0.03F),
+      RUBBER_BALL(0.12F),
+      RUBBER_DEFENSE_FLAT(0.2F),
+      LEFT_RUBBER_FLAT(0.26F),
+      SEMI_DEFENSE(0.1F),
+      DEFENSE_SHARP(0.04F),
+      METAL_SHARP(0.0F),
+      METAL_BALL(0.12F),
+      GRAVITY_BALL(0.14F),
+      QUAKE(0.18F),
+      BEARING_DRIVE(0.02F);
 
       public final float contact;
 
@@ -246,12 +283,54 @@ public record BeyPart(
          this.contact = contact;
       }
 
+      /** Rubber grips the floor: fast, aggressive, the rubber wears as the bey slows. */
       public boolean rubber() {
-         return this == RUBBER_FLAT || this == RUBBER_SEMI_FLAT || this == COAT_SHARP;
+         return switch (this) {
+            case RUBBER_FLAT, RUBBER_SEMI_FLAT, COAT_SHARP, RUBBER_SHARP, RUBBER_BALL, RUBBER_DEFENSE_FLAT, LEFT_RUBBER_FLAT -> true;
+            default -> false;
+         };
       }
 
+      /** The tip turns on its own (bearing / eternal / final): hits and the floor steal less spin. */
       public boolean freeSpin() {
-         return this == ETERNAL_SHARP || this == ETERNAL_WIDE_DEFENSE || this == FINAL_DRIVE || this == FINAL_SURVIVE;
+         return this == ETERNAL_SHARP || this == ETERNAL_WIDE_DEFENSE || this == FINAL_DRIVE || this == FINAL_SURVIVE || this == BEARING_DRIVE;
+      }
+
+      public boolean sharp() {
+         return switch (this) {
+            case SHARP, ETERNAL_SHARP, COAT_SHARP, RUBBER_SHARP, DEFENSE_SHARP, METAL_SHARP, BEARING_DRIVE -> true;
+            default -> false;
+         };
+      }
+
+      public boolean ball() {
+         return switch (this) {
+            case BALL, WIDE_BALL, RUBBER_BALL, METAL_BALL, GRAVITY_BALL -> true;
+            default -> false;
+         };
+      }
+
+      public boolean wide() {
+         return switch (this) {
+            case WIDE_DEFENSE, ETERNAL_WIDE_DEFENSE, WIDE_BALL, WIDE_FLAT, WIDE_SEMI_FLAT, RUBBER_DEFENSE_FLAT -> true;
+            default -> false;
+         };
+      }
+
+      public boolean metal() {
+         return this == METAL_FLAT || this == METAL_SHARP || this == METAL_BALL;
+      }
+
+      public boolean defense() {
+         return switch (this) {
+            case DEFENSE, WIDE_DEFENSE, ETERNAL_WIDE_DEFENSE, SEMI_DEFENSE, DEFENSE_SHARP, RUBBER_DEFENSE_FLAT -> true;
+            default -> false;
+         };
+      }
+
+      /** A flat contact surface (drives the bey around the bowl). */
+      public boolean flat() {
+         return this.contact >= 0.18F && !this.ball() && !this.defense() && this != FINAL_SURVIVE;
       }
    }
 

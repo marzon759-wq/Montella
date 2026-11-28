@@ -289,6 +289,121 @@
     {
      "type": "minecraft:empty",
      "weight": 6
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_hf",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_wf",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_wsf",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_rs",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_rb",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_rdf",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_lrf",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_sd",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_ds",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_ms",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_mb",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_gb",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_q",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_tip_bd",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_120",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_130",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_160",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_ch120",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_ed145",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_df145",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_ad145",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_sw145",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "librabeyblade:part_track_lw160",
+     "weight": 1
     }
    ]
   }

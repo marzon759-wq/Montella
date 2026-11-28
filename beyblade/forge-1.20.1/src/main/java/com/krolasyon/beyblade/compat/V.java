@@ -35,4 +35,12 @@ public final class V {
    public static ItemStack loadStack(Level level, CompoundTag tag) {
       return ItemStack.of(tag);
    }
+
+   public static void ignite(net.minecraft.world.entity.Entity l, int seconds) {
+      l.setSecondsOnFire(seconds);
+   }
+
+   public static void chestLoot(net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity chest, ResourceLocation table, long seed) {
+      chest.setLootTable(table, seed);
+   }
 }

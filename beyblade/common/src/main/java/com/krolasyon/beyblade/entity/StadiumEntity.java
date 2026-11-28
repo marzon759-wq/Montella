@@ -1,5 +1,6 @@
 package com.krolasyon.beyblade.entity;
 
+import com.krolasyon.beyblade.compat.DataEntity;
 import com.krolasyon.beyblade.registry.ModBlocks;
 import com.krolasyon.beyblade.registry.ModEntities;
 import com.krolasyon.beyblade.registry.ModItems;
@@ -45,7 +46,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class StadiumEntity extends Entity {
+public class StadiumEntity extends DataEntity {
    public static final float BOWL_R = 10.5F;
    public static final float FLOOR_Y0 = 0.35F;
    public static final float FLOOR_RISE = 1.15F;
@@ -189,14 +190,14 @@ public class StadiumEntity extends Entity {
       return r <= 10.5 ? 2.3F * r / 110.25 : 0.0;
    }
 
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_MSTATE, 0);
-      this.entityData.define(DATA_SCORE_A, 0);
-      this.entityData.define(DATA_SCORE_B, 0);
-      this.entityData.define(DATA_TIMER, 0);
-      this.entityData.define(DATA_ROUND, 0);
-      this.entityData.define(DATA_NAME_A, "");
-      this.entityData.define(DATA_NAME_B, "");
+   protected void defineData(DataDef d) {
+      d.define(DATA_MSTATE, 0);
+      d.define(DATA_SCORE_A, 0);
+      d.define(DATA_SCORE_B, 0);
+      d.define(DATA_TIMER, 0);
+      d.define(DATA_ROUND, 0);
+      d.define(DATA_NAME_A, "");
+      d.define(DATA_NAME_B, "");
    }
 
    public int matchState() {

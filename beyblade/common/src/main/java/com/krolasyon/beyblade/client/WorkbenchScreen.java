@@ -75,7 +75,7 @@ public class WorkbenchScreen extends AbstractContainerScreen<WorkbenchMenu> {
    }
 
    public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-      this.renderBackground(g);
+      com.krolasyon.beyblade.compat.VClient.background(this, g, mouseX, mouseY, partial);
       super.render(g, mouseX, mouseY, partial);
       this.renderTooltip(g, mouseX, mouseY);
    }

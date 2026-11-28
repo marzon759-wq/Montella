@@ -21,7 +21,8 @@ public final class PartLathe {
    public static float tipTop(BeyPart.Tip t) {
       return switch (t) {
          case FINAL_DRIVE, FINAL_SURVIVE -> 0.42F;
-         case WIDE_DEFENSE, ETERNAL_WIDE_DEFENSE, WIDE_BALL -> 0.38F;
+         case WIDE_DEFENSE, ETERNAL_WIDE_DEFENSE, WIDE_BALL, WIDE_FLAT, WIDE_SEMI_FLAT, GRAVITY_BALL, RUBBER_DEFENSE_FLAT -> 0.38F;
+         case BEARING_DRIVE -> 0.4F;
          default -> 0.36F;
       };
    }
@@ -102,6 +103,86 @@ public final class PartLathe {
             p.add(new PartLathe.P(0.22F, 0.06F, true));
             p.add(new PartLathe.P(0.06F, 0.005F, true));
             break;
+         case HOLE_FLAT:
+            p.add(new PartLathe.P(0.31F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.31F, 0.12F, false));
+            p.add(new PartLathe.P(0.23F, 0.03F, true));
+            p.add(new PartLathe.P(0.2F, 0.0F, true));
+            p.add(new PartLathe.P(0.1F, 0.0F, true));
+            p.add(new PartLathe.P(0.08F, 0.05F, false));
+            p.add(new PartLathe.P(0.0F, 0.05F, false));
+            break;
+         case WIDE_FLAT:
+            p.add(new PartLathe.P(0.42F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.42F, 0.12F, false));
+            p.add(new PartLathe.P(0.33F, 0.03F, true));
+            p.add(new PartLathe.P(0.3F, 0.0F, true));
+            break;
+         case WIDE_SEMI_FLAT:
+            p.add(new PartLathe.P(0.42F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.38F, 0.14F, false));
+            p.add(new PartLathe.P(0.22F, 0.03F, true));
+            p.add(new PartLathe.P(0.16F, 0.0F, true));
+            break;
+         case RUBBER_SHARP:
+         case METAL_SHARP:
+            p.add(new PartLathe.P(0.3F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.27F, 0.19F, t == BeyPart.Tip.METAL_SHARP));
+            p.add(new PartLathe.P(0.14F, 0.07F, true));
+            p.add(new PartLathe.P(0.04F, 0.01F, true));
+            break;
+         case RUBBER_BALL:
+         case METAL_BALL:
+         case GRAVITY_BALL:
+            float bw = t == BeyPart.Tip.GRAVITY_BALL ? 0.36F : 0.31F;
+            p.add(new PartLathe.P(bw, top - 0.1F, t == BeyPart.Tip.METAL_BALL));
+            for (int i = 1; i <= 5; i++) {
+               double a = (double)i / 5.0 * Math.PI / 2.0;
+               float y = (float)((double)(top - 0.1F) * Math.cos(a));
+               p.add(new PartLathe.P((float)((double)bw * Math.cos(a * 0.85)) * 0.95F, y, i >= 2 || t == BeyPart.Tip.METAL_BALL));
+            }
+            break;
+         case RUBBER_DEFENSE_FLAT:
+            p.add(new PartLathe.P(0.34F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.34F, 0.18F, false));
+            p.add(new PartLathe.P(0.26F, 0.06F, true));
+            p.add(new PartLathe.P(0.22F, 0.0F, true));
+            break;
+         case LEFT_RUBBER_FLAT:
+            p.add(new PartLathe.P(0.31F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.31F, 0.16F, false));
+            p.add(new PartLathe.P(t.contact + 0.06F, 0.12F, true));
+            p.add(new PartLathe.P(t.contact + 0.04F, 0.02F, true));
+            p.add(new PartLathe.P(t.contact, 0.0F, true));
+            break;
+         case SEMI_DEFENSE:
+            p.add(new PartLathe.P(0.34F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.32F, 0.16F, false));
+            p.add(new PartLathe.P(0.2F, 0.05F, true));
+            p.add(new PartLathe.P(0.1F, 0.0F, true));
+            break;
+         case DEFENSE_SHARP:
+            p.add(new PartLathe.P(0.34F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.34F, 0.18F, false));
+            p.add(new PartLathe.P(0.14F, 0.07F, true));
+            p.add(new PartLathe.P(0.04F, 0.008F, true));
+            break;
+         case QUAKE:
+            p.add(new PartLathe.P(0.31F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.31F, 0.14F, false));
+            p.add(new PartLathe.P(0.24F, 0.05F, true));
+            p.add(new PartLathe.P(0.2F, 0.0F, true));
+            p.add(new PartLathe.P(0.14F, 0.035F, true));
+            p.add(new PartLathe.P(0.08F, 0.0F, true));
+            break;
+         case BEARING_DRIVE:
+            p.add(new PartLathe.P(0.3F, top - 0.08F, false));
+            p.add(new PartLathe.P(0.3F, 0.2F, false));
+            p.add(new PartLathe.P(0.22F, 0.17F, true));
+            p.add(new PartLathe.P(0.2F, 0.13F, true));
+            p.add(new PartLathe.P(0.12F, 0.06F, false));
+            p.add(new PartLathe.P(0.03F, 0.008F, true));
+            break;
          default:
             p.add(new PartLathe.P(0.3F, top - 0.08F, false));
             p.add(new PartLathe.P(0.1F, 0.02F, true));
@@ -177,6 +258,22 @@ public final class PartLathe {
       p.add(new PartLathe.P(0.19F, bottom + 0.04F, false));
       p.add(new PartLathe.P(0.26F, bottom, false));
       return p;
+   }
+
+   public static void renderTrack(PoseStack pose, VertexConsumer vc, int light, int overlay, Loadout lo) {
+      BeyPart tip = lo.get(PartType.TIP);
+      BeyPart track = lo.get(PartType.TRACK);
+      float bottom = tip == null ? 0.05F : tipTop(tip.tip());
+      if (track != null) {
+         lathe(pose, vc, light, overlay, trackProfile(track, bottom, bottom + trackHeight(track)), track.color(), track.color2());
+      }
+   }
+
+   public static void renderTip(PoseStack pose, VertexConsumer vc, int light, int overlay, Loadout lo) {
+      BeyPart tip = lo.get(PartType.TIP);
+      if (tip != null) {
+         lathe(pose, vc, light, overlay, tipProfile(tip.tip(), tipTop(tip.tip())), tip.color(), tip.color2());
+      }
    }
 
    public static void render(PoseStack pose, VertexConsumer vc, int light, int overlay, Loadout lo) {

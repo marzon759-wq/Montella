@@ -66,7 +66,7 @@ public class CommandScreen extends Screen {
    }
 
    public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-      this.renderBackground(g);
+      com.krolasyon.beyblade.compat.VClient.background(this, g, mouseX, mouseY, partial);
       int cols = 3;
       int rows = (14 + cols - 1) / cols;
       int totalW = cols * 104 + (cols - 1) * 4;

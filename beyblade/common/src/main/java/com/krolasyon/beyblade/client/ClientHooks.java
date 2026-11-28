@@ -10,4 +10,8 @@ public final class ClientHooks {
    public static void startSpinSound(BeybladeEntity e) {
       Minecraft.getInstance().getSoundManager().play(new SpinSound(e));
    }
+
+   public static void tipFx(BeybladeEntity e) {
+      TipFx.tick(e);
+   }
 }
