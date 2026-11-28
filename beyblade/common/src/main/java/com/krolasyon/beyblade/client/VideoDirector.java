@@ -223,7 +223,7 @@ public final class VideoDirector {
       this.shot(300, 1.0F, then(cmds(CLEAR), s -> {
          place(s, ModEntities.PEGASUS.get(), new ItemStack(ModItems.PEGASUS.get()), CX - 3.0, CZ, new Vec3(0.0, 0.0, 0.35), false);
          place(s, ModEntities.LDRAGO.get(), new ItemStack(ModItems.LDRAGO.get()), CX + 3.0, CZ, new Vec3(0.0, 0.0, -0.35), false);
-      }), orbit(CX, CY, CZ, 15.0, 7.5, 200.0, 0.12), "BEYBLADE METAL FIGHT 2.0|GeckoLib animasyonları · Forge 1.20.1 & 1.21.1");
+      }), orbit(CX, CY, CZ, 15.0, 7.5, 200.0, 0.12), "BEYBLADE METAL FIGHT 2.1|Özel hamleler dünyayı etkiliyor · Forge 1.20.1 & 1.21.1");
       // 2. line up
       String[] kinds = {"leone", "eagle", "ldrago", "pegasus", "beffal", "variares", "libra", "tempo"};
       String[] names = {"Rock Leone 145WB", "Earth Eagle 145WD", "L-Drago Destruction F:S", "Storm Pegasus 105RF", "Evil Befall UW145EWD",
@@ -264,8 +264,7 @@ public final class VideoDirector {
       this.capAt(-1, 520, "Her vuruş: GeckoLib geri tepme + parça titremesi");
       // 5. special moves
       Object[][] sp = {
-         {"ldrago", ModEntities.LDRAGO, 3}, {"pegasus", ModEntities.PEGASUS, 3}, {"leone", ModEntities.LEONE, 5}, {"eagle", ModEntities.EAGLE, 3},
-         {"libra", ModEntities.LIBRA, 3}, {"variares", ModEntities.VARIARES, 5}, {"beffal", ModEntities.BEFFAL, 3}, {"tempo", ModEntities.TEMPO, 1}
+         {"eagle", ModEntities.EAGLE, 3}, {"variares", ModEntities.VARIARES, 5}, {"beffal", ModEntities.BEFFAL, 3}, {"tempo", ModEntities.TEMPO, 1}
       };
       for (int i = 0; i < sp.length; i++) {
          String kind = (String)sp[i][0];
@@ -279,6 +278,8 @@ public final class VideoDirector {
             track(type, 4.2, 2.2, 140.0 + 45.0 * i, 0.22), "@" + abilityKey,
             sub(30, s -> each(s, b -> b.debugForceAbility(ab))));
       }
+      // 5b. out of the stadium: the special moves hit the world
+      this.outdoor();
       // 6. rubber vs sharp
       this.shot(560, 1.0F, then(cmds(CLEAR), s -> {
          place(s, ModEntities.PEGASUS.get(), custom(ModItems.PEGASUS.get(), "track_105", "tip_rf"), CX - 5.0, CZ, new Vec3(0.3, 0.2, 0.25), false);
@@ -304,7 +305,92 @@ public final class VideoDirector {
       this.capAt(-1, 400, "");
       // 10. outro
       this.shot(240, 1.0F, s -> {
-      }, orbit(CX, CY, CZ, 16.0, 9.0, 120.0, 0.12), "Beyblade Metal Fight 2.0|GeckoLib · 31 uç · 24 track · 1.20.1 & 1.21.1");
+      }, orbit(CX, CY, CZ, 16.0, 9.0, 120.0, 0.12), "Beyblade Metal Fight 2.1|Krater · kasırga · şok dalgası · kendini onaran dünya");
+   }
+
+   // ------------------------------------------------------------------ outdoor: world impact
+   private static final double OX = 60.0;
+   private static final double OY = -60.0;
+   private static final double OZ = 0.0;
+
+   /** Fixed camera that follows the first bey of a type with its eyes (no height clamp: for sky moves). */
+   private static CamPath watch(java.util.function.Supplier<?> type, double x, double y, double z) {
+      double[] c = {OX, OY, OZ};
+      return (v, t) -> {
+         for (BeybladeEntity b : v.beys) {
+            if (b.getType() == type.get()) {
+               c[0] += (b.getX() - c[0]) * 0.25;
+               c[1] += (b.getY() - c[1]) * 0.25;
+               c[2] += (b.getZ() - c[2]) * 0.25;
+               break;
+            }
+         }
+         return look(x, y, z, c[0], c[1] + 0.3, c[2]);
+      };
+   }
+
+   private static CamPath fixed(double x, double y, double z, double tx, double ty, double tz) {
+      return (v, t) -> look(x, y, z, tx, ty, tz);
+   }
+
+   private void outdoor() {
+      String meadow = String.format(Locale.ROOT, "fill %d -61 %d %d -61 %d minecraft:grass_block", (int)OX - 26, (int)OZ - 22, (int)OX + 26, (int)OZ + 22);
+      String air = String.format(Locale.ROOT, "fill %d -60 %d %d -52 %d minecraft:air", (int)OX - 26, (int)OZ - 22, (int)OX + 26, (int)OZ + 22);
+      String grass = String.format(Locale.ROOT, "fill %d -60 %d %d -60 %d minecraft:short_grass", (int)OX - 22, (int)OZ - 18, (int)OX + 22, (int)OZ + 18);
+      Consumer<MinecraftServer> decor = cmds(meadow, air, grass,
+         f("fill %d -60 %d %d -60 %d minecraft:poppy", -9, -6, -5, -3), f("fill %d -60 %d %d -60 %d minecraft:dandelion", 4, 3, 8, 7),
+         f("fill %d -60 %d %d -60 %d minecraft:cornflower", -3, 7, 1, 9), f("fill %d -60 %d %d -60 %d minecraft:oxeye_daisy", 9, -8, 12, -5),
+         f("fill %d -60 %d %d -57 %d minecraft:oak_leaves", -14, 6, -12, 8), f("fill %d -60 %d %d -58 %d minecraft:oak_leaves", 13, -10, 15, -8),
+         f("fill %d -60 %d %d -58 %d minecraft:glass", -4, -13, 3, -13),
+         f("summon minecraft:cow %d -60 %d", -6, 4), f("summon minecraft:sheep %d -60 %d", 7, -3), f("summon minecraft:pig %d -60 %d", 2, 10),
+         f("summon minecraft:chicken %d -60 %d", -8, -8));
+      // the meadow
+      this.shot(160, 1.0F, then(cmds(CLEAR), decor), orbit(OX, OY, OZ, 18.0, 7.0, 150.0, 0.18),
+         "Stadyumun dışında: özel hamleler dünyayı etkiliyor|Krater · kasırga · şok dalgası — bloklar sonra kendini onarır");
+      // Star Blast Attack: rise
+      this.shot(24, 1.0F, cmds(f("summon librabeyblade:pegasus %d -59.7 %d {Tags:[\"a\"]}", -3, 1), f("summon librabeyblade:common %d -59.7 %d {Variant:2}", 2, 0)),
+         fixed(OX + 6.0, OY + 3.0, OZ + 12.0, OX, OY, OZ), "Storm Pegasus — Pegasus Yıldız Patlama Saldırısı!",
+         sub(8, s -> each(s, b -> b.debugForceAbility(3))));
+      this.shot(12, 1.0F, s -> {
+      }, watch(ModEntities.PEGASUS, OX + 4.0, OY + 4.0, OZ + 14.0), "Gökyüzüne fırlar…");
+      this.shot(18, 1.0F, s -> {
+      }, watch(ModEntities.PEGASUS, OX - 6.0, OY + 30.0, OZ + 8.0), "…Pegasus kanatlarını açar…");
+      this.shot(16, 0.4F, s -> {
+      }, fixed(OX + 5.0, OY + 3.5, OZ + 11.0, OX + 1.0, OY + 3.0, OZ), "…ve kuyruklu yıldız gibi dalar!");
+      this.shot(70, 1.0F, s -> {
+      }, orbit(OX + 1.0, OY, OZ, 11.0, 6.0, 20.0, 0.25), "Krater + şok dalgası: çiçekler yatar, cam kırılır");
+      // Storm Bringer
+      this.shot(130, 1.0F, cmds(CLEAR, f("summon librabeyblade:pegasus %d -59.7 %d {Tags:[\"a\"]}", -10, -2),
+            f("summon librabeyblade:common %d -59.7 %d {Variant:4}", -6, -3)),
+         fixed(OX - 8.0, OY + 5.0, OZ + 15.0, OX - 6.0, OY + 5.0, OZ - 3.0), "Storm Pegasus — Fırtına Getirici",
+         sub(14, s -> each(s, b -> b.debugForceAbility(2))));
+      // Inferno Blast
+      this.shot(110, 1.0F, cmds(CLEAR, f("summon librabeyblade:libra %d -59.7 %d {Tags:[\"a\"]}", 10, 6),
+            f("summon librabeyblade:common %d -59.7 %d {Variant:5}", 13, 4)),
+         fixed(OX + 10.0, OY + 5.0, OZ + 19.0, OX + 10.0, OY + 3.0, OZ + 6.0), "Flame Libra — Cehennem Patlaması: zemin kuma döner",
+         sub(14, s -> each(s, b -> b.debugForceAbility(3))));
+      // L-Drago dive
+      this.shot(130, 1.0F, cmds(CLEAR, f("summon librabeyblade:ldrago %d -59.7 %d {Tags:[\"a\"]}", -12, 12),
+            f("summon librabeyblade:common %d -59.7 %d {Variant:1}", -9, 13)),
+         watch(ModEntities.LDRAGO, OX - 4.0, OY + 7.0, OZ + 24.0), "L-Drago — Ejderha İmparatoru Yüksekten Dalış: yanan krater",
+         sub(14, s -> each(s, b -> b.debugForceAbility(3))));
+      // Leone giant tornado
+      this.shot(240, 1.0F, cmds(CLEAR, f("summon librabeyblade:leone %d -59.7 %d {Tags:[\"a\"]}", 0, -6),
+            f("summon librabeyblade:common %d -59.7 %d {Variant:6}", 4, -3), f("summon minecraft:sheep %d -60 %d", 2, -8)),
+         fixed(OX + 1.0, OY + 6.0, OZ + 18.0, OX, OY + 6.0, OZ - 6.0), "Rock Leone — Kral Aslan Dev Kasırga",
+         sub(14, s -> each(s, b -> b.debugForceAbility(6))));
+      // the world heals (time lapse)
+      this.shot(80, 1.0F, cmds(CLEAR, "weather clear"), orbit(OX, OY, OZ, 22.0, 12.0, 330.0, 0.15), "Savaş bitti…");
+      this.shot(760, 12.0F, s -> {
+      }, orbit(OX, OY, OZ, 22.0, 12.0, 342.0, 0.06), "…ve zemin kendini onarıyor (hızlandırılmış)");
+   }
+
+   private static String f(String fmt, int dx, int dz) {
+      return String.format(Locale.ROOT, fmt, (int)OX + dx, (int)OZ + dz);
+   }
+
+   private static String f(String fmt, int x0, int z0, int x1, int z1) {
+      return String.format(Locale.ROOT, fmt, (int)OX + x0, (int)OZ + z0, (int)OX + x1, (int)OZ + z1);
    }
 
    /** extra caption inside shot {@code shot} (index, -1 = last added) starting at a tick of that shot */
@@ -314,7 +400,7 @@ public final class VideoDirector {
    }
 
    private static void each(MinecraftServer s, Consumer<BeybladeEntity> c) {
-      for (BeybladeEntity e : s.overworld().getEntitiesOfClass(BeybladeEntity.class, new AABB(-40.0, -80.0, -60.0, 40.0, 20.0, 40.0))) {
+      for (BeybladeEntity e : s.overworld().getEntitiesOfClass(BeybladeEntity.class, new AABB(-60.0, -80.0, -60.0, 120.0, 40.0, 60.0))) {
          if (e.getTags().contains("a") || e.getType() == ModEntities.EAGLE.get() || e.getType() == ModEntities.LIBRA.get()) {
             c.accept(e);
          }
