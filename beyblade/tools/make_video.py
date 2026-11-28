@@ -194,7 +194,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 
 def main():
-    d, out = sys.argv[1], sys.argv[2]
+    d, out = os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2])
     vt, gt, cam = load_frames(d)
     length = float(vt[-1])
     fdir = os.path.join(d, 'frames')
