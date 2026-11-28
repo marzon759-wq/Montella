@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "EDE",
+  "DXD",
+  "EDE"
+ ],
+ "key": {
+  "E": {
+   "item": "minecraft:emerald_block"
+  },
+  "D": {
+   "item": "minecraft:diamond"
+  },
+  "X": {
+   "item": "minecraft:heart_of_the_sea"
+  }
+ },
+ "result": {
+  "item": "librabeyblade:rock_leone"
+ }
+}

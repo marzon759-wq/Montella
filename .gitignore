@@ -37,3 +37,10 @@ bloodsea/bedrock/node_modules/
 bloodsea/bedrock/out/
 bloodsea/bedrock/tools/sim/bundle.mjs
 bloodsea/*.zip
+
+# Beyblade
+beyblade/forge-*/build/
+beyblade/forge-*/run/
+beyblade/forge-*/.gradle/
+beyblade/tools/__pycache__/
+beyblade/tools/out/

@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "LDL",
+  "DXD",
+  "LDL"
+ ],
+ "key": {
+  "L": {
+   "item": "minecraft:lapis_block"
+  },
+  "D": {
+   "item": "minecraft:diamond"
+  },
+  "X": {
+   "item": "minecraft:trident"
+  }
+ },
+ "result": {
+  "item": "librabeyblade:storm_pegasus"
+ }
+}

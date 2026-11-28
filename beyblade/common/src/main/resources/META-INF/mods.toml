@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="${loader_range}"
+license="All Rights Reserved"
+
+[[mods]]
+modId="librabeyblade"
+version="${mod_version}"
+displayName="Beyblade Metal Fight"
+authors="krolasyon"
+description='''
+Metal Fight beyblade'leri: Face Bolt, Energy Ring, Fusion Wheel, Spin Track ve Performance Tip ile kendi beyini kur.
+GeckoLib animasyonlari: donus, yalpalama, vurus, ozel hareketler, burst ve uyuma.
+Kaucuk uclar zemine tutunur, keskin uclar sabit durur, serbest donen uclar dayanir.
+'''
+
+[[dependencies.librabeyblade]]
+    modId="forge"
+    mandatory=true
+    versionRange="${loader_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.librabeyblade]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${mc_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.librabeyblade]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="${gecko_range}"
+    ordering="AFTER"
+    side="BOTH"
