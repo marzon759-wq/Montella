@@ -30,6 +30,9 @@ public class LibraBeyblade {
       if (Boolean.getBoolean("libra.autotest") && FMLEnvironment.dist == Dist.CLIENT) {
          AutoTest.init();
       }
+      if (Boolean.getBoolean("libra.video") && FMLEnvironment.dist == Dist.CLIENT) {
+         com.krolasyon.beyblade.client.VideoDirector.init();
+      }
    }
 
    private void commonSetup(FMLCommonSetupEvent event) {
