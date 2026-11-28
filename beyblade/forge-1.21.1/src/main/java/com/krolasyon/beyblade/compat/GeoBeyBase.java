@@ -48,4 +48,14 @@ public abstract class GeoBeyBase extends DataEntity implements GeoEntity {
    public double getTick(Object object) {
       return this.tickCount;
    }
+
+   /** Client position interpolation (the bey smooths server positions itself). */
+   protected void lerpToImpl(double x, double y, double z) {
+      this.setPos(x, y, z);
+   }
+
+   @Override
+   public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+      this.lerpToImpl(x, y, z);
+   }
 }

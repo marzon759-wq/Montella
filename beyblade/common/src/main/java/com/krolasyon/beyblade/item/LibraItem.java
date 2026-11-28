@@ -24,7 +24,7 @@ import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
-public class LibraItem extends Item {
+public class LibraItem extends com.krolasyon.beyblade.compat.BeyItem {
    private final String kind;
    private final int variant;
 
@@ -74,7 +74,8 @@ public class LibraItem extends Item {
       return level(stack) >= 10;
    }
 
-   public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
+   @Override
+   protected void tooltip(ItemStack stack, List<Component> tip, TooltipFlag flag) {
       String base = this.getDescriptionId();
       int lvl = level(stack);
       CompoundTag t = V.tag(stack);

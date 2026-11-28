@@ -27,7 +27,7 @@ import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class LauncherItem extends Item {
+public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
    public static final int FULL_CHARGE = 40;
    private final Supplier<? extends Item> beyItem;
    private final Supplier<? extends EntityType<? extends BeybladeEntity>> beyType;
@@ -112,7 +112,7 @@ public class LauncherItem extends Item {
    }
 
    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remaining) {
-      int used = this.getUseDuration(stack) - remaining;
+      int used = this.useDuration(stack) - remaining;
       if (entity instanceof Player pl) {
          LaunchPlan.track(pl);
       }
@@ -131,7 +131,7 @@ public class LauncherItem extends Item {
 
    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int remaining) {
       if (entity instanceof Player player && !level.isClientSide()) {
-         int used = this.getUseDuration(stack) - remaining;
+         int used = this.useDuration(stack) - remaining;
          if (used < 4) {
             return;
          }
@@ -234,7 +234,8 @@ public class LauncherItem extends Item {
       }
    }
 
-   public int getUseDuration(ItemStack stack) {
+   @Override
+   protected int useDuration(ItemStack stack) {
       return 72000;
    }
 
@@ -242,7 +243,8 @@ public class LauncherItem extends Item {
       return UseAnim.BOW;
    }
 
-   public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
+   @Override
+   protected void tooltip(ItemStack stack, List<Component> tip, TooltipFlag flag) {
       tip.add(Component.translatable(this.getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
       tip.add(Component.translatable("item.librabeyblade.libra_launcher.desc2").withStyle(ChatFormatting.DARK_GRAY));
    }

@@ -20,7 +20,7 @@ import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class RivalLibraItem extends Item {
+public class RivalLibraItem extends com.krolasyon.beyblade.compat.BeyItem {
    private final Supplier<? extends EntityType<? extends BeybladeEntity>> beyType;
 
    public RivalLibraItem(Properties props, Supplier<? extends EntityType<? extends BeybladeEntity>> beyType) {
@@ -47,7 +47,8 @@ public class RivalLibraItem extends Item {
       return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
    }
 
-   public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
+   @Override
+   protected void tooltip(ItemStack stack, List<Component> tip, TooltipFlag flag) {
       tip.add(Component.translatable(this.getDescriptionId() + ".desc").withStyle(ChatFormatting.RED));
    }
 }

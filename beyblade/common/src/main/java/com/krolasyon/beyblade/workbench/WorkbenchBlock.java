@@ -13,14 +13,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class WorkbenchBlock extends Block {
+public class WorkbenchBlock extends com.krolasyon.beyblade.compat.UseBlock {
    private static final Component TITLE = Component.translatable("container.librabeyblade.workbench");
 
    public WorkbenchBlock(Properties props) {
       super(props);
    }
 
-   public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+   @Override
+   protected InteractionResult onUse(BlockState state, Level level, BlockPos pos, Player player) {
       if (!level.isClientSide()) {
          player.openMenu(new SimpleMenuProvider((id, inv, p) -> new WorkbenchMenu(id, inv, ContainerLevelAccess.create(level, pos)), TITLE));
       }

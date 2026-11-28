@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "ADA",
+  "DXD",
+  "ADA"
+ ],
+ "key": {
+  "A": {
+   "item": "minecraft:amethyst_block"
+  },
+  "D": {
+   "item": "minecraft:diamond"
+  },
+  "X": {
+   "item": "minecraft:totem_of_undying"
+  }
+ },
+ "result": {
+  "id": "librabeyblade:earth_eagle"
+ }
+}

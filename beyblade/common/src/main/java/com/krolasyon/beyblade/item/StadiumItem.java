@@ -20,7 +20,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
-public class StadiumItem extends Item {
+public class StadiumItem extends com.krolasyon.beyblade.compat.BeyItem {
    public StadiumItem(Properties props) {
       super(props);
    }
@@ -57,7 +57,8 @@ public class StadiumItem extends Item {
       return InteractionResult.sidedSuccess(level.isClientSide());
    }
 
-   public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
+   @Override
+   protected void tooltip(ItemStack stack, List<Component> tip, TooltipFlag flag) {
       tip.add(Component.translatable("item.librabeyblade.stadium.desc").withStyle(ChatFormatting.GRAY));
       tip.add(Component.translatable("item.librabeyblade.stadium.desc2").withStyle(ChatFormatting.DARK_GRAY));
    }

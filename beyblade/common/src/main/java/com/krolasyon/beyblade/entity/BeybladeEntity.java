@@ -3191,7 +3191,8 @@ public class BeybladeEntity extends GeoBeyBase {
       return this.clientAbility == 0 ? -1.0F : (float)(this.tickCount - this.clientAbilityStart) + partial;
    }
 
-   public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
+   @Override
+   protected void lerpToImpl(double x, double y, double z) {
       this.lerpX = x;
       this.lerpY = y;
       this.lerpZ = z;

@@ -118,7 +118,7 @@ public final class AutoTest {
       );
       this.wait(40, "lineup");
       // custom bottoms: rubber, bearing and metal tips turned on the lathe
-      this.cmd(2, null, CLEAR, "tp @a 0.5 -58.6 -12.6 180 25");
+      this.cmd(2, null, CLEAR, "tp @a 0.5 -60.9 -12.4 180 6");
       this.server(4, null, s -> {
          launchCustom(s, com.krolasyon.beyblade.registry.ModEntities.PEGASUS.get(), -1.0,
             custom(com.krolasyon.beyblade.registry.ModItems.PEGASUS.get(), "track_df145:1", "tip_rs:1"), true);

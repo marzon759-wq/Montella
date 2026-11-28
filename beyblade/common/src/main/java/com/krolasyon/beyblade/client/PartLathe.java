@@ -272,7 +272,7 @@ public final class PartLathe {
    public static void renderTip(PoseStack pose, VertexConsumer vc, int light, int overlay, Loadout lo) {
       BeyPart tip = lo.get(PartType.TIP);
       if (tip != null) {
-         lathe(pose, vc, light, overlay, tipProfile(tip.tip(), tipTop(tip.tip())), tip.color(), tip.color2());
+         lathe(pose, vc, light, overlay, tipProfile(tip.tip(), tipTop(tip.tip())), tip.color(), tip.color2(), tip.tip().rubber());
       }
    }
 
@@ -290,6 +290,11 @@ public final class PartLathe {
    }
 
    private static void lathe(PoseStack pose, VertexConsumer vc, int light, int overlay, List<PartLathe.P> prof, int col, int accent) {
+      lathe(pose, vc, light, overlay, prof, col, accent, false);
+   }
+
+   /** Turns a profile around the Y axis. Rubber contact rings are drawn matte with tread grooves. */
+   private static void lathe(PoseStack pose, VertexConsumer vc, int light, int overlay, List<PartLathe.P> prof, int col, int accent, boolean rubber) {
       Matrix4f m = pose.last().pose();
       Matrix3f n = pose.last().normal();
 
@@ -322,7 +327,9 @@ public final class PartLathe {
                   len = 1.0F;
                }
 
-               float shade = 0.85F + 0.15F * (float)Math.sin((double)(v[2] * 4.0F));
+               float shade = rubber && b.accent
+                  ? 0.62F + 0.1F * (float)Math.sin((double)(v[2] * 18.0F))
+                  : 0.85F + 0.15F * (float)Math.sin((double)(v[2] * 4.0F));
                VClient.vertex(
                   vc,
                   m,

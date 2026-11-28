@@ -1,0 +1,23 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "DAD",
+  "ABA",
+  "DAD"
+ ],
+ "key": {
+  "D": {
+   "item": "minecraft:diamond"
+  },
+  "A": {
+   "item": "minecraft:amethyst_block"
+  },
+  "B": {
+   "item": "minecraft:blaze_rod"
+  }
+ },
+ "result": {
+  "count": 1,
+  "id": "librabeyblade:part_wheel_phoenix"
+ }
+}

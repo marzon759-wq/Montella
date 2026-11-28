@@ -48,3 +48,4 @@ tasks.named('jar', Jar).configure {
     manifest { attributes(['Specification-Title': 'librabeyblade', 'Implementation-Title': 'libra_beyblade', 'Implementation-Version': project.version]) }
     if (mc_version == '1.20.1') finalizedBy 'reobfJar'
 }
+

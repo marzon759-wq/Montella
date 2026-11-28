@@ -16,7 +16,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 
-public class PartItem extends Item {
+public class PartItem extends com.krolasyon.beyblade.compat.BeyItem {
    private final BeyPart part;
 
    public PartItem(Properties props, BeyPart part) {
@@ -49,7 +49,8 @@ public class PartItem extends Item {
          : base);
    }
 
-   public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
+   @Override
+   protected void tooltip(ItemStack stack, List<Component> tip, TooltipFlag flag) {
       appendPartLines(this.part, level(stack), tip);
       tip.add(Component.translatable("item.librabeyblade.part.hint").withStyle(ChatFormatting.DARK_GRAY));
    }

@@ -13,7 +13,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class StadiumBarrierBlock extends Block {
+public class StadiumBarrierBlock extends com.krolasyon.beyblade.compat.NoPathBlock {
    public StadiumBarrierBlock(Properties props) {
       super(props);
    }
@@ -42,7 +42,4 @@ public class StadiumBarrierBlock extends Block {
       return 1.0F;
    }
 
-   public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
-      return false;
-   }
 }

@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "RDR",
+  "DXD",
+  "RDR"
+ ],
+ "key": {
+  "R": {
+   "item": "minecraft:redstone_block"
+  },
+  "D": {
+   "item": "minecraft:diamond"
+  },
+  "X": {
+   "item": "minecraft:netherite_ingot"
+  }
+ },
+ "result": {
+  "id": "librabeyblade:ldrago_destruction"
+ }
+}
