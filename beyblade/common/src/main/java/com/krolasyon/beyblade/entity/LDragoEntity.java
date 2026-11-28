@@ -130,7 +130,7 @@ public class LDragoEntity extends BeybladeEntity {
 
          Player owner = this.getOwner();
          if (owner != null) {
-            owner.displayClientMessage(
+            com.krolasyon.beyblade.Msg.say(owner, 
                Component.translatable("msg.librabeyblade.ldrago_revive").withStyle(new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.BOLD}), false
             );
          }

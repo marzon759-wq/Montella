@@ -84,8 +84,8 @@ public final class ModEvents {
                p.drop(bey, false);
             }
 
-            p.sendSystemMessage(Component.translatable("msg.librabeyblade.starter", new Object[]{bey.getHoverName()}).withStyle(ChatFormatting.GOLD));
-            p.sendSystemMessage(Component.translatable("msg.librabeyblade.starter2").withStyle(ChatFormatting.GRAY));
+            com.krolasyon.beyblade.Msg.chat(p, Component.translatable("msg.librabeyblade.starter", new Object[]{bey.getHoverName()}).withStyle(ChatFormatting.GOLD));
+            com.krolasyon.beyblade.Msg.chat(p, Component.translatable("msg.librabeyblade.starter2").withStyle(ChatFormatting.GRAY));
          }
       }
    }

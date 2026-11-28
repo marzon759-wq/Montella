@@ -12,7 +12,7 @@ public final class CommandHandler {
       if (player != null) {
          BeybladeEntity bey = BeybladeEntity.findActive(player);
          if (bey == null) {
-            player.displayClientMessage(Component.translatable("msg.librabeyblade.none_active"), true);
+            com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.none_active"), true);
          } else {
             if (cmd == 0) {
                bey.recall();

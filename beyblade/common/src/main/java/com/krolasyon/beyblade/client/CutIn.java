@@ -25,6 +25,8 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 @EventBusSubscriber(modid = "librabeyblade", bus = EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class CutIn {
    private static final double LIFE = 46.0;
+   /** The text band is off (no on-screen texts); the start of a special move is felt through sound, shake and flash. */
+   private static final boolean BANNER = false;
    private static String name = "";
    private static String title = "";
    private static ResourceLocation icon;
@@ -50,6 +52,7 @@ public final class CutIn {
       float[] g = BeyRig.of(e, 0.0F).glowCol;
       color = 0xFF000000 | (int)(Mth.clamp(g[0], 0.0F, 1.0F) * 255.0F) << 16 | (int)(Mth.clamp(g[1], 0.0F, 1.0F) * 255.0F) << 8 | (int)(Mth.clamp(g[2], 0.0F, 1.0F) * 255.0F);
       start = CameraFx.now();
+      CameraFx.near(e.position(), 0.6F, 40.0);
       mc.getSoundManager().play(SimpleSoundInstance.forUI(ModSounds.CUT_IN.get(), 1.0F, 0.9F));
    }
 
@@ -79,7 +82,7 @@ public final class CutIn {
    private static void draw(Minecraft mc, GuiGraphics g, double age, float fl) {
       int W = g.guiWidth();
       int H = g.guiHeight();
-      if (age >= 0.0 && age <= LIFE) {
+      if (BANNER && age >= 0.0 && age <= LIFE) {
          float a = (float)age;
          float off;
          if (a < 6.0F) {

@@ -374,7 +374,7 @@ public class StadiumEntity extends DataEntity {
       if (p != null) {
          Vec3 b = this.balconyPos(side);
          p.connection.teleport(b.x, b.y, b.z, side == 0 ? 180.0F : 0.0F, 30.0F);
-         p.displayClientMessage(Component.translatable("msg.librabeyblade.match.balcony").withStyle(ChatFormatting.AQUA), true);
+         com.krolasyon.beyblade.Msg.say(p, Component.translatable("msg.librabeyblade.match.balcony").withStyle(ChatFormatting.AQUA), true);
       }
    }
 
@@ -458,7 +458,7 @@ public class StadiumEntity extends DataEntity {
                } else {
                   if (solo.isShiftKeyDown()) {
                      this.sneakTicks += 5;
-                     solo.displayClientMessage(Component.translatable("msg.librabeyblade.match.ai_hold", new Object[]{Math.max(0, (40 - this.sneakTicks + 19) / 20)}), true);
+                     com.krolasyon.beyblade.Msg.say(solo, Component.translatable("msg.librabeyblade.match.ai_hold", new Object[]{Math.max(0, (40 - this.sneakTicks + 19) / 20)}), true);
                      if (this.sneakTicks >= 40) {
                         this.sneakTicks = 0;
                         if (a != null) {
@@ -470,7 +470,7 @@ public class StadiumEntity extends DataEntity {
                   } else {
                      this.sneakTicks = 0;
                      if (++this.waitMsg % 8 == 0) {
-                        solo.displayClientMessage(Component.translatable("msg.librabeyblade.match.waiting"), true);
+                        com.krolasyon.beyblade.Msg.say(solo, Component.translatable("msg.librabeyblade.match.waiting"), true);
                      }
                   }
                }
@@ -531,7 +531,7 @@ public class StadiumEntity extends DataEntity {
                         ServerPlayer wp = aWon ? pa : pb;
                         if (wp != null) {
                            BeybladeEntity.grantXp(wp, 150);
-                           wp.displayClientMessage(Component.translatable("msg.librabeyblade.match.xp", new Object[]{150}), false);
+                           com.krolasyon.beyblade.Msg.say(wp, Component.translatable("msg.librabeyblade.match.xp", new Object[]{150}), false);
                         }
 
                         ServerPlayer lp = aWon ? pb : pa;
@@ -642,11 +642,11 @@ public class StadiumEntity extends DataEntity {
          this.graceTicks--;
          if (this.graceTicks % 100 == 0 && this.graceTicks > 0) {
             if (!this.seenA && pa != null) {
-               pa.displayClientMessage(Component.translatable("msg.librabeyblade.match.launch_now", new Object[]{(this.graceTicks + 19) / 20}), true);
+               com.krolasyon.beyblade.Msg.say(pa, Component.translatable("msg.librabeyblade.match.launch_now", new Object[]{(this.graceTicks + 19) / 20}), true);
             }
 
             if (!this.seenB && pb != null) {
-               pb.displayClientMessage(Component.translatable("msg.librabeyblade.match.launch_now", new Object[]{(this.graceTicks + 19) / 20}), true);
+               com.krolasyon.beyblade.Msg.say(pb, Component.translatable("msg.librabeyblade.match.launch_now", new Object[]{(this.graceTicks + 19) / 20}), true);
             }
          }
 
@@ -812,9 +812,11 @@ public class StadiumEntity extends DataEntity {
 
    private void broadcast(Component title, Component sub, @Nullable SoundEvent sound) {
       for (ServerPlayer p : this.audience()) {
-         p.connection.send(new ClientboundSetTitlesAnimationPacket(4, 30, 8));
-         p.connection.send(new ClientboundSetSubtitleTextPacket(sub));
-         p.connection.send(new ClientboundSetTitleTextPacket(title));
+         if (com.krolasyon.beyblade.Msg.SHOW) {
+            p.connection.send(new ClientboundSetTitlesAnimationPacket(4, 30, 8));
+            p.connection.send(new ClientboundSetSubtitleTextPacket(sub));
+            p.connection.send(new ClientboundSetTitleTextPacket(title));
+         }
       }
 
       if (sound != null) {

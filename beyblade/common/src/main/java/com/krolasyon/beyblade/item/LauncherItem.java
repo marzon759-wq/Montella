@@ -82,7 +82,7 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
             if (player.isShiftKeyDown()) {
                active.recall();
             } else {
-               player.displayClientMessage(Component.translatable("msg.librabeyblade.already"), true);
+               com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.already"), true);
             }
          }
 
@@ -97,9 +97,9 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
          return InteractionResultHolder.consume(stack);
       } else {
          if (!level.isClientSide() && this.hasIncomplete(player)) {
-            player.displayClientMessage(Component.translatable("msg.librabeyblade.incomplete").withStyle(ChatFormatting.RED), true);
+            com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.incomplete").withStyle(ChatFormatting.RED), true);
          } else if (!level.isClientSide()) {
-            player.displayClientMessage(
+            com.krolasyon.beyblade.Msg.say(player, 
                this.isStandard()
                   ? Component.translatable("msg.librabeyblade.no_bey_any")
                   : Component.translatable("msg.librabeyblade.no_bey", new Object[]{this.beyItem.get().getDescription()}),
@@ -183,7 +183,7 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
             bey.setLaunchWobble(plan.wobble);
             int steady = Math.round((1.0F - plan.wobble) * 100.0F);
             if (plan.wobble >= 0.6F) {
-               player.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(player, 
                   Component.translatable(
                         "msg.librabeyblade.launch_bad",
                         new Object[]{steady, Component.translatable("launch.librabeyblade.hint." + (plan.hint == null ? "shaky" : plan.hint))}
@@ -192,7 +192,7 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
                   false
                );
             } else if (plan.wobble >= 0.3F) {
-               player.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(player, 
                   Component.translatable(
                         "msg.librabeyblade.launch_shaky",
                         new Object[]{steady, Component.translatable("launch.librabeyblade.hint." + (plan.hint == null ? "shaky" : plan.hint))}
@@ -203,13 +203,13 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
             }
 
             if (perfect) {
-               player.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(player, 
                   Component.translatable("msg.librabeyblade.perfect_launch").withStyle(new ChatFormatting[]{ChatFormatting.GOLD, ChatFormatting.BOLD}), false
                );
             }
 
             if (powerLaunch) {
-               player.displayClientMessage(Component.translatable("msg.librabeyblade.power_launch").withStyle(ChatFormatting.RED), false);
+               com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.power_launch").withStyle(ChatFormatting.RED), false);
             }
 
             level.playSound(
@@ -223,7 +223,7 @@ public class LauncherItem extends com.krolasyon.beyblade.compat.BeyItem {
                0.95F + power * 0.1F
             );
             if (!perfect && !powerLaunch) {
-               player.displayClientMessage(Component.translatable("msg.librabeyblade.launch", new Object[]{Math.round(power * 100.0F)}), true);
+               com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.launch", new Object[]{Math.round(power * 100.0F)}), true);
             }
 
             player.getCooldowns().addCooldown(this, 10);

@@ -35,7 +35,7 @@ public class StadiumItem extends com.krolasyon.beyblade.compat.BeyItem {
          double z = (double)pos.getZ() + 0.5;
          if (!level.getEntitiesOfClass(StadiumEntity.class, new AABB(x - 18.0, y - 4.0, z - 18.0, x + 18.0, y + 4.0, z + 18.0)).isEmpty()) {
             if (player != null) {
-               player.displayClientMessage(Component.translatable("msg.librabeyblade.stadium_near"), true);
+               com.krolasyon.beyblade.Msg.say(player, Component.translatable("msg.librabeyblade.stadium_near"), true);
             }
 
             return InteractionResult.FAIL;

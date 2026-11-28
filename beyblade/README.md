@@ -1,4 +1,4 @@
-# Beyblade Metal Fight (librabeyblade) — 2.2.0
+# Beyblade Metal Fight (librabeyblade) — 2.3.0
 
 Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
@@ -6,8 +6,17 @@ Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
 1. Forge + **GeckoLib** (Forge sürümü, aynı Minecraft sürümü için) kur.
 2. `dist/` içinden doğru jar'ı `mods/` klasörüne at:
-   - `beyblade_mod-1.20.1-forge-2.2.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
-   - `beyblade_mod-1.21.1-forge-2.2.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+   - `beyblade_mod-1.20.1-forge-2.3.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
+   - `beyblade_mod-1.21.1-forge-2.3.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+
+## 2.3: yazısız ekran, daha seyrek özel hamleler
+
+- Ekrana gelen tüm yazılar kaldırıldı: özel hamle bandı (cut-in), aksiyon çubuğu mesajları (hamle duyurusu, KO,
+  bekleme süresi, fırlatma gücü…), sohbet mesajları ve maç başlıkları. Hamlenin başladığını ses, kamera sarsıntısı
+  ve flaş anlatır. (Geri açmak için `Msg.SHOW = true`.) Dönüş/istatistik HUD'u kalıcı gösterge olarak duruyor.
+- Özel hamleler animedeki gibi zaman alıyor: bekleme süreleri 2,5 kat, maçın ilk 10 saniyesinde özel hamle yok,
+  rakip beyler iki özel hamle arasında en az 20 saniye bekliyor ve daha seyrek deniyor; kalkan/uyanış gibi
+  güçlendirmeler 1,5 kat uzun sürüyor.
 
 ## 2.2: savaşı hissettir
 

@@ -449,7 +449,7 @@ public class BeybladeEntity extends GeoBeyBase {
       this.entityData.set(DATA_MODE, Math.floorMod(m, 4));
       Player owner = this.getOwner();
       if (owner != null) {
-         owner.displayClientMessage(Component.translatable("msg.librabeyblade.mode", new Object[]{Component.translatable("mode.librabeyblade." + MODE_IDS[this.getMode()])}), true);
+         com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.mode", new Object[]{Component.translatable("mode.librabeyblade." + MODE_IDS[this.getMode()])}), true);
       }
 
       this.play((SoundEvent)ModSounds.CHARGE.get(), 0.7F, 1.4F + (float)this.getMode() * 0.1F);
@@ -464,7 +464,7 @@ public class BeybladeEntity extends GeoBeyBase {
       this.rushPhase = 0;
       Player owner = this.getOwner();
       if (owner != null) {
-         owner.displayClientMessage(
+         com.krolasyon.beyblade.Msg.say(owner, 
             Component.translatable("msg.librabeyblade.order", new Object[]{Component.translatable("order.librabeyblade." + ORDER_IDS[this.getOrder()])}), true
          );
       }
@@ -511,7 +511,7 @@ public class BeybladeEntity extends GeoBeyBase {
             this.healSpin(this.getMaxSpin() * 0.15F);
             Player owner = this.getOwner();
             if (owner != null) {
-               owner.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(owner, 
                   Component.translatable("msg.librabeyblade.level_up", new Object[]{Component.translatable(this.titleKey()), lvl}).withStyle(ChatFormatting.GOLD),
                   false
                );
@@ -550,7 +550,7 @@ public class BeybladeEntity extends GeoBeyBase {
       if (this.getState() == 0) {
          if (this.getSpirit() < 100) {
             if (owner != null) {
-               owner.displayClientMessage(Component.translatable("msg.librabeyblade.spirit_low", new Object[]{this.getSpirit()}), true);
+               com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.spirit_low", new Object[]{this.getSpirit()}), true);
             }
          } else {
             this.entityData.set(DATA_SPIRIT, 0);
@@ -569,7 +569,7 @@ public class BeybladeEntity extends GeoBeyBase {
             this.play((SoundEvent)ModSounds.CLASH_HEAVY.get(), 1.5F, 0.6F);
             this.level().broadcastEntityEvent(this, (byte)69);
             if (owner != null) {
-               owner.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(owner, 
                   Component.translatable("msg.librabeyblade.spirit", new Object[]{Component.translatable(this.titleKey())})
                      .withStyle(new ChatFormatting[]{ChatFormatting.GOLD, ChatFormatting.BOLD}),
                   true
@@ -851,7 +851,7 @@ public class BeybladeEntity extends GeoBeyBase {
          this.onDodge(attacker);
          Player owner = this.getOwner();
          if (owner != null) {
-            owner.displayClientMessage(Component.translatable("dodge.librabeyblade." + this.kindId()).withStyle(ChatFormatting.AQUA), true);
+            com.krolasyon.beyblade.Msg.say(owner, Component.translatable("dodge.librabeyblade." + this.kindId()).withStyle(ChatFormatting.AQUA), true);
          }
 
          return true;
@@ -1745,7 +1745,7 @@ public class BeybladeEntity extends GeoBeyBase {
       this.play((SoundEvent)ModSounds.CLASH_HEAVY.get(), 1.2F, 1.6F);
       this.addSpirit(4);
       if (owner != null) {
-         owner.displayClientMessage(Component.translatable("msg.librabeyblade.xdash").withStyle(new ChatFormatting[]{ChatFormatting.GOLD, ChatFormatting.BOLD}), true);
+         com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.xdash").withStyle(new ChatFormatting[]{ChatFormatting.GOLD, ChatFormatting.BOLD}), true);
       }
    }
 
@@ -1782,7 +1782,7 @@ public class BeybladeEntity extends GeoBeyBase {
       );
 
       for (Player p : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(40.0))) {
-         p.displayClientMessage(title.copy().withStyle(new ChatFormatting[]{zone == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA, ChatFormatting.BOLD}), true);
+         com.krolasyon.beyblade.Msg.say(p, title.copy().withStyle(new ChatFormatting[]{zone == 2 ? ChatFormatting.GOLD : ChatFormatting.AQUA, ChatFormatting.BOLD}), true);
       }
 
       this.defeat();
@@ -1808,7 +1808,7 @@ public class BeybladeEntity extends GeoBeyBase {
                this.play((SoundEvent)ModSounds.GRIND.get(), 1.2F, 0.7F);
                this.level().broadcastEntityEvent(this, (byte)60);
                if (owner != null) {
-                  owner.displayClientMessage(Component.translatable("msg.librabeyblade.wobble_land").withStyle(ChatFormatting.RED), true);
+                  com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.wobble_land").withStyle(ChatFormatting.RED), true);
                }
             }
          }
@@ -2024,7 +2024,7 @@ public class BeybladeEntity extends GeoBeyBase {
 
    private void announceNear(Component c) {
       for (Player p : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(32.0))) {
-         p.displayClientMessage(c, true);
+         com.krolasyon.beyblade.Msg.say(p, c, true);
       }
    }
 
@@ -2076,13 +2076,13 @@ public class BeybladeEntity extends GeoBeyBase {
             Player wo = win.getOwner();
             Player lo = lose.getOwner();
             if (wo != null) {
-               wo.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(wo, 
                   Component.translatable("msg.librabeyblade.lock_win", new Object[]{Component.translatable(win.titleKey())}).withStyle(ChatFormatting.GOLD), true
                );
             }
 
             if (lo != null && lo != wo) {
-               lo.displayClientMessage(
+               com.krolasyon.beyblade.Msg.say(lo, 
                   Component.translatable("msg.librabeyblade.lock_lose", new Object[]{Component.translatable(lose.titleKey())}).withStyle(ChatFormatting.RED), true
                );
             }
@@ -2224,24 +2224,27 @@ public class BeybladeEntity extends GeoBeyBase {
    }
 
    public boolean tryAbility(int id, boolean fromPlayer) {
+      if (!this.forcedAbility && this.tickCount < OPENING_LOCK) {
+         return false;
+      }
       if (id >= 1 && id <= this.abilityCount() && this.getState() == 0) {
          Player owner = this.getOwner();
          int cd = this.cooldownRemaining(id);
          if (cd > 0) {
             if (fromPlayer && owner != null) {
-               owner.displayClientMessage(Component.translatable("msg.librabeyblade.cooldown", new Object[]{Component.translatable(this.abilityKey(id)), (cd + 19) / 20}), true);
+               com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.cooldown", new Object[]{Component.translatable(this.abilityKey(id)), (cd + 19) / 20}), true);
             }
 
             return false;
          } else if (id == this.buffAbility()) {
-            this.entityData.set(DATA_SHIELD_END, (int)(this.level().getGameTime() + (long)this.buffTicks()));
+            this.entityData.set(DATA_SHIELD_END, (int)(this.level().getGameTime() + (long)((float)this.buffTicks() * 1.5F)));
             this.startCooldown(id);
             this.onBuffStart(owner);
             this.announce(owner, id);
             return true;
          } else if (!this.abilityAvailable(id)) {
             if (fromPlayer && owner != null) {
-               owner.displayClientMessage(Component.translatable("msg.librabeyblade.locked", new Object[]{Component.translatable(this.abilityKey(id))}), true);
+               com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.locked", new Object[]{Component.translatable(this.abilityKey(id))}), true);
             }
 
             return false;
@@ -2253,7 +2256,7 @@ public class BeybladeEntity extends GeoBeyBase {
 
                if (this.target == null) {
                   if (fromPlayer && owner != null) {
-                     owner.displayClientMessage(Component.translatable("msg.librabeyblade.no_target"), true);
+                     com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.no_target"), true);
                   }
 
                   return false;
@@ -2277,7 +2280,7 @@ public class BeybladeEntity extends GeoBeyBase {
                this.pendingAbility = id;
                this.ramTicks = 0;
                if (owner != null) {
-                  owner.displayClientMessage(Component.translatable("msg.librabeyblade.ram", new Object[]{Component.translatable(this.abilityKey(id))}), true);
+                  com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.ram", new Object[]{Component.translatable(this.abilityKey(id))}), true);
                }
 
                this.play((SoundEvent)ModSounds.CHARGE.get(), 1.0F, 1.5F);
@@ -2288,7 +2291,7 @@ public class BeybladeEntity extends GeoBeyBase {
             return true;
          } else {
             if (fromPlayer && owner != null) {
-               owner.displayClientMessage(Component.translatable("msg.librabeyblade.busy"), true);
+               com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.busy"), true);
             }
 
             return false;
@@ -2352,12 +2355,22 @@ public class BeybladeEntity extends GeoBeyBase {
 
    private void announce(@Nullable Player owner, int id) {
       if (owner != null) {
-         owner.displayClientMessage(Component.translatable("msg.librabeyblade.ability." + this.kindId(), new Object[]{Component.translatable(this.abilityKey(id))}), true);
+         com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.ability." + this.kindId(), new Object[]{Component.translatable(this.abilityKey(id))}), true);
       }
    }
 
+   /** Special moves take time to build up, as in the anime: longer cooldowns than the base values. */
+   public static final float COOLDOWN_SCALE = 2.5F;
+   /** No special move in the first seconds of a battle. */
+   public static final int OPENING_LOCK = 200;
+   /** Rival beys wait at least this long between two special moves. */
+   public static final int RIVAL_GAP = 400;
+   private long lastSpecialTick = -100000L;
+   private boolean forcedAbility;
+
    private void startCooldown(int id) {
-      this.entityData.set(DATA_COOLDOWN[id - 1], (int)(this.level().getGameTime() + (long)this.cooldown(id)));
+      this.lastSpecialTick = this.level().getGameTime();
+      this.entityData.set(DATA_COOLDOWN[id - 1], (int)(this.level().getGameTime() + (long)((float)this.cooldown(id) * COOLDOWN_SCALE)));
    }
 
    protected void endAbility() {
@@ -2372,7 +2385,10 @@ public class BeybladeEntity extends GeoBeyBase {
    }
 
    private void rivalUseAbilities() {
-      if (this.target != null && !(this.target.distanceToSqr(this) > 144.0) && this.random.nextInt(45) == 0) {
+      if (this.level().getGameTime() - this.lastSpecialTick < (long)RIVAL_GAP) {
+         return;
+      }
+      if (this.target != null && !(this.target.distanceToSqr(this) > 144.0) && this.random.nextInt(110) == 0) {
          int id = 1 + this.random.nextInt(this.abilityCount());
          if (this.cooldownRemaining(id) == 0) {
             this.tryAbility(id, false);
@@ -2856,7 +2872,7 @@ public class BeybladeEntity extends GeoBeyBase {
       this.play((SoundEvent)ModSounds.DEFEAT.get(), 1.2F, 1.0F);
       Player owner = this.getOwner();
       if (owner != null) {
-         owner.displayClientMessage(Component.translatable("msg.librabeyblade.defeated"), true);
+         com.krolasyon.beyblade.Msg.say(owner, Component.translatable("msg.librabeyblade.defeated"), true);
       }
 
       BeybladeEntity winner = this.lastAttacker();
@@ -2864,7 +2880,7 @@ public class BeybladeEntity extends GeoBeyBase {
          winner.addXp(this.isRival() ? 30 : 50);
          Player wo = winner.getOwner();
          if (wo != null) {
-            wo.displayClientMessage(Component.translatable(this.finishedByAbility() ? "msg.librabeyblade.ko_ability" : "msg.librabeyblade.ko"), true);
+            com.krolasyon.beyblade.Msg.say(wo, Component.translatable(this.finishedByAbility() ? "msg.librabeyblade.ko_ability" : "msg.librabeyblade.ko"), true);
          }
       }
    }
@@ -2929,7 +2945,7 @@ public class BeybladeEntity extends GeoBeyBase {
                t.putInt("BeyXp", nx);
             });
             if (lvl > before) {
-               p.displayClientMessage(Component.translatable("msg.librabeyblade.level_up", new Object[]{target.getHoverName(), lvl}).withStyle(ChatFormatting.GOLD), false);
+               com.krolasyon.beyblade.Msg.say(p, Component.translatable("msg.librabeyblade.level_up", new Object[]{target.getHoverName(), lvl}).withStyle(ChatFormatting.GOLD), false);
             }
          }
       }
@@ -3627,7 +3643,9 @@ public class BeybladeEntity extends GeoBeyBase {
          this.endAbility();
       }
 
+      this.forcedAbility = true;
       this.tryAbility(id, false);
+      this.forcedAbility = false;
    }
 
    static {
