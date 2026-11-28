@@ -626,5 +626,12 @@
  "part.librabeyblade.track_sw145": "SW145 (Switch) Spin Track",
  "item.librabeyblade.part_track_sw145": "SW145 (Switch) Spin Track",
  "part.librabeyblade.track_lw160": "LW160 (Left Wing) Spin Track",
- "item.librabeyblade.part_track_lw160": "LW160 (Left Wing) Spin Track"
+ "item.librabeyblade.part_track_lw160": "LW160 (Left Wing) Spin Track",
+ "subtitles.librabeyblade.crater": "Crater blasts open",
+ "subtitles.librabeyblade.debris": "Rocks fall",
+ "subtitles.librabeyblade.tornado": "Tornado howls",
+ "subtitles.librabeyblade.shockwave": "Shock wave",
+ "subtitles.librabeyblade.sky_launch": "Bey shoots into the sky",
+ "subtitles.librabeyblade.meteor_dive": "Meteor dive",
+ "subtitles.librabeyblade.aura": "Spirit aura"
 }

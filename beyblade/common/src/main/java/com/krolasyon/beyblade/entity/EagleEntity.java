@@ -241,6 +241,7 @@ public class EagleEntity extends BeybladeEntity {
                      this.grabTick = t;
                      this.play((SoundEvent)ModSounds.CLASH_HEAVY.get(), 1.4F, 1.2F);
                      this.level().broadcastEntityEvent(this, (byte)91);
+                     AnimeMoves.slam(this, 3.5, com.krolasyon.beyblade.world.WorldImpact.Style.EARTH);
                      if (this.target instanceof BeybladeEntity b) {
                         b.damageSpin(40.0F, this);
                      } else if (this.target instanceof LivingEntity l) {

@@ -626,5 +626,12 @@
  "part.librabeyblade.track_sw145": "SW145 (Anahtar) Dönüş Yolu",
  "item.librabeyblade.part_track_sw145": "SW145 (Anahtar) Dönüş Yolu",
  "part.librabeyblade.track_lw160": "LW160 (Sol Kanat) Dönüş Yolu",
- "item.librabeyblade.part_track_lw160": "LW160 (Sol Kanat) Dönüş Yolu"
+ "item.librabeyblade.part_track_lw160": "LW160 (Sol Kanat) Dönüş Yolu",
+ "subtitles.librabeyblade.crater": "Krater patladı",
+ "subtitles.librabeyblade.debris": "Kayalar düşüyor",
+ "subtitles.librabeyblade.tornado": "Kasırga uğulduyor",
+ "subtitles.librabeyblade.shockwave": "Şok dalgası",
+ "subtitles.librabeyblade.sky_launch": "Bey gökyüzüne fırladı",
+ "subtitles.librabeyblade.meteor_dive": "Meteor dalışı",
+ "subtitles.librabeyblade.aura": "Ruh aurası"
 }

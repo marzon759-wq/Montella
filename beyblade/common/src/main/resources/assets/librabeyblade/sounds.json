@@ -442,5 +442,75 @@
    "librabeyblade:rewind"
   ],
   "subtitle": "subtitles.librabeyblade.rewind"
+ },
+ "crater": {
+  "subtitle": "subtitles.librabeyblade.crater",
+  "sounds": [
+   {
+    "name": "librabeyblade:crater",
+    "stream": false,
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "debris": {
+  "subtitle": "subtitles.librabeyblade.debris",
+  "sounds": [
+   {
+    "name": "librabeyblade:debris",
+    "stream": false,
+    "attenuation_distance": 32
+   }
+  ]
+ },
+ "tornado": {
+  "subtitle": "subtitles.librabeyblade.tornado",
+  "sounds": [
+   {
+    "name": "librabeyblade:tornado",
+    "stream": false,
+    "attenuation_distance": 40
+   }
+  ]
+ },
+ "shockwave": {
+  "subtitle": "subtitles.librabeyblade.shockwave",
+  "sounds": [
+   {
+    "name": "librabeyblade:shockwave",
+    "stream": false,
+    "attenuation_distance": 40
+   }
+  ]
+ },
+ "sky_launch": {
+  "subtitle": "subtitles.librabeyblade.sky_launch",
+  "sounds": [
+   {
+    "name": "librabeyblade:sky_launch",
+    "stream": false,
+    "attenuation_distance": 48
+   }
+  ]
+ },
+ "meteor_dive": {
+  "subtitle": "subtitles.librabeyblade.meteor_dive",
+  "sounds": [
+   {
+    "name": "librabeyblade:meteor_dive",
+    "stream": false,
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "aura": {
+  "subtitle": "subtitles.librabeyblade.aura",
+  "sounds": [
+   {
+    "name": "librabeyblade:aura",
+    "stream": false,
+    "attenuation_distance": 24
+   }
+  ]
  }
 }

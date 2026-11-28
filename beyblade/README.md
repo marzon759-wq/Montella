@@ -1,4 +1,4 @@
-# Beyblade Metal Fight (librabeyblade) — 2.0.0
+# Beyblade Metal Fight (librabeyblade) — 2.1.0
 
 Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
@@ -6,8 +6,28 @@ Forge **1.20.1** and **1.21.1**, now animated with **GeckoLib 4**.
 
 1. Forge + **GeckoLib** (Forge sürümü, aynı Minecraft sürümü için) kur.
 2. `dist/` içinden doğru jar'ı `mods/` klasörüne at:
-   - `beyblade_mod-1.20.1-forge-2.0.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
-   - `beyblade_mod-1.21.1-forge-2.0.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+   - `beyblade_mod-1.20.1-forge-2.1.0.jar` — Minecraft 1.20.1, Forge 47+, GeckoLib 4.4+
+   - `beyblade_mod-1.21.1-forge-2.1.0.jar` — Minecraft 1.21.1, Forge 52+, GeckoLib 4.7+
+
+## 2.1: özel hamlelerin dünyaya etkisi + yeni sesler
+
+- **Storm Pegasus — Star Blast Attack:** bey gökyüzüne fırlar (~24 blok), Pegasus ruhu kanatlarını açar, hedefin
+  üstünde yıldız kilidi belirir, kuyruklu yıldız gibi dalar: krater + şok dalgası.
+- **Storm Pegasus — Storm Bringer:** Pegasus rakibin etrafında döner, rakibi içine çekip havaya kaldıran bir kasırga
+  (fırtına bulutu, şimşek çatırtıları) ve sonunda yere çakma.
+- **Dünyaya etki (`WorldImpact`):** krater (toprak / yanık magma / kum / yıldız / fırtına stili), çimi-çiçeği-yaprağı söken
+  ve mobları-eşyaları taşıyan kasırgalar, bitkileri yatıran ve camı kıran şok dalgaları, magma ve kum alanları.
+  - L-Drago dalışı: yanan magma krater, Wild Fire: zemin magmaya döner, Spin Steal girdabı her şeyi çeker.
+  - Flame Libra Inferno Blast: zemin kuma döner, kum kasırgası yükselir, kum krateri; Sonic Wave halka şok dalgaları.
+  - Rock Leone: Gale Force Wall rüzgar duvarı her şeyi dışarı fırlatır; deprem halkaları; dev kasırgalar.
+  - Earth Eagle Diving Crush krateri, kasırgalar; Variares şimşek kılıcı krateri; Befall tüy fırtınası;
+    Tempo zaman durdurma: çevredeki mobları ve eşyaları dondurur.
+  - Tüm blok değişiklikleri **geçicidir**: ~30 saniye sonra dıştan içe kendiliğinden onarılır, dünya kapanırken hepsi
+    geri konur. Sandık/blok-varlıkları ve kırılmaz bloklar asla değişmez. Kapatmak için:
+    `/gamerule beybladeWorldDamage false`.
+- **Sesler:** çarpışma, ağır çarpışma, fırlatma, iniş, krater, enkaz, kasırga, şok dalgası, gökyüzüne fırlama, meteor
+  dalışı, aura, şarj, gök gürültüsü — OpenGameArt'tan CC0 gerçek kayıtlarla yeniden yapıldı (`tools/gen_sfx.py`,
+  kaynaklar `CREDITS.md`). Animeden ses kullanılmadı; kendi seslerini kaynak paketiyle aynı dosya adlarıyla koyabilirsin.
 
 ## 2.0 ile gelenler / What's new
 

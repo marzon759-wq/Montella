@@ -9,6 +9,13 @@ import net.minecraftforge.registries.RegistryObject;
 public final class ModSounds {
    public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, "librabeyblade");
    public static final RegistryObject<SoundEvent> LAUNCH = reg("launch");
+   public static final RegistryObject<SoundEvent> CRATER = reg("crater");
+   public static final RegistryObject<SoundEvent> DEBRIS = reg("debris");
+   public static final RegistryObject<SoundEvent> TORNADO = reg("tornado");
+   public static final RegistryObject<SoundEvent> SHOCKWAVE = reg("shockwave");
+   public static final RegistryObject<SoundEvent> SKY_LAUNCH = reg("sky_launch");
+   public static final RegistryObject<SoundEvent> METEOR_DIVE = reg("meteor_dive");
+   public static final RegistryObject<SoundEvent> AURA = reg("aura");
    public static final RegistryObject<SoundEvent> LAND = reg("land");
    public static final RegistryObject<SoundEvent> CHARGE = reg("charge");
    public static final RegistryObject<SoundEvent> SPIN_LOOP = reg("spin_loop");

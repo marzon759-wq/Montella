@@ -308,6 +308,7 @@ public class BeffalEntity extends BeybladeEntity {
                this.play((SoundEvent)ModSounds.JUDGMENT_STRIKE.get(), 3.0F, 0.7F);
                this.play((SoundEvent)ModSounds.METEOR_IMPACT.get(), 2.6F, 0.9F);
                this.level().broadcastEntityEvent(this, (byte)114);
+               AnimeMoves.requiem(this, this.requiemAt);
 
                for (Entity e : this.level().getEntities(this, new AABB(this.requiemAt, this.requiemAt).inflate(6.0, 4.0, 6.0))) {
                   boolean var10000;

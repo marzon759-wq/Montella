@@ -266,6 +266,7 @@ public class VariaresEntity extends BeybladeEntity {
                this.play((SoundEvent)ModSounds.METEOR_IMPACT.get(), 3.0F, 0.8F);
                this.play((SoundEvent)ModSounds.THUNDER_STRIKE.get(), 3.0F, 0.6F);
                this.level().broadcastEntityEvent(this, (byte)127);
+               AnimeMoves.swordStrike(this, this.swordAt);
 
                for (int i = 0; i < 3; i++) {
                   LightningBolt bolt = (LightningBolt)EntityType.LIGHTNING_BOLT.create(sl);

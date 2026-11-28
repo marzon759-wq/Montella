@@ -148,6 +148,8 @@ public class BeybladeEntity extends GeoBeyBase {
    protected double abilityBaseX;
    protected double abilityBaseZ;
    protected boolean diving;
+   /** last tick's dive flag (AnimeMoves: a dive that just ended is a landing) */
+   boolean prevDiving;
    private int dashCooldown = 20;
    private int dashTicks;
    private int pendingAbility;
@@ -959,6 +961,7 @@ public class BeybladeEntity extends GeoBeyBase {
          } else if (ab != 0) {
             this.abilityTicks++;
             controlled = this.tickAbility(ab, this.abilityTicks, owner);
+            AnimeMoves.tick(this, ab, this.abilityTicks);
             if (this.abilityTicks >= this.duration(ab)) {
                this.endAbility();
             }
@@ -975,6 +978,7 @@ public class BeybladeEntity extends GeoBeyBase {
 
          if (this.isShielded()) {
             this.tickBuff();
+            AnimeMoves.buff(this);
          }
 
          if (this.stunTicks > 0) {

@@ -91,6 +91,10 @@ public final class AutoTest {
    }
 
    private AutoTest() {
+      if ("world".equals(System.getProperty("libra.autotest"))) {
+         this.worldScenario();
+         return;
+      }
       this.cmd(
          0,
          null,
@@ -171,6 +175,64 @@ public final class AutoTest {
       this.wait(10, "sleep_a");
       this.wait(30, "sleep_b");
       this.wait(20, "END");
+   }
+
+   /** Special moves on open ground: craters, tornadoes, shock waves, and the ground putting itself back. */
+   private void worldScenario() {
+      String[] decor = {
+         "fill 20 -61 -20 60 -61 20 minecraft:grass_block", "fill 20 -60 -20 60 -55 20 minecraft:air",
+         "fill 24 -60 -14 56 -60 14 minecraft:short_grass", "fill 30 -60 -6 34 -60 -2 minecraft:poppy", "fill 44 -60 2 48 -60 6 minecraft:dandelion",
+         "fill 27 -60 6 29 -57 8 minecraft:oak_leaves", "fill 46 -60 -9 48 -58 -7 minecraft:oak_leaves", "fill 36 -60 -12 42 -58 -12 minecraft:glass",
+         "summon minecraft:cow 33 -60 3", "summon minecraft:sheep 47 -60 -3", "summon minecraft:pig 41 -60 9"
+      };
+      String grass = "fill 24 -60 -14 56 -60 14 minecraft:grass replace minecraft:air";
+      this.cmd(0, null, "gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "gamerule doMobSpawning false", "time set 5000", "weather clear",
+         "difficulty peaceful", "gamemode spectator @a", "kill @e[type=!player]");
+      this.cmd(4, null, decor);
+      this.cmd(10, "ground_before", "tp @a 40 -50 16 180 35");
+      // Star Blast Attack
+      this.cmd(2, null, "kill @e[type=librabeyblade:pegasus]", "summon librabeyblade:pegasus 36 -60 0 {Tags:[\"a\"]}", "summon librabeyblade:common 41 -60 -1 {Variant:2}");
+      this.wait(20, null);
+      this.force(3);
+      this.wait(10, "star_rise");
+      this.cmd(1, null, "tp @a 44 -45 12 160 -10");
+      this.wait(14, "star_sky");
+      this.cmd(1, null, "tp @a 40 -54 12 180 25");
+      this.wait(12, "star_dive");
+      this.wait(8, "star_impact");
+      this.wait(30, "star_crater");
+      // Storm Bringer
+      this.cmd(2, null, "kill @e[type=!player]", "summon librabeyblade:pegasus 30 -60 -4 {Tags:[\"a\"]}", "summon librabeyblade:common 34 -60 -4 {Variant:4}",
+         "summon minecraft:cow 35 -60 -2", "tp @a 32 -54 8 180 25");
+      this.wait(20, null);
+      this.force(2);
+      this.wait(25, "storm_a");
+      this.wait(25, "storm_b");
+      this.wait(32, "storm_drop");
+      // Inferno Blast
+      this.cmd(2, null, "kill @e[type=!player]", "summon librabeyblade:libra 48 -60 4 {Tags:[\"a\"]}", "summon librabeyblade:common 51 -60 2 {Variant:5}",
+         "tp @a 48 -54 16 180 20");
+      this.wait(20, null);
+      this.force(3);
+      this.wait(16, "inferno_dig");
+      this.wait(20, "inferno_sand_tornado");
+      this.wait(30, "inferno_crater");
+      // L-Drago dive and Leone giant tornado
+      this.cmd(2, null, "kill @e[type=!player]", "summon librabeyblade:ldrago 30 -60 8 {Tags:[\"a\"]}", "summon librabeyblade:common 33 -60 9 {Variant:1}",
+         "tp @a 31 -54 20 180 25");
+      this.wait(20, null);
+      this.force(3);
+      this.wait(40, "drago_a");
+      this.wait(40, "drago_b");
+      this.cmd(2, null, "kill @e[type=!player]", "summon librabeyblade:leone 40 -60 0 {Tags:[\"a\"]}", "summon librabeyblade:common 44 -60 3 {Variant:6}",
+         "summon minecraft:sheep 42 -60 -3", "tp @a 40 -50 18 180 25");
+      this.wait(20, null);
+      this.force(6);
+      this.wait(40, "leone_tornado_a");
+      this.wait(60, "leone_tornado_b");
+      this.cmd(2, "wide_after", "kill @e[type=!player]", "tp @a 40 -46 22 180 40");
+      this.wait(700, "restored");
+      this.wait(10, "END");
    }
 
    private static ItemStack custom(Item bey, String... parts) {

@@ -139,6 +139,15 @@ public final class PegasusFx {
    ) {
       float dur = (float)PegasusEntity.PG_DURATION[2];
       float f = easeOut(at / 14.0F) * (at > dur - 10.0F ? Math.max(0.0F, (dur - at) / 10.0F) : 1.0F);
+      // Storm Bringer's tornado around the opponent (or around Pegasus when it has none)
+      if (at > 6.0F && at < 82.0F) {
+         net.minecraft.world.entity.Entity tg = e.level().getEntity(e.getTargetId());
+         double fx = (tg != null ? Mth.lerp(partial, tg.xo, tg.getX()) : Mth.lerp(partial, e.xo, e.getX())) - ex;
+         double fz = (tg != null ? Mth.lerp(partial, tg.zo, tg.getZ()) : Mth.lerp(partial, e.zo, e.getZ())) - ez;
+         double fy = (tg != null ? tg.getY() : e.getY()) - ey;
+         float g = Mth.clamp((at - 6.0F) / 14.0F, 0.0F, 1.0F) * Mth.clamp((82.0F - at) / 6.0F, 0.0F, 1.0F);
+         TornadoFx.draw(buf, pose, fx, fy - 0.2, fz, 1.2F + 1.5F * g, 4.5F * g + 1.0F, 12.0F * g, t, new float[]{0.65F, 0.85F, 1.0F}, g);
+      }
       double bx = e.abilityX - ex;
       double by = e.abilityY - ey;
       double bz = e.abilityZ - ez;
@@ -216,6 +225,25 @@ public final class PegasusFx {
    }
 
    private static void star(PegasusEntity e, float at, float t, double ex, double ey, double ez, PoseStack pose, MultiBufferSource buf, Quaternionf cam) {
+      // the bey itself: Pegasus' spirit spreads its wings above it in the sky, and it falls as a shooting star
+      if (at > 4.0F && at < 62.0F) {
+         float g = Mth.clamp((at - 4.0F) / 8.0F, 0.0F, 1.0F) * Mth.clamp((62.0F - at) / 6.0F, 0.0F, 1.0F);
+         spirit(buf, pose, cam, 0.0, 1.4, 0.0, 4.5F, g, false);
+         VertexConsumer fl = Fx.buf(buf, Fx.FLARE);
+         Fx.billboard(fl, pose, cam, 0.0, 0.4, 0.0, 2.6F * g, t * 6.0F, k(SKY, 1.2F * g));
+         double vy = e.getY() - e.yo;
+         double vx = e.getX() - e.xo;
+         double vz = e.getZ() - e.zo;
+         double sp = Math.sqrt(vx * vx + vy * vy + vz * vz);
+         if (sp > 0.4) {
+            // comet tail along the flight path
+            VertexConsumer tv = Fx.buf(buf, Fx.SOFT);
+            Vec3 back = new Vec3(-vx, -vy, -vz).normalize().scale(Math.min(14.0, sp * 7.0));
+            Fx.beam(tv, pose.last().pose(), new Vec3(0.0, 0.4, 0.0), back.add(0.0, 0.4, 0.0), 1.3F, k(WHITE, 1.4F), k(SKY, 0.0F), 0.3F, t * 0.2F);
+            Fx.beam(tv, pose.last().pose(), new Vec3(0.0, 0.4, 0.0), back.scale(0.6).add(0.0, 0.4, 0.0), 2.4F, k(SKY, 0.9F), k(SKY, 0.0F), 0.3F, t * 0.1F);
+         }
+      }
+
       if (!(at > 46.0F)) {
          pose.pushPose();
          pose.translate(e.starX - ex, e.starY - ey, e.starZ - ez);

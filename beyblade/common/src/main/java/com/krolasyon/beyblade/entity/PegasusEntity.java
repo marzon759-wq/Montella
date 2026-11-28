@@ -13,6 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,7 +31,7 @@ public class PegasusEntity extends BeybladeEntity {
    public static final int PG_STAR = 3;
    public static final int PG_RICO = 4;
    public static final int PG_GALLOP = 5;
-   public static final int[] PG_DURATION = new int[]{0, 0, 100, 72, 64, 110};
+   public static final int[] PG_DURATION = new int[]{0, 0, 100, 84, 64, 110};
    public static final int[] PG_COOLDOWN = new int[]{0, 600, 600, 550, 500, 1100};
    public static final int WINGS_TICKS = 200;
    public static final int S_FORM = 14;
@@ -62,6 +63,7 @@ public class PegasusEntity extends BeybladeEntity {
    private Vec3 ricoDir = new Vec3(1.0, 0.0, 0.0);
    @Nullable
    private Vec3 starCenter;
+   private Vec3 stormCenter;
    private final Set<Integer> hits = new HashSet<>();
    private int lap = -1;
    private double bcx;
@@ -171,39 +173,70 @@ public class PegasusEntity extends BeybladeEntity {
       ServerLevel sl = (ServerLevel)this.level();
       switch (ab) {
          case 2:
+            // Storm Bringer: Pegasus races round the opponent and whips the air into a tornado that sucks it up,
+            // then lets it fall
             if (t == 1) {
                this.play((SoundEvent)ModSounds.STORM_CLOUD.get(), 2.0F, 1.0F);
+               this.play((SoundEvent)ModSounds.TORNADO.get(), 2.4F, 1.0F);
+               this.stormCenter = this.target != null ? this.target.position() : this.position();
             }
 
-            this.hover(0.6, 0.2);
-            int rel0 = t - 14;
-            if (rel0 >= 0 && rel0 % 5 == 0 && rel0 / 5 < 16) {
-               int k = rel0 / 5;
-               Entity tgt = this.strikeTarget(k);
-               Vec3 p = tgt != null ? tgt.position() : strikePoint(k, this.getX(), this.getY(), this.getZ());
-               this.level()
-                  .playSound(
-                     null,
-                     p.x,
-                     p.y,
-                     p.z,
-                     (SoundEvent)ModSounds.THUNDER_STRIKE.get(),
-                     SoundSource.NEUTRAL,
-                     1.6F,
-                     0.9F + this.random.nextFloat() * 0.3F
+            if (this.stormCenter == null) {
+               this.stormCenter = this.position();
+            }
+
+            if (this.target != null && this.target.isAlive() && t < 70) {
+               this.stormCenter = this.stormCenter.lerp(this.target.position(), 0.08);
+            }
+
+            if (t < 80) {
+               this.setNoGravity(false);
+               double a = (double)t * 0.55 * (double)this.spinDir();
+               double rr = Math.min(2.8, 0.6 + (double)t * 0.08);
+               Vec3 want = this.stormCenter.add(Math.cos(a) * rr, 0.0, Math.sin(a) * rr);
+               Vec3 d = flat(want.subtract(this.position()));
+               this.setDeltaMovement(d.x * 0.55, this.getDeltaMovement().y, d.z * 0.55);
+               if (t > 8) {
+                  com.krolasyon.beyblade.world.WorldImpact.tornado(
+                     sl, this, this.stormCenter, 4.2, 12.0, 0.8 + (double)t / 100.0, false, t
                   );
-               Px.send(sl, ParticleTypes.ELECTRIC_SPARK, p.x, p.y + 0.3, p.z, 20, 0.3, 0.3, 0.3, 0.5);
-               if (tgt instanceof BeybladeEntity b) {
-                  b.damageSpin(28.0F, this);
-                  b.stun(6);
-               } else if (tgt instanceof LivingEntity l) {
-                  l.invulnerableTime = 0;
-                  l.hurt(this.damageSources().indirectMagic(this, owner), 4.0F);
+               }
+
+               if (t > 14 && t % 16 == 0) {
+                  Vec3 top = this.stormCenter.add(this.random.nextGaussian(), 9.0 + this.random.nextDouble() * 3.0, this.random.nextGaussian());
+                  this.level().playSound(null, top.x, top.y, top.z, (SoundEvent)ModSounds.THUNDER_STRIKE.get(), SoundSource.NEUTRAL, 1.2F, 1.2F);
+                  Px.send(sl, ParticleTypes.ELECTRIC_SPARK, top.x, top.y, top.z, 30, 1.0, 1.0, 1.0, 0.6);
+               }
+
+               for (Entity ex : this.enemiesWithin(12.0)) {
+                  if (ex instanceof BeybladeEntity b && b.distanceToSqr(this.stormCenter) < 20.0 && t % 10 == 0) {
+                     b.damageSpin(10.0F, this);
+                  }
+               }
+            } else if (t == 80) {
+               this.play((SoundEvent)ModSounds.CLASH_HEAVY.get(), 2.4F, 0.7F);
+               this.level().broadcastEntityEvent(this, (byte)65);
+               com.krolasyon.beyblade.world.WorldImpact.shockwave(sl, this, this.stormCenter, 6.0);
+
+               for (Entity ex : this.enemiesWithin(16.0)) {
+                  if (flat(ex.position().subtract(this.stormCenter)).length() < 6.0) {
+                     if (ex instanceof BeybladeEntity b) {
+                        b.damageSpin(90.0F, this);
+                        b.setDeltaMovement(b.getDeltaMovement().multiply(0.3, 0.0, 0.3).add(0.0, -1.4, 0.0));
+                     } else if (ex instanceof LivingEntity l) {
+                        l.hurt(this.damageSources().indirectMagic(this, owner), 8.0F);
+                        l.setDeltaMovement(l.getDeltaMovement().multiply(0.3, 0.0, 0.3).add(0.0, -1.2, 0.0));
+                     }
+
+                     ex.hurtMarked = true;
+                  }
                }
             }
 
             return true;
          case 3:
+            // Star Blast Attack: Pegasus is hurled up into the sky, spreads its wings above the opponent and
+            // comes down on it like a shooting star
             if (t == 1) {
                if (this.target == null) {
                   this.endAbilityEarly();
@@ -212,48 +245,63 @@ public class PegasusEntity extends BeybladeEntity {
 
                this.starCenter = this.target.position();
                this.level().broadcastEntityEvent(this, (byte)100);
-               this.play((SoundEvent)ModSounds.STAR_CHIME.get(), 1.6F, 1.0F);
+               this.play((SoundEvent)ModSounds.SKY_LAUNCH.get(), 2.4F, 1.0F);
+               this.play((SoundEvent)ModSounds.PEGASUS_NEIGH.get(), 2.0F, 1.1F);
+               com.krolasyon.beyblade.world.WorldImpact.shockwave(sl, this, this.position(), 4.0);
             }
 
             if (this.starCenter == null) {
                return true;
             }
 
-            this.hover(1.0, 0.2);
-            int relx = t - 6;
-            if (relx >= 0 && relx % 4 == 0 && relx / 4 < 5) {
-               this.play((SoundEvent)ModSounds.STAR_CHIME.get(), 1.0F, 1.2F + (float)(relx / 4) * 0.12F);
+            if (this.target != null && this.target.isAlive() && t < 40) {
+               this.starCenter = this.target.position();
             }
 
-            if (t >= 24 && t < 46) {
-               for (Entity exx : this.enemiesWithin(24.0)) {
+            if (t < 18) {
+               this.setNoGravity(true);
+               double dy = this.abilityBaseY + 24.0 - this.getY();
+               Vec3 v0 = this.getDeltaMovement();
+               this.setDeltaMovement(v0.x * 0.6, Mth.clamp(dy * 0.25, 0.25, 1.8), v0.z * 0.6);
+               Px.send(sl, ParticleTypes.END_ROD, this.getX(), this.getY(), this.getZ(), 4, 0.15, 0.3, 0.15, 0.05);
+               Px.send(sl, ParticleTypes.CLOUD, this.getX(), this.getY() - 0.6, this.getZ(), 2, 0.2, 0.2, 0.2, 0.02);
+            } else if (t < 40) {
+               this.setNoGravity(true);
+               Vec3 above = new Vec3(this.starCenter.x, this.abilityBaseY + 24.0, this.starCenter.z);
+               this.setDeltaMovement(above.subtract(this.position()).scale(0.15));
+               int relx = t - 18;
+               if (relx % 4 == 0) {
+                  this.play((SoundEvent)ModSounds.STAR_CHIME.get(), 1.4F, 1.0F + (float)relx * 0.03F);
+               }
+
+               Px.send(sl, ParticleTypes.END_ROD, this.getX(), this.getY() + 0.5, this.getZ(), 6, 1.2, 0.6, 1.2, 0.02);
+
+               for (Entity exx : this.enemiesWithin(40.0)) {
                   Vec3 dxx = flat(exx.position().subtract(this.starCenter));
                   if (dxx.length() < 4.5) {
                      exx.setDeltaMovement(exx.getDeltaMovement().multiply(0.4, 1.0, 0.4).subtract(dxx.scale(0.04)));
                      exx.hurtMarked = true;
                   }
                }
+            } else if (t == 40) {
+               this.play((SoundEvent)ModSounds.METEOR_DIVE.get(), 2.6F, 1.0F);
+               this.play((SoundEvent)ModSounds.PEGASUS_NEIGH.get(), 2.4F, 0.9F);
+               this.diving = true;
             }
 
-            if (t == 46) {
-               this.play((SoundEvent)ModSounds.THUNDER_STRIKE.get(), 2.0F, 1.4F);
-               this.play((SoundEvent)ModSounds.STAR_CHIME.get(), 2.0F, 0.7F);
-               this.level().broadcastEntityEvent(this, (byte)102);
-               Px.send(sl, ParticleTypes.END_ROD, this.starCenter.x, this.starCenter.y + 0.5, this.starCenter.z, 60, 1.5, 1.0, 1.5, 0.25);
-
-               for (Entity exxx : this.enemiesWithin(30.0)) {
-                  Vec3 dxx = flat(exxx.position().subtract(this.starCenter));
-                  double dist = dxx.length();
-                  if (!(dist > 5.0)) {
-                     Vec3 out = dist < 0.001 ? new Vec3(1.0, 0.0, 0.0) : dxx.scale(1.0 / dist);
-                     if (exxx instanceof BeybladeEntity b) {
-                        b.damageSpin(150.0F, this);
-                        b.setDeltaMovement(out.scale(0.6).add(0.0, 0.7, 0.0));
-                     } else if (exxx instanceof LivingEntity l) {
-                        l.hurt(this.damageSources().indirectMagic(this, owner), 12.0F);
-                        l.knockback(1.0, -out.x, -out.z);
-                     }
-                  }
+            if (this.diving) {
+               this.setNoGravity(true);
+               Vec3 to = this.starCenter.subtract(this.position());
+               double len = to.length();
+               this.setDeltaMovement(len > 0.001 ? to.scale(Math.min(2.6, len) / len) : Vec3.ZERO);
+               Px.send(sl, ParticleTypes.END_ROD, this.getX(), this.getY() + 0.5, this.getZ(), 8, 0.2, 0.6, 0.2, 0.05);
+               Px.send(sl, ParticleTypes.FIREWORK, this.getX(), this.getY() + 0.8, this.getZ(), 4, 0.2, 0.8, 0.2, 0.02);
+               if (this.onGround() || len < 1.3 || this.verticalCollision || t > 70) {
+                  this.diving = false;
+                  this.setNoGravity(false);
+                  this.setDeltaMovement(0.0, -0.2, 0.0);
+                  this.starImpact(sl, owner);
+                  this.abilityTicks = Math.max(this.abilityTicks, PG_DURATION[3] - 12);
                }
             }
 
@@ -480,6 +528,30 @@ public class PegasusEntity extends BeybladeEntity {
       double a = (double)k * 2.4;
       double r = 2.5 + (double)(k % 3) * 2.0;
       return new Vec3(x + Math.cos(a) * r, y, z + Math.sin(a) * r);
+   }
+
+   private void starImpact(ServerLevel sl, @Nullable Player owner) {
+      this.play((SoundEvent)ModSounds.THUNDER_STRIKE.get(), 2.0F, 1.4F);
+      this.play((SoundEvent)ModSounds.METEOR_IMPACT.get(), 2.8F, 1.0F);
+      this.play((SoundEvent)ModSounds.STAR_CHIME.get(), 2.0F, 0.7F);
+      this.level().broadcastEntityEvent(this, (byte)102);
+      this.level().broadcastEntityEvent(this, (byte)65);
+      Px.send(sl, ParticleTypes.END_ROD, this.starCenter.x, this.starCenter.y + 0.5, this.starCenter.z, 80, 1.5, 1.0, 1.5, 0.3);
+
+      for (Entity exxx : this.enemiesWithin(30.0)) {
+         Vec3 dxx = flat(exxx.position().subtract(this.starCenter));
+         double dist = dxx.length();
+         if (!(dist > 5.0)) {
+            Vec3 out = dist < 0.001 ? new Vec3(1.0, 0.0, 0.0) : dxx.scale(1.0 / dist);
+            if (exxx instanceof BeybladeEntity b) {
+               b.damageSpin(150.0F, this);
+               b.setDeltaMovement(out.scale(0.6).add(0.0, 0.7, 0.0));
+            } else if (exxx instanceof LivingEntity l) {
+               l.hurt(this.damageSources().indirectMagic(this, owner), 12.0F);
+               l.knockback(1.0, -out.x, -out.z);
+            }
+         }
+      }
    }
 
    @Override
